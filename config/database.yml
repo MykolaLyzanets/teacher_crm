@@ -1,0 +1,18 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: teacher_crm_development
+
+test:
+  <<: *default
+  database: teacher_crm_test
+
+production:
+  <<: *default
+  database: teacher_crm_production
+  username: teacher_crm
+  password: teacher_crm2026project
