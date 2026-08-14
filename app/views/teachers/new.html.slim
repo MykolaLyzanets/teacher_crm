@@ -1,0 +1,190 @@
+- content_for :title, 'Create teacher | danlio'
+
+.teachers-page.teachers-page--form data-controller="teachers"
+  nav.teachers-page__breadcrumb aria-label="Breadcrumb"
+    = link_to 'Teachers', teachers_path
+    = icon_tag 'chevron-right', size: 16
+    span Create teacher
+
+  .teachers-page__form-header
+    .teachers-page__form-intro
+      .teachers-page__empty-icon
+        = icon_tag 'user', size: 24
+      div
+        h1.teachers-page__title Create teacher
+        p.teachers-page__subtitle Add a teacher, configure their teaching details and control workspace access.
+    .teachers-page__form-actions.teachers-page__form-actions--top
+      = link_to 'Cancel', teachers_path, class: 'teachers-page__secondary-btn'
+      button.teachers-page__primary-btn type="submit" form="create-teacher-form" Create teacher
+
+  = form_with url: teachers_path, method: :post, html: { id: 'create-teacher-form', class: 'teachers-page__form', novalidate: true } do
+    section.teachers-page__card
+      h2 Basic information
+      p.teachers-page__section-sub Add the teacher’s primary profile details.
+      .teachers-page__avatar-upload
+        span.teachers-page__avatar.teachers-page__avatar--lg data-teachers-target="initialsPreview" TC
+      .teachers-page__fields
+        label.teachers-page__field
+          span First name *
+          input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Olivia" data-teachers-target="firstName" data-action="input->teachers#updateInitials"
+        label.teachers-page__field
+          span Last name *
+          input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Anderson" data-teachers-target="lastName" data-action="input->teachers#updateInitials"
+        label.teachers-page__field
+          span Display name
+          input type="text" name="display_name" placeholder="Name shown to students" data-teachers-target="displayName" data-action="input->teachers#updateInitials"
+        label.teachers-page__field
+          span Job title
+          input type="text" name="job_title" placeholder="English teacher" list="teacher-job-title-examples"
+          datalist#teacher-job-title-examples
+            option value="English teacher"
+            option value="Mathematics tutor"
+            option value="Senior teacher"
+            option value="Academic coordinator"
+        label.teachers-page__field
+          span Teacher status *
+          select name="status" required=true
+            option value="active" selected="selected" Active
+            option value="invited" Invited
+            option value="on_leave" On leave
+            option value="inactive" Inactive
+
+    section.teachers-page__card
+      h2 Contact information
+      p.teachers-page__section-sub Add contact details used by the workspace.
+      .teachers-page__fields
+        label.teachers-page__field
+          span Email address
+          .teachers-page__input-icon
+            = icon_tag 'mail', size: 18
+            input type="email" name="email" autocomplete="email" placeholder="olivia@example.com"
+        label.teachers-page__field
+          span Phone number
+          .teachers-page__input-icon
+            = icon_tag 'message', size: 18
+            input type="tel" name="phone" autocomplete="tel" placeholder="+1 555 0100"
+        label.teachers-page__field
+          span Preferred contact
+          select name="preferred_contact_method"
+            option value="email" selected="selected" Email
+            option value="phone" Phone
+            option value="either" Either
+        label.teachers-page__field
+          span Timezone
+          select name="timezone"
+            - TeachersHelper::TIMEZONES.each do |tz|
+              option value=tz selected=(tz == 'America/New_York') = tz
+        label.teachers-page__field.teachers-page__field--full
+          span Location
+          input type="text" name="location" placeholder="City, Country"
+
+    section.teachers-page__card
+      h2 Teaching details
+      p.teachers-page__section-sub Configure what the teacher teaches and how they work with students.
+      .teachers-page__chips-block
+        p.teachers-page__chips-label Subjects or courses
+        .teachers-page__chips
+          - TeachersHelper::SUBJECTS.each do |subject|
+            label.teachers-page__chip-toggle
+              input type="checkbox" name="subjects[]" value=subject
+              span = subject
+      .teachers-page__fields
+        label.teachers-page__field
+          span Workspace role
+          select name="workspace_role"
+            option value="" Select workspace role
+            option value="teacher" Teacher
+            option value="senior_teacher" Senior teacher
+            option value="administrator" Administrator
+        label.teachers-page__field
+          span Experience (years)
+          input type="number" name="experience_years" min="0" step="1" placeholder="e.g. 5"
+        label.teachers-page__field.teachers-page__field--full
+          span Bio
+          textarea name="bio" rows="4" placeholder="Short teaching bio…"
+      .teachers-page__chips-block
+        p.teachers-page__chips-label Languages
+        .teachers-page__chips
+          - TeachersHelper::LANGUAGES.each do |code, label|
+            label.teachers-page__chip-toggle
+              input type="checkbox" name="languages[]" value=code
+              span = label
+      .teachers-page__chips-block
+        p.teachers-page__chips-label Tags
+        .teachers-page__chips
+          - TeachersHelper::TAGS.each do |tag|
+            label.teachers-page__chip-toggle
+              input type="checkbox" name="tags[]" value=tag
+              span = tag
+
+    section.teachers-page__card
+      h2 Availability and lesson settings
+      p.teachers-page__section-sub Set the teacher’s regular working hours and lesson defaults.
+      .teachers-page__chips-block
+        p.teachers-page__chips-label Working days
+        .teachers-page__chips
+          - TeachersHelper::WEEK_DAYS.each do |day|
+            label.teachers-page__chip-toggle
+              input type="checkbox" name="working_days[]" value=day checked=%w[Monday Tuesday Wednesday Thursday Friday].include?(day)
+              span = day[0, 3]
+      .teachers-page__fields
+        label.teachers-page__field
+          span Default lesson duration
+          select name="default_lesson_duration_minutes"
+            - [30, 45, 60, 90].each do |minutes|
+              option value=minutes selected=(minutes == 60) = "#{minutes} minutes"
+        label.teachers-page__field
+          span Maximum lessons per day
+          input type="number" name="max_lessons_per_day" min="1" step="1" placeholder="Optional"
+        label.teachers-page__field.teachers-page__field--full
+          span Lesson formats
+          .teachers-page__chips
+            - [['online', 'Online'], ['in_person', 'In person'], ['hybrid', 'Hybrid']].each do |value, label|
+              label.teachers-page__chip-toggle
+                input type="checkbox" name="lesson_formats[]" value=value checked=(value == 'online')
+                span = label
+        label.teachers-page__field
+          span Default meeting link
+          input type="url" name="default_meeting_link" placeholder="https://meet.example.com/…"
+        label.teachers-page__field
+          span Calendar color
+          select name="calendar_color"
+            - TeachersHelper::CALENDAR_COLORS.each do |id, _|
+              option value=id selected=(id == 'olive') = id.humanize
+
+    section.teachers-page__card
+      h2 Workspace access
+      p.teachers-page__section-sub Choose whether this teacher can sign in to Danlio.
+      .teachers-page__invite
+        div
+          p.teachers-page__invite-title Invite teacher to Danlio
+          p.teachers-page__invite-copy Teacher profile only: can be assigned students and lessons, but cannot sign in and no invitation is sent.
+        label.teachers-page__switch
+          input type="checkbox" name="invite_to_workspace" value="1" data-teachers-target="inviteToggle" data-action="change->teachers#toggleInvite"
+          span
+      .teachers-page__invite-fields.teachers-page__invite-fields--hidden data-teachers-target="inviteFields"
+        .teachers-page__fields
+          label.teachers-page__field
+            span Send invitation
+            select name="invitation_timing"
+              option value="send_now" selected="selected" Send now
+              option value="create_pending" Create and send later
+          label.teachers-page__field.teachers-page__field--full
+            span Invitation message
+            textarea name="invitation_message" rows="3" placeholder="Optional message included with the invitation…"
+
+    section.teachers-page__card
+      h2 Internal notes
+      p.teachers-page__section-sub Add information visible only to authorized workspace staff.
+      label.teachers-page__field.teachers-page__field--full
+        span Notes
+        textarea name="notes" rows="4" maxlength="500" placeholder="Add internal information about this teacher…" data-teachers-target="notes" data-action="input->teachers#updateNotesCount"
+      .teachers-page__notes-meta
+        p
+          = icon_tag 'lock', size: 14
+          span Teachers and students cannot see these notes unless their role has permission.
+        p data-teachers-target="notesCount" 0/500
+
+    .teachers-page__form-actions
+      = link_to 'Cancel', teachers_path, class: 'teachers-page__secondary-btn'
+      button.teachers-page__primary-btn type="submit" Create teacher

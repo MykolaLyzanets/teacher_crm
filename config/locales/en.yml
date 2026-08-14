@@ -1,4 +1,170 @@
 en:
   en: English
-  ua: Ukrainian
+  ua: Українська
   ru: Russian
+
+  header:
+    features: Features
+    how_it_works: How it works
+    schools: For schools
+    pricing: Pricing
+    log_in: Sign in
+    log_out: Sign out
+    get_started: Get started
+    menu: Menu
+    language: Language
+
+  footer:
+    tagline: The all-in-one CRM for tutors and teachers. Teach more. Manage less.
+    product: Product
+    features: Features
+    pricing: Pricing
+    updates: Updates
+    resources: Resources
+    help_center: Help Center
+    guides: Guides
+    blog: Blog
+    company: Company
+    about: About
+    contact: Contact
+    privacy: Privacy Policy
+    follow_us: Follow us
+    copyright: "© %{year} danlio. All rights reserved."
+
+  home:
+    hero:
+      title_lead: Teach more.
+      title_accent: Manage less.
+      subhead: The all-in-one CRM for tutors and teachers. Organize students, schedule lessons, track progress and grow your teaching business.
+      get_started: Get started free
+      see_how: See how it works
+      no_card: No credit card required
+      setup: Setup in 2 minutes
+    logos:
+      trusted: Trusted by teachers and tutors worldwide
+    features:
+      title: Everything you need to teach and manage
+      students_title: Manage Students
+      students_text: Keep all student information organized and up to date.
+      lessons_title: Schedule Lessons
+      lessons_text: Plan, reschedule and track lessons with ease.
+      homework_title: Assign Homework
+      homework_text: Create, assign and review homework in one place.
+      progress_title: Track Progress
+      progress_text: Monitor student progress and achievements.
+      payments_title: Accept Payments
+      payments_text: Get paid online and track your income easily.
+      reports_title: Generate Reports
+      reports_text: Get insights and grow your teaching business.
+    workflow:
+      title_lead: One workspace.
+      title_accent: Your entire teaching workflow.
+      step1_title: Add your students
+      step1_text: Import or add student profiles in seconds.
+      step2_title: Schedule your lessons
+      step2_text: Set your availability and book lessons.
+      step3_title: Teach & assign
+      step3_text: Run lessons and assign homework.
+      step4_title: Track & improve
+      step4_text: Monitor progress and help students grow.
+      next_lesson: Next lesson
+      next_lesson_date: May 14, 2024 • 10:00 AM
+      progress: Progress
+      progress_overview: Progress Overview
+    cta:
+      title: Ready to simplify your teaching?
+      text: Join thousands of teachers who save time and grow their business with danlio.
+      get_started: Get started free
+      see_how: See how it works
+    dash:
+      active: Active
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    calendar:
+      title: Calendar
+      subtitle: Manage your classes, meetings and events
+      create: Create Event
+      today: Today
+      prev: Previous
+      next: Next
+      range: May 12 – May 18, 2024
+      settings: Calendar settings
+      all_day: All-day
+      month: May 2024
+      calendars: Calendars
+      select_all: Select All
+      week_days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      views: [Day, Week, Month, Agenda]
+      times: ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
+      mini_head: [S, M, T, W, T, F, S]
+      filter_classes: My Classes
+      filter_meetings: Meetings
+      filter_events: School Events
+      filter_personal: Personal
+      filter_reminders: Reminders
+
+  not_found:
+    title: Page not found
+    back: Back to home
+
+  sessions:
+    title: Sign in
+    heading: Welcome back
+    description: Sign in to continue to your Danlio workspace.
+    email: Email address
+    email_placeholder: you@example.com
+    password: Password
+    password_placeholder: Enter your password
+    remember_me: Remember me
+    forgot: Forgot password?
+    submit: Sign in
+    or: or continue with
+    google: Continue with Google
+    apple: Continue with Apple
+    no_account: Don't have an account?
+    create_account: Create account
+    show_password: Show password
+
+  registrations:
+    title: Create account
+    heading: Create your account
+    description: Start organizing your teaching with Danlio.
+    full_name: Full name
+    full_name_placeholder: Your full name
+    password_placeholder: Create a password
+    confirm_password: Confirm password
+    confirm_placeholder: Repeat your password
+    req_length: At least 8 characters
+    req_upper: One uppercase letter
+    req_lower: One lowercase letter
+    req_number: One number
+    agree: I agree to the
+    terms: Terms of Service
+    and: and
+    privacy: Privacy Policy
+    submit: Create account
+    have_account: Already have an account?
+
+  passwords:
+    title: Reset password
+    heading: Forgot your password?
+    description: Enter your email and we will send you reset instructions.
+    submit: Send reset instructions
+    edit_title: New password
+    edit_heading: Set a new password
+    edit_description: Choose a strong password for your Danlio account.
+    new_password: New password
+    update: Save new password
+
+  auth:
+    security: Your data is protected with enterprise-grade security.
+    aside:
+      title: Everything you need to teach, in one place.
+      text: Manage students, schedule lessons, assign homework and track progress without switching between tools.
+      students_title: Manage your students
+      students_text: Keep student details and learning notes organized.
+      lessons_title: Schedule lessons
+      lessons_text: Plan, reschedule and track every lesson with ease.
+      homework_title: Assign homework
+      homework_text: Create, assign and review work from one place.
+      progress_title: Track progress
+      progress_text: See student growth and achievements clearly.

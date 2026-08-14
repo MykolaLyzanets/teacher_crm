@@ -1,0 +1,61 @@
+doctype html
+html lang="#{html_lang}"
+  head
+    title = content_for?(:title) ? yield(:title) : 'danlio'
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    = favicon_link_tag 'favicon.svg'
+    link rel="preconnect" href="https://fonts.googleapis.com"
+    link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""
+    link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"
+    = stylesheet_link_tag "css/application.min", "data-turbo-track": "reload"
+    = stylesheet_link_tag "css/auth.min", "data-turbo-track": "reload"
+    = javascript_include_tag "application", "data-turbo-track": "reload", defer: true
+    = javascript_include_tag "auth", "data-turbo-track": "reload", defer: true
+    = csrf_meta_tags
+    = csp_meta_tag
+
+  body.auth-page class="#{controller_name}-#{action_name}"
+    .auth-shell
+      section.auth-form-col
+        .auth-form-top
+          = render 'layouts/logo'
+          = render 'layouts/lang_switch'
+        .auth-form-body
+          .auth-form
+            #flash
+              = render 'layouts/flash'
+            = yield
+      aside.auth-aside
+        .auth-aside-inner
+          .auth-mark
+            = image_tag 'brand/danlio-mark.svg', alt: '', height: 34
+          h2 = t('auth.aside.title')
+          p = t('auth.aside.text')
+          .auth-benefits
+            .auth-benefit
+              .icon-box
+                = icon_tag 'students', size: 22
+              div
+                h3 = t('auth.aside.students_title')
+                p = t('auth.aside.students_text')
+            .auth-benefit
+              .icon-box
+                = icon_tag 'calendar', size: 22
+              div
+                h3 = t('auth.aside.lessons_title')
+                p = t('auth.aside.lessons_text')
+            .auth-benefit
+              .icon-box
+                = icon_tag 'homework', size: 22
+              div
+                h3 = t('auth.aside.homework_title')
+                p = t('auth.aside.homework_text')
+            .auth-benefit
+              .icon-box
+                = icon_tag 'reports', size: 22
+              div
+                h3 = t('auth.aside.progress_title')
+                p = t('auth.aside.progress_text')
+        .auth-glow-a
+        .auth-glow-b
+        = icon_tag 'auth-botanical', class: 'auth-botanical'

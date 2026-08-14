@@ -1,0 +1,15 @@
+- content_for :title, 'Dashboard | danlio'
+
+.dashboard-page
+  .dashboard-page__header
+    div
+      h1.dashboard-page__title Dashboard
+      p.dashboard-page__subtitle Your teaching workspace overview.
+  section.dashboard-page__card
+    .dashboard-page__icon
+      = icon_tag 'dashboard', size: 28
+    h2 Coming soon
+    p Insights, upcoming lessons and quick actions will appear here.
+    .dashboard-page__actions
+      = link_to 'Open calendar', calendar_path, class: 'dashboard-page__primary-btn'
+      = link_to 'View students', students_path, class: 'dashboard-page__secondary-btn'

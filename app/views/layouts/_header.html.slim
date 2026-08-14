@@ -1,5 +1,18 @@
 header.header
   .container
-    = link_to 'teacher_crm', root_path, class: 'logo'
-    nav
-
+    = render 'layouts/logo'
+    .header-panel data-home-nav=""
+      nav.nav
+        a href="#features" = t('header.features')
+        a href="#workflow" = t('header.how_it_works')
+        a href="#schools" = t('header.schools')
+        a href="#pricing" = t('header.pricing')
+      .header-actions
+        = render 'layouts/lang_switch'
+        - if user_signed_in?
+          = button_to t('header.log_out'), destroy_user_session_path, method: :delete, class: 'btn'
+        - else
+          = link_to t('header.log_in'), new_user_session_path, class: 'link-login type-nav'
+          = link_to t('header.get_started'), new_user_registration_path, class: 'btn'
+    button.header-toggle type="button" aria-label=t('header.menu') aria-expanded="false" data-home-menu-toggle=""
+      = icon_tag 'menu', size: 20

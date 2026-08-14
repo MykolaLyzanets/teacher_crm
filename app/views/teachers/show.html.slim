@@ -1,0 +1,115 @@
+- if @teacher.blank?
+  - content_for :title, 'Teacher not found | danlio'
+  .teachers-page
+    .teachers-page__missing
+      .teachers-page__empty-icon
+        = icon_tag 'teachers', size: 24
+      h1 Teacher not found
+      p This teacher may have been removed or is not available in the current session.
+      = link_to 'Back to teachers', teachers_path, class: 'teachers-page__primary-btn'
+- else
+  - teacher = @teacher
+  - name = teacher_display_name(teacher)
+  - content_for :title, "#{name} | danlio"
+
+  .teachers-page.teachers-page--profile
+    nav.teachers-page__breadcrumb aria-label="Breadcrumb"
+      = link_to 'Teachers', teachers_path
+      = icon_tag 'chevron-right', size: 16
+      span = name
+
+    section.teachers-page__hero
+      .teachers-page__hero-main
+        span.teachers-page__avatar.teachers-page__avatar--lg
+          = teacher_initials(teacher)
+          span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}"
+        div
+          .teachers-page__hero-title
+            h1 = name
+            = status_badge teacher_status_label(teacher[:status]), tone: teacher_status_tone(teacher[:status])
+          p.teachers-page__hero-sub
+            = [teacher[:jobTitle], teacher_role_label(teacher[:workspaceRole])].compact_blank.join(' · ')
+          .teachers-page__hero-contacts
+            - if teacher[:email].present?
+              span
+                = icon_tag 'mail', size: 18
+                = teacher[:email]
+            - if teacher[:phone].present?
+              span
+                = icon_tag 'message', size: 18
+                = teacher[:phone]
+      = link_to calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn' do
+        = icon_tag 'calendar', size: 18
+        span Schedule lesson
+
+    .teachers-page__grid
+      section.teachers-page__card
+        h2 Teaching details
+        dl.teachers-page__dl
+          div
+            dt Subjects
+            dd = Array(teacher[:subjects]).presence&.join(', ') || '—'
+          div
+            dt Languages
+            dd = Array(teacher[:languages]).map { |code| teacher_language_label(code) }.presence&.join(', ') || '—'
+          div
+            dt Experience
+            dd = teacher[:experienceYears].present? ? "#{teacher[:experienceYears]} years" : '—'
+          - if teacher[:bio].present?
+            div
+              dt Bio
+              dd = teacher[:bio]
+
+      section.teachers-page__card
+        h2 Availability
+        dl.teachers-page__dl
+          div
+            dt Working days
+            dd = Array(teacher[:workingDays]).map { |d| d.to_s[0, 3] }.presence&.join(', ') || '—'
+          div
+            dt Default lesson
+            dd
+              = "#{teacher[:defaultLessonDurationMinutes] || 60} minutes · "
+              = Array(teacher[:lessonFormats]).map { |f| lesson_format_label(f) }.join(', ')
+          div
+            dt Timezone
+            dd = teacher[:timezone].presence || '—'
+          div
+            dt Workspace access
+            dd
+              - if teacher[:inviteToWorkspace]
+                = "Invited · #{teacher[:invitationStatus].presence || 'pending'}"
+              - else
+                | Profile only — no login access
+
+    - if teacher[:notes].present?
+      section.teachers-page__card
+        h2.teachers-page__notes-title
+          = icon_tag 'lock', size: 20
+          span Internal notes
+        p.teachers-page__notes = teacher[:notes]
+
+    section.teachers-page__card
+      .teachers-page__section-head
+        div
+          h2 Assigned students
+          p.teachers-page__section-sub Students currently assigned to this teacher.
+        span.teachers-page__count = @assigned_students.size
+      - if @assigned_students.empty?
+        .teachers-page__empty.teachers-page__empty--compact
+          .teachers-page__empty-icon
+            = icon_tag 'students', size: 24
+          h3 No students assigned
+          p Assign students from the students list to see them here.
+      - else
+        ul.teachers-page__assigned
+          - @assigned_students.each do |student|
+            - student = student.with_indifferent_access
+            - student_name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+            li
+              .teachers-page__assigned-main
+                span.teachers-page__avatar.teachers-page__avatar--sm = student_name.split.map { |p| p[0] }.first(2).join.upcase
+                div
+                  = link_to student_name, student_path(student[:id]), class: 'teachers-page__name'
+                  p.teachers-page__meta = Array(student[:subjects]).first(2).join(', ').presence || student[:status].to_s.humanize
+              = status_badge student[:status].to_s.humanize, tone: (student[:status].to_s == 'active' ? 'olive' : 'neutral')

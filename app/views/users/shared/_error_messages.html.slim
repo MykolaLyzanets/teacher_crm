@@ -1,0 +1,4 @@
+- if resource.errors.any?
+  .auth-alert
+    - resource.errors.full_messages.each do |message|
+      p = message

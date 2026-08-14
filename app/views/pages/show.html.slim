@@ -1,0 +1,13 @@
+- content_for :title, "#{@page[:title]} | danlio"
+
+.placeholder-page
+  .placeholder-page__header
+    div
+      h1.placeholder-page__title = @page[:title]
+      p.placeholder-page__subtitle = @page[:description]
+  section.placeholder-page__card
+    .placeholder-page__icon
+      = icon_tag @page[:icon], size: 28
+    h2 Coming soon
+    p This section is part of the Danlio workspace and will be available in a future update.
+    = link_to 'Back to dashboard', dashboard_path, class: 'placeholder-page__secondary-btn'

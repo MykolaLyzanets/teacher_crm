@@ -3,8 +3,6 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  devise_for :users, skip: %i[registrations]
-
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development? || Rails.env.test?
 
   authenticate :user, ->(user) { user.admin? } do
@@ -16,7 +14,19 @@ Rails.application.routes.draw do
   }, constraints: { host: /^www\./ }
 
   scope '(:locale)', locale: /(#{I18n.available_locales.map(&:to_s).join('|')})/ do
+    devise_for :users
+
     root 'home#index'
+
+    get 'dashboard', to: 'dashboard#index'
+
+    resources :students, only: %i[index show new create]
+    resources :teachers, only: %i[index show new create]
+    get 'calendar', to: 'calendar#index'
+
+    %w[lessons homework payments reports messages settings].each do |page|
+      get page, to: 'pages#show', defaults: { page: page }, as: page
+    end
 
     match '*path', to: 'home#not_found', via: :all, constraints: lambda { |req|
       req.path.exclude?('uploads')

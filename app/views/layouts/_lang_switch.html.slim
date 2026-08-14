@@ -1,0 +1,4 @@
+nav.lang-switch aria-label=t('header.language')
+  = link_to 'EN', locale_switch_path(:en), class: ('is-active' if I18n.locale == :en)
+  span.lang-switch-sep |
+  = link_to 'UA', locale_switch_path(:ua), class: ('is-active' if I18n.locale == :ua)

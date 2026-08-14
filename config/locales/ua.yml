@@ -2,3 +2,169 @@ ua:
   en: English
   ua: Українська
   ru: Російська
+
+  header:
+    features: Можливості
+    how_it_works: Як це працює
+    schools: Для шкіл
+    pricing: Ціни
+    log_in: Увійти
+    log_out: Вийти
+    get_started: Почати
+    menu: Меню
+    language: Мова
+
+  footer:
+    tagline: Єдина CRM для репетиторів і викладачів. Більше викладайте. Менше адмініструйте.
+    product: Продукт
+    features: Можливості
+    pricing: Ціни
+    updates: Оновлення
+    resources: Ресурси
+    help_center: Допомога
+    guides: Гайди
+    blog: Блог
+    company: Компанія
+    about: Про нас
+    contact: Контакти
+    privacy: Політика конфіденційності
+    follow_us: Стежте за нами
+    copyright: "© %{year} danlio. Усі права захищено."
+
+  home:
+    hero:
+      title_lead: Більше викладайте.
+      title_accent: Менше адмініструйте.
+      subhead: Єдина CRM для репетиторів і викладачів. Організовуйте учнів, плануйте уроки, відстежуйте прогрес і розвивайте викладацький бізнес.
+      get_started: Почати безкоштовно
+      see_how: Як це працює
+      no_card: Картка не потрібна
+      setup: Налаштування за 2 хвилини
+    logos:
+      trusted: Нам довіряють викладачі та репетитори з усього світу
+    features:
+      title: Усе, що потрібно, щоб викладати й керувати
+      students_title: Учні
+      students_text: Уся інформація про учнів в одному місці й завжди актуальна.
+      lessons_title: Розклад уроків
+      lessons_text: Плануйте, переносьте й відстежуйте уроки без зайвих зусиль.
+      homework_title: Домашні завдання
+      homework_text: Створюйте, призначайте й перевіряйте домашні в одному місці.
+      progress_title: Прогрес
+      progress_text: Стежте за успіхами учнів і їхніми досягненнями.
+      payments_title: Оплати
+      payments_text: Приймайте оплату онлайн і контролюйте дохід.
+      reports_title: Звіти
+      reports_text: Отримуйте аналітику й розвивайте викладацький бізнес.
+    workflow:
+      title_lead: Один простір.
+      title_accent: Увесь викладацький процес.
+      step1_title: Додайте учнів
+      step1_text: Імпортуйте або створіть профілі за кілька секунд.
+      step2_title: Заплануйте уроки
+      step2_text: Вкажіть доступність і бронюйте заняття.
+      step3_title: Викладайте й задавайте
+      step3_text: Проводьте уроки та призначайте домашні.
+      step4_title: Відстежуйте й покращуйте
+      step4_text: Стежте за прогресом і допомагайте учням рости.
+      next_lesson: Наступний урок
+      next_lesson_date: 14 травня 2024 • 10:00
+      progress: Прогрес
+      progress_overview: Огляд прогресу
+    cta:
+      title: Готові спростити викладання?
+      text: Приєднуйтесь до тисяч викладачів, які економлять час і розвивають бізнес з danlio.
+      get_started: Почати безкоштовно
+      see_how: Як це працює
+    dash:
+      active: Активна
+      days: [Пн, Вт, Ср, Чт, Пт, Сб, Нд]
+    calendar:
+      title: Календар
+      subtitle: Класи, зустрічі та події в одному місці
+      create: Створити подію
+      today: Сьогодні
+      prev: Назад
+      next: Далі
+      range: 12–18 травня 2024
+      settings: Налаштування календаря
+      all_day: Весь день
+      month: Травень 2024
+      calendars: Календарі
+      select_all: Обрати всі
+      week_days: [Пн, Вт, Ср, Чт, Пт, Сб, Нд]
+      views: [День, Тиждень, Місяць, Порядок]
+      times: ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+      mini_head: [Н, П, В, С, Ч, П, С]
+      filter_classes: Мої класи
+      filter_meetings: Зустрічі
+      filter_events: Шкільні події
+      filter_personal: Особисте
+      filter_reminders: Нагадування
+
+  not_found:
+    title: Сторінку не знайдено
+    back: На головну
+
+  sessions:
+    title: Вхід
+    heading: З поверненням
+    description: Увійдіть, щоб продовжити роботу в Danlio.
+    email: Email
+    email_placeholder: you@example.com
+    password: Пароль
+    password_placeholder: Введіть пароль
+    remember_me: Запамʼятати
+    forgot: Забули пароль?
+    submit: Увійти
+    or: або продовжити з
+    google: Продовжити з Google
+    apple: Продовжити з Apple
+    no_account: Немає акаунта?
+    create_account: Створити акаунт
+    show_password: Показати пароль
+
+  registrations:
+    title: Реєстрація
+    heading: Створіть акаунт
+    description: Почніть організовувати викладання з Danlio.
+    full_name: Повне імʼя
+    full_name_placeholder: Ваше повне імʼя
+    password_placeholder: Створіть пароль
+    confirm_password: Підтвердіть пароль
+    confirm_placeholder: Повторіть пароль
+    req_length: Щонайменше 8 символів
+    req_upper: Одна велика літера
+    req_lower: Одна мала літера
+    req_number: Одна цифра
+    agree: Я погоджуюсь з
+    terms: Умовами використання
+    and: та
+    privacy: Політикою конфіденційності
+    submit: Створити акаунт
+    have_account: Вже є акаунт?
+
+  passwords:
+    title: Скидання пароля
+    heading: Забули пароль?
+    description: Вкажіть email — надішлемо інструкції для скидання.
+    submit: Надіслати інструкції
+    edit_title: Новий пароль
+    edit_heading: Встановіть новий пароль
+    edit_description: Оберіть надійний пароль для акаунта Danlio.
+    new_password: Новий пароль
+    update: Зберегти пароль
+
+  auth:
+    security: Ваші дані захищені корпоративним рівнем безпеки.
+    aside:
+      title: Усе для викладання — в одному місці.
+      text: Керуйте учнями, плануйте уроки, задавайте домашні й відстежуйте прогрес без зайвих інструментів.
+      students_title: Керуйте учнями
+      students_text: Дані учнів і нотатки завжди під рукою.
+      lessons_title: Плануйте уроки
+      lessons_text: Легко створюйте, переносьте й відстежуйте заняття.
+      homework_title: Задавайте домашні
+      homework_text: Створюйте, призначайте й перевіряйте в одному місці.
+      progress_title: Відстежуйте прогрес
+      progress_text: Бачте зростання учнів зрозуміло й наочно.

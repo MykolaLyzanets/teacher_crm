@@ -1,0 +1,39 @@
+doctype html
+html lang="#{html_lang}"
+  head
+    title = content_for?(:title) ? yield(:title) : 'danlio'
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    = favicon_link_tag 'favicon.svg'
+    link rel="preconnect" href="https://fonts.googleapis.com"
+    link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""
+    link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"
+    = stylesheet_link_tag "css/application.min", "data-turbo-track": "reload"
+    = stylesheet_link_tag "css/app.min", "data-turbo-track": "reload"
+    - if app_page_stylesheet.present?
+      = stylesheet_link_tag "css/#{app_page_stylesheet}.min", "data-turbo-track": "reload"
+    = javascript_include_tag "application", "data-turbo-track": "reload", defer: true
+    = csrf_meta_tags
+    = csp_meta_tag
+    = yield :head
+
+  body.app-body class="#{controller_name}-#{action_name}"
+    .app-shell data-controller="app-shell"
+      aside.app-shell__sidebar.app-shell__sidebar--desktop aria-label="Sidebar"
+        = render 'shared/sidebar'
+
+      .app-shell__drawer data-app-shell-target="drawer" hidden="hidden"
+        button.app-shell__backdrop type="button" aria-label="Close navigation" data-action="app-shell#close"
+        aside.app-shell__sidebar.app-shell__sidebar--mobile
+          .app-shell__drawer-head
+            = link_to root_path, class: 'app-shell__brand', aria: { label: 'danlio home' }, data: { action: 'app-shell#close' } do
+              = image_tag 'brand/danlio-logo.svg', alt: 'danlio', height: 32
+            button.app-shell__icon-btn type="button" aria-label="Close menu" data-action="app-shell#close"
+              = icon_tag 'x', size: 20
+          = render 'shared/sidebar', mobile: true
+
+      .app-shell__main
+        = render 'shared/app_header'
+        #flash
+          = render 'layouts/flash'
+        main.app-shell__content
+          = yield

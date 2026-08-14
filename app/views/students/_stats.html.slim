@@ -1,0 +1,9 @@
+.students-page__stats data-students-target="stats"
+  - student_stats_cards(stats).each do |card|
+    button.students-page__stat type="button" aria-label=card[:aria] aria-pressed="false" data-filter=card[:id] data-action="students#setStatsFilter" data-students-target="stat"
+      span.students-page__stat-icon
+        = icon_tag card[:icon], size: 26
+      span.students-page__stat-body
+        span.students-page__stat-label = card[:label]
+        span.students-page__stat-value = card[:value]
+        span.students-page__stat-support = card[:support]

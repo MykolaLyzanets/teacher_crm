@@ -1,0 +1,188 @@
+[
+  {
+    "id": "tch-ava",
+    "firstName": "Ava",
+    "lastName": "Thompson",
+    "displayName": "Ava Thompson",
+    "jobTitle": "English teacher",
+    "status": "active",
+    "email": "ava.thompson@example.com",
+    "phone": "+1 555 1001",
+    "preferredContactMethod": "email",
+    "timezone": "America/New_York",
+    "location": "Austin, TX",
+    "subjects": [
+      "English",
+      "IELTS"
+    ],
+    "workspaceRole": "administrator",
+    "experienceYears": 8,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "bio": "Helps students build confidence in speaking and exam prep.",
+    "tags": [
+      "IELTS",
+      "Online",
+      "Exam preparation"
+    ],
+    "workingDays": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "workingHours": [
+      {
+        "day": "Monday",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      {
+        "day": "Tuesday",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      {
+        "day": "Wednesday",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      {
+        "day": "Thursday",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      {
+        "day": "Friday",
+        "startTime": "09:00",
+        "endTime": "15:00"
+      }
+    ],
+    "defaultLessonDurationMinutes": 60,
+    "lessonFormats": [
+      "online",
+      "hybrid"
+    ],
+    "defaultMeetingLink": "https://meet.example.com/ava",
+    "maxLessonsPerDay": 6,
+    "calendarColor": "olive",
+    "inviteToWorkspace": true,
+    "invitationStatus": "sent",
+    "notes": "Primary workspace administrator in the demo.",
+    "createdAt": "2025-08-01T10:00:00.000Z"
+  },
+  {
+    "id": "tch-noah",
+    "firstName": "Noah",
+    "lastName": "Patel",
+    "jobTitle": "Mathematics tutor",
+    "status": "active",
+    "email": "noah.patel@example.com",
+    "phone": "+1 555 1002",
+    "preferredContactMethod": "either",
+    "timezone": "America/Chicago",
+    "subjects": [
+      "Mathematics",
+      "Physics"
+    ],
+    "workspaceRole": "teacher",
+    "experienceYears": 5,
+    "languages": [
+      "en"
+    ],
+    "tags": [
+      "Advanced",
+      "Online"
+    ],
+    "workingDays": [
+      "Monday",
+      "Wednesday",
+      "Friday"
+    ],
+    "workingHours": [
+      {
+        "day": "Monday",
+        "startTime": "10:00",
+        "endTime": "18:00"
+      },
+      {
+        "day": "Wednesday",
+        "startTime": "10:00",
+        "endTime": "18:00"
+      },
+      {
+        "day": "Friday",
+        "startTime": "10:00",
+        "endTime": "16:00"
+      }
+    ],
+    "defaultLessonDurationMinutes": 45,
+    "lessonFormats": [
+      "online",
+      "in_person"
+    ],
+    "maxLessonsPerDay": 5,
+    "calendarColor": "slate",
+    "inviteToWorkspace": true,
+    "invitationStatus": "sent",
+    "createdAt": "2025-09-12T10:00:00.000Z"
+  },
+  {
+    "id": "tch-mia",
+    "firstName": "Mia",
+    "lastName": "Chen",
+    "jobTitle": "Senior teacher",
+    "status": "active",
+    "email": "mia.chen@example.com",
+    "preferredContactMethod": "email",
+    "timezone": "America/Los_Angeles",
+    "subjects": [
+      "Spanish",
+      "English"
+    ],
+    "workspaceRole": "senior_teacher",
+    "experienceYears": 10,
+    "languages": [
+      "en",
+      "zh",
+      "es"
+    ],
+    "tags": [
+      "Group lessons",
+      "Beginners"
+    ],
+    "workingDays": [
+      "Tuesday",
+      "Thursday",
+      "Saturday"
+    ],
+    "workingHours": [
+      {
+        "day": "Tuesday",
+        "startTime": "08:00",
+        "endTime": "14:00"
+      },
+      {
+        "day": "Thursday",
+        "startTime": "08:00",
+        "endTime": "14:00"
+      },
+      {
+        "day": "Saturday",
+        "startTime": "09:00",
+        "endTime": "13:00"
+      }
+    ],
+    "defaultLessonDurationMinutes": 60,
+    "lessonFormats": [
+      "hybrid"
+    ],
+    "calendarColor": "teal",
+    "inviteToWorkspace": true,
+    "invitationStatus": "sent",
+    "createdAt": "2025-10-01T10:00:00.000Z"
+  }
+]

@@ -1,0 +1,20 @@
+header.app-header
+  .app-header__inner
+    .app-header__start
+      button.app-header__menu type="button" aria-label="Open navigation" data-action="app-shell#open"
+        = icon_tag 'menu', size: 20
+      .app-header__mobile-brand
+        = link_to root_path, aria: { label: 'danlio home' } do
+          = image_tag 'brand/danlio-logo.svg', alt: 'danlio', height: 30
+      .app-header__search
+        = icon_tag 'search', size: 18
+        input type="search" placeholder="Search students, lessons…" aria-label="Search"
+
+    .app-header__end
+      button.app-header__icon-btn type="button" aria-label="Notifications"
+        = icon_tag 'bell', size: 20
+      button.app-header__user type="button"
+        span.app-header__avatar AT
+        span.app-header__user-meta
+          span.app-header__user-name Ava Thompson
+          span.app-header__user-role Teacher

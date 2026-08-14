@@ -1,0 +1,166 @@
+- content_for :title, 'Calendar | danlio'
+
+.calendar-page data-controller="calendar" data-calendar-lessons-value=@lessons_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s)
+  .calendar-page__header
+    div
+      h1.calendar-page__title Calendar
+      p.calendar-page__subtitle Manage your lessons, availability and events.
+    button.calendar-page__primary-btn type="button" data-action="calendar#openCreate"
+      = icon_tag 'plus', size: 20
+      span Create lesson
+
+  section.calendar-page__shell
+    .calendar-page__toolbar
+      .calendar-page__nav
+        button.calendar-page__icon-btn type="button" aria-label="Previous period" data-action="calendar#previous"
+          = icon_tag 'chevron-left', size: 20
+        button.calendar-page__today-btn type="button" data-action="calendar#today" Today
+        button.calendar-page__icon-btn type="button" aria-label="Next period" data-action="calendar#next"
+          = icon_tag 'chevron-right', size: 20
+        h2.calendar-page__period data-calendar-target="title" —
+
+      .calendar-page__toolbar-end
+        .calendar-page__views role="tablist" aria-label="Calendar view"
+          - %w[day week month agenda].each do |view|
+            button.calendar-page__view-btn type="button" role="tab" data-view=view data-action="calendar#setView" data-calendar-target="viewTab" aria-selected=(view == 'month') = view.capitalize
+
+        label.sr-only for="calendar-view-mobile" Calendar view
+        select#calendar-view-mobile.calendar-page__view-select data-calendar-target="viewSelect" data-action="change->calendar#setViewFromSelect"
+          - %w[day week month agenda].each do |view|
+            option value=view selected=(view == 'month') = view.capitalize
+
+        button.calendar-page__filters-btn type="button" aria-expanded="false" aria-controls="calendar-filters" data-action="calendar#toggleFilters" data-calendar-target="filtersToggle"
+          = icon_tag 'settings', size: 20
+          span Filters
+          span.calendar-page__filter-count.calendar-page__filter-count--hidden data-calendar-target="filterCount"
+
+    .calendar-page__filters.calendar-page__filters--hidden id="calendar-filters" data-calendar-target="filters"
+      .calendar-page__filters-head
+        h3 Filters
+        button type="button" data-action="calendar#closeFilters" Close
+      .calendar-page__filters-body
+        label
+          span Teacher
+          select data-calendar-target="filterTeacher"
+            option value="" All teachers
+            - @teacher_names.each do |name|
+              option value=name = name
+        label
+          span Student
+          select data-calendar-target="filterStudent"
+            option value="" All students
+            - @student_names.each do |name|
+              option value=name = name
+        label
+          span Lesson type
+          select data-calendar-target="filterType"
+            option value="" All types
+            option value="individual" Individual
+            option value="group" Group
+            option value="trial" Trial
+            option value="consultation" Consultation
+        label
+          span Status
+          select data-calendar-target="filterStatus"
+            option value="" All statuses
+            option value="confirmed" Confirmed
+            option value="pending" Pending
+            option value="cancelled" Cancelled
+        label
+          span Location
+          select data-calendar-target="filterLocation"
+            option value="" All locations
+            option value="online" Online
+            option value="in_person" In person
+      .calendar-page__filters-actions
+        button.calendar-page__secondary-btn type="button" data-action="calendar#clearFilters" Clear filters
+        button.calendar-page__primary-btn type="button" data-action="calendar#applyFilters" Apply filters
+
+    .calendar-page__body
+      .calendar-page__month data-calendar-target="monthView"
+        .calendar-page__weekdays
+          - %w[Mon Tue Wed Thu Fri Sat Sun].each do |label|
+            div = label
+        .calendar-page__grid data-calendar-target="grid"
+
+      .calendar-page__week.calendar-page__week--hidden data-calendar-target="weekView"
+        .calendar-page__week-placeholder
+          p Week view shows lessons for the selected week.
+          .calendar-page__week-list data-calendar-target="weekList"
+
+      .calendar-page__day.calendar-page__day--hidden data-calendar-target="dayView"
+        .calendar-page__day-list data-calendar-target="dayList"
+
+      .calendar-page__agenda.calendar-page__agenda--hidden data-calendar-target="agendaView"
+        .calendar-page__agenda-list data-calendar-target="agendaList"
+
+      .calendar-page__selected-day data-calendar-target="selectedDay"
+        .calendar-page__selected-head
+          div
+            p.calendar-page__selected-label Selected day
+            h3 data-calendar-target="selectedTitle" —
+          button.calendar-page__ghost-btn type="button" data-action="calendar#openCreate" Create
+        .calendar-page__selected-list data-calendar-target="selectedList"
+
+      .calendar-page__empty-banner.calendar-page__empty-banner--hidden data-calendar-target="emptyBanner"
+        = icon_tag 'calendar', size: 20
+        div
+          p No lessons scheduled
+          span Create a lesson or adjust your filters.
+        button.calendar-page__primary-btn type="button" data-action="calendar#openCreate" Create lesson
+
+  .calendar-page__drawer-backdrop.calendar-page__drawer-backdrop--hidden data-calendar-target="drawerBackdrop" data-action="click->calendar#closeCreate"
+  aside.calendar-page__drawer.calendar-page__drawer--hidden role="dialog" aria-modal="true" aria-labelledby="create-lesson-title" data-calendar-target="drawer"
+    .calendar-page__drawer-head
+      div
+        h2#create-lesson-title Create lesson
+        p Schedule a lesson with a student and teacher.
+      button.calendar-page__icon-btn type="button" aria-label="Close" data-action="calendar#closeCreate"
+        = icon_tag 'plus', size: 20, class: 'calendar-page__close-icon'
+    .calendar-page__drawer-body
+      label.calendar-page__field
+        span Teacher
+        select data-calendar-target="draftTeacher"
+          option value="" Select a teacher
+          - @teachers.each do |teacher|
+            - teacher = teacher.with_indifferent_access
+            option value=teacher[:id] = teacher_display_name(teacher)
+      label.calendar-page__field
+        span Student
+        select data-calendar-target="draftStudent"
+          option value="" Select a student
+          - @students.each do |student|
+            - student = student.with_indifferent_access
+            - name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+            option value=student[:id] = name
+      label.calendar-page__field
+        span Title
+        input type="text" placeholder="English lesson" data-calendar-target="draftTitle"
+      .calendar-page__fields-row
+        label.calendar-page__field
+          span Date
+          input type="date" data-calendar-target="draftDate"
+        label.calendar-page__field
+          span Start
+          input type="time" value="10:00" data-calendar-target="draftStart"
+        label.calendar-page__field
+          span End
+          input type="time" value="11:00" data-calendar-target="draftEnd"
+      label.calendar-page__field
+        span Type
+        select data-calendar-target="draftType"
+          option value="individual" Individual
+          option value="group" Group
+          option value="trial" Trial
+          option value="consultation" Consultation
+      label.calendar-page__field
+        span Location
+        select data-calendar-target="draftLocation"
+          option value="online" Online
+          option value="in_person" In person
+      label.calendar-page__field
+        span Notes
+        textarea rows="3" placeholder="Optional lesson notes…" data-calendar-target="draftNotes"
+    .calendar-page__drawer-foot
+      button.calendar-page__secondary-btn type="button" data-action="calendar#closeCreate" Cancel
+      button.calendar-page__primary-btn type="button" data-action="calendar#submitCreate" Create lesson

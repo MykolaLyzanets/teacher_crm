@@ -1,0 +1,22 @@
+- mobile = local_assigns.fetch(:mobile, false)
+
+.app-sidebar class=("app-sidebar--mobile" if mobile)
+  - unless mobile
+    .app-sidebar__brand
+      = link_to root_path, aria: { label: 'danlio home' } do
+        = image_tag 'brand/danlio-logo.svg', alt: 'danlio', height: 34
+
+  nav.app-sidebar__nav aria-label="Main"
+    - app_nav_items.each do |item|
+      - active = controller_name == item[:match] || (controller_name == 'pages' && params[:page].to_s == item[:match])
+      = link_to item[:path], class: "app-sidebar__link#{" is-active" if active}", aria: ({ current: 'page' } if active), data: (mobile ? { action: 'app-shell#close' } : {}) do
+        span.app-sidebar__icon
+          = icon_tag item[:icon], size: 20
+        span = item[:label]
+
+  .app-sidebar__footer
+    - settings_active = controller_name == 'pages' && params[:page].to_s == 'settings'
+    = link_to settings_path, class: "app-sidebar__link#{" is-active" if settings_active}", data: (mobile ? { action: 'app-shell#close' } : {}) do
+      span.app-sidebar__icon
+        = icon_tag 'settings', size: 20
+      span Settings

@@ -1,0 +1,90 @@
+- if @student.blank?
+  - content_for :title, 'Student not found | danlio'
+  .students-page
+    .students-page__missing
+      .students-page__empty-icon
+        = icon_tag 'students', size: 24
+      h1 Student not found
+      p This student may have been removed or is not available in the current session.
+      = link_to 'Back to students', students_path, class: 'students-page__primary-btn'
+- else
+  - student = @student
+  - name = student_display_name(student)
+  - content_for :title, "#{name} | danlio"
+
+  .students-page.students-page--profile
+    nav.students-page__breadcrumb aria-label="Breadcrumb"
+      = link_to 'Students', students_path
+      = icon_tag 'chevron-right', size: 16
+      span = name
+
+    section.students-page__hero
+      .students-page__hero-main
+        .students-page__hero-identity
+          span.students-page__avatar.students-page__avatar--lg = student_initials(student)
+          div
+            .students-page__hero-title
+              h1 = name
+              span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
+            p.students-page__hero-sub
+              = [student[:grade], student[:level], student[:academicYear]].compact_blank.join(' · ').presence || 'Student profile'
+            .students-page__hero-contacts
+              - if student[:email].present?
+                span
+                  = icon_tag 'mail', size: 18
+                  = student[:email]
+              - if student[:phone].present?
+                span
+                  = icon_tag 'message', size: 18
+                  = student[:phone]
+        = link_to calendar_path(studentId: student[:id]), class: 'students-page__primary-btn' do
+          = icon_tag 'calendar', size: 20
+          span Schedule lesson
+
+      .students-page__info-grid
+        .students-page__info-card
+          h2 Learning
+          .students-page__info-row
+            span Grade
+            strong = student[:grade].presence || '—'
+          .students-page__info-row
+            span Student ID
+            strong = student[:studentCode].presence || '—'
+          .students-page__info-row
+            span Enrollment
+            strong = student[:enrollmentDate].presence || '—'
+          .students-page__info-row
+            span Subjects
+            strong = Array(student[:subjects]).presence&.join(', ') || '—'
+        .students-page__info-card
+          h2 Guardian
+          .students-page__info-row
+            span Name
+            strong = student[:parentName].presence || '—'
+          .students-page__info-row
+            span Email
+            strong = student[:parentEmail].presence || '—'
+          .students-page__info-row
+            span Phone
+            strong = student[:parentPhone].presence || '—'
+          .students-page__info-row
+            span Preferred days
+            strong = Array(student[:preferredDays]).presence&.join(', ') || '—'
+
+      - if student[:notes].present?
+        .students-page__notes
+          p.students-page__notes-label Notes
+          p = student[:notes]
+
+    section.students-page__teacher-card
+      h2 Assigned teacher
+      - if @teacher
+        .students-page__teacher-card-body
+          span.students-page__avatar = [@teacher[:firstName].to_s[0], @teacher[:lastName].to_s[0]].join
+          div
+            = link_to (@teacher[:displayName].presence || "#{@teacher[:firstName]} #{@teacher[:lastName]}"), teacher_path(@teacher[:id]), class: 'students-page__name'
+            p.students-page__meta = @teacher[:jobTitle].presence || 'Teacher'
+          = link_to 'View teacher', teacher_path(@teacher[:id]), class: 'students-page__view-btn'
+      - else
+        p.students-page__meta No teacher assigned yet.
+        = link_to 'Back to students', students_path, class: 'students-page__secondary-btn'

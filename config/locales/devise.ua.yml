@@ -1,0 +1,28 @@
+ua:
+  devise:
+    failure:
+      already_authenticated: Ви вже увійшли.
+      invalid: Невірний %{authentication_keys} або пароль.
+      not_found_in_database: Невірний %{authentication_keys} або пароль.
+      timeout: Сесія закінчилась. Увійдіть знову, щоб продовжити.
+      unauthenticated: Щоб продовжити, увійдіть або створіть акаунт.
+    passwords:
+      no_token: Відкрийте цю сторінку з листа для скидання пароля.
+      send_instructions: За кілька хвилин надішлемо лист з інструкціями для скидання пароля.
+      send_paranoid_instructions: Якщо цей email є в системі, надішлемо посилання для відновлення пароля.
+      updated: Пароль змінено. Ви увійшли в акаунт.
+      updated_not_active: Пароль успішно змінено.
+    registrations:
+      signed_up: Вітаємо! Акаунт створено.
+      updated: Акаунт оновлено.
+    sessions:
+      signed_in: Ви успішно увійшли.
+      signed_out: Ви вийшли з акаунта.
+      already_signed_out: Ви вийшли з акаунта.
+  errors:
+    messages:
+      not_saved:
+        one: "1 помилка не дає зберегти %{resource}:"
+        few: "%{count} помилки не дають зберегти %{resource}:"
+        many: "%{count} помилок не дають зберегти %{resource}:"
+        other: "%{count} помилок не дають зберегти %{resource}:"

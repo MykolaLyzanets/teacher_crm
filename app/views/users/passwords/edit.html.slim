@@ -1,0 +1,42 @@
+- content_for :title, "#{t('passwords.edit_title')} | danlio"
+
+.auth-intro
+  h1 = t('passwords.edit_heading')
+  p = t('passwords.edit_description')
+
+= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: 'auth-fields', novalidate: true }) do |f|
+  = render 'users/shared/error_messages'
+  = f.hidden_field :reset_password_token
+  .auth-field
+    = f.label :password, t('passwords.new_password')
+    .auth-input
+      = icon_tag 'lock', size: 20
+      = f.password_field :password, autofocus: true, autocomplete: 'new-password', required: true, placeholder: t('registrations.password_placeholder'), data: { auth_password: true, auth_new_password: true }
+      button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
+        = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
+        = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
+    ul.auth-reqs
+      li data-auth-req="length"
+        span.dot
+        = t('registrations.req_length')
+      li data-auth-req="upper"
+        span.dot
+        = t('registrations.req_upper')
+      li data-auth-req="lower"
+        span.dot
+        = t('registrations.req_lower')
+      li data-auth-req="number"
+        span.dot
+        = t('registrations.req_number')
+  .auth-field
+    = f.label :password_confirmation, t('registrations.confirm_password')
+    .auth-input
+      = icon_tag 'lock', size: 20
+      = f.password_field :password_confirmation, autocomplete: 'new-password', required: true, placeholder: t('registrations.confirm_placeholder'), data: { auth_password: true }
+      button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
+        = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
+        = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
+  = f.submit t('passwords.update'), class: 'auth-submit'
+
+p.auth-switch
+  = link_to t('sessions.submit'), new_user_session_path

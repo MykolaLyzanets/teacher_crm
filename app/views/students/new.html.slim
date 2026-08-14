@@ -1,0 +1,107 @@
+- content_for :title, 'Create student | danlio'
+
+.students-page.students-page--form data-controller="students"
+  nav.students-page__breadcrumb aria-label="Breadcrumb"
+    = link_to 'Students', students_path
+    = icon_tag 'chevron-right', size: 16
+    span Create student
+
+  .students-page__form-header
+    .students-page__form-intro
+      .students-page__empty-icon
+        = icon_tag 'user-plus', size: 24
+      div
+        h1.students-page__title Create student
+        p.students-page__subtitle Add a student profile, contacts and learning preferences.
+    .students-page__form-actions
+      = link_to 'Cancel', students_path, class: 'students-page__secondary-btn'
+      button.students-page__primary-btn type="submit" form="create-student-form" Create student
+
+  = form_with url: students_path, method: :post, html: { id: 'create-student-form', class: 'students-page__form', novalidate: true } do
+    section.students-page__card
+      h2 Basic information
+      p.students-page__section-sub Primary profile details for the student.
+      .students-page__fields
+        label.students-page__field
+          span First name *
+          input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Emma" data-students-target="firstName" data-action="input->students#updateInitials"
+        label.students-page__field
+          span Last name *
+          input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Johnson" data-students-target="lastName" data-action="input->students#updateInitials"
+        label.students-page__field
+          span Preferred name
+          input type="text" name="preferred_name" placeholder="Shown in the workspace"
+        label.students-page__field
+          span Status *
+          select name="status" required=true
+            option value="active" selected="selected" Active
+            option value="trial" Trial
+            option value="paused" Paused
+            option value="archived" Archived
+        label.students-page__field
+          span Grade
+          input type="text" name="grade" placeholder="Grade 8"
+
+    section.students-page__card
+      h2 Contact
+      p.students-page__section-sub How to reach the student.
+      .students-page__fields
+        label.students-page__field
+          span Email
+          .students-page__input-icon
+            = icon_tag 'mail', size: 18
+            input type="email" name="email" autocomplete="email" placeholder="emma@example.com"
+        label.students-page__field
+          span Phone
+          input type="tel" name="phone" autocomplete="tel" placeholder="+1 555 0101"
+
+    section.students-page__card
+      h2 Learning
+      p.students-page__section-sub Subjects and lesson preferences.
+      .students-page__fields
+        label.students-page__field
+          span Level
+          input type="text" name="level" placeholder="Intermediate"
+        label.students-page__field
+          span Location preference
+          select name="location_preference"
+            option value="online" selected="selected" Online
+            option value="in_person" In person
+            option value="hybrid" Hybrid
+        label.students-page__field.students-page__field--full
+          span Assigned teacher
+          select name="teacher_id"
+            option value="" Unassigned
+            - @teachers.each do |teacher|
+              - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
+              option value=teacher[:id] = name
+        label.students-page__field.students-page__field--full
+          span Notes
+          textarea name="notes" rows="4" placeholder="Anything the teacher should know"
+
+    section.students-page__card
+      h2 Guardian
+      p.students-page__section-sub Parent or guardian contact details.
+      .students-page__fields
+        label.students-page__field
+          span Name
+          input type="text" name="parent_name" placeholder="Sarah Johnson"
+        label.students-page__field
+          span Relationship
+          select name="relationship"
+            option value="" —
+            option value="mother" Mother
+            option value="father" Father
+            option value="guardian" Guardian
+            option value="parent" Parent
+            option value="other" Other
+        label.students-page__field
+          span Email
+          input type="email" name="parent_email" placeholder="parent@example.com"
+        label.students-page__field
+          span Phone
+          input type="tel" name="parent_phone" placeholder="+1 555 0102"
+
+    .students-page__form-actions.students-page__form-actions--bottom
+      = link_to 'Cancel', students_path, class: 'students-page__secondary-btn'
+      button.students-page__primary-btn type="submit" Create student

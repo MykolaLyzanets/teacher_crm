@@ -1,0 +1,376 @@
+@import "general.sass.scss";
+
+.app-body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-shell__sidebar--desktop {
+  position: sticky;
+  top: 0;
+  display: none;
+  width: 248px;
+  height: 100vh;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line-soft);
+  background: #fff;
+}
+
+@media (min-width: 1024px) {
+  .app-shell__sidebar--desktop {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.app-shell__drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.app-shell__drawer[hidden] {
+  display: none !important;
+}
+
+.app-shell__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(32, 35, 29, 0.35);
+  padding: 0;
+}
+
+.app-shell__sidebar--mobile {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(65, 75, 50, 0.18);
+}
+
+.app-shell__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line-soft);
+  padding: 16px;
+}
+
+.app-shell__icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.app-shell__icon-btn:hover {
+  background: var(--sage);
+}
+
+.app-shell__main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.app-shell__content {
+  flex: 1;
+  padding: 16px;
+}
+
+@media (min-width: 640px) {
+  .app-shell__content {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell__content {
+    padding: 28px 32px;
+  }
+}
+
+.app-sidebar {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.app-sidebar__brand {
+  display: none;
+  border-bottom: 1px solid var(--line-soft);
+  padding: 20px;
+}
+
+@media (min-width: 1024px) {
+  .app-sidebar__brand {
+    display: block;
+  }
+}
+
+.app-sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+.app-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #4d5248;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-sidebar__link + .app-sidebar__link {
+  margin-top: 4px;
+}
+
+.app-sidebar__link:hover {
+  background: #f4f5ef;
+  color: var(--foreground);
+}
+
+.app-sidebar__link.is-active {
+  background: var(--sage);
+  color: var(--olive-dark);
+}
+
+.app-sidebar__icon {
+  display: grid;
+  place-items: center;
+  color: var(--text-subtle);
+}
+
+.app-sidebar__link.is-active .app-sidebar__icon {
+  color: var(--olive);
+}
+
+.app-sidebar__link img {
+  display: block;
+}
+
+.app-sidebar__footer {
+  border-top: 1px solid var(--line-soft);
+  padding: 12px;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--line-soft);
+  background: rgba(250, 249, 245, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.app-header__inner {
+  display: flex;
+  height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .app-header__inner {
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-header__inner {
+    padding: 0 32px;
+  }
+}
+
+.app-header__start,
+.app-header__end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-header__menu {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--foreground);
+}
+
+@media (min-width: 1024px) {
+  .app-header__menu,
+  .app-header__mobile-brand {
+    display: none;
+  }
+}
+
+.app-header__search {
+  position: relative;
+  display: none;
+  min-width: 280px;
+}
+
+@media (min-width: 768px) {
+  .app-header__search {
+    display: block;
+  }
+}
+
+.app-header__search img {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.app-header__search input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0 12px 0 40px;
+  font-size: 14px;
+  outline: none;
+}
+
+.app-header__search input::placeholder {
+  color: #9a9e96;
+}
+
+.app-header__search input:focus {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 4px rgba(102, 115, 74, 0.1);
+}
+
+.app-header__icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text-muted);
+}
+
+.app-header__icon-btn:hover {
+  background: var(--sage);
+  color: var(--olive-dark);
+}
+
+.app-header__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 6px 12px 6px 6px;
+  text-align: left;
+}
+
+.app-header__avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--sage);
+  color: var(--olive-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-header__user-meta {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .app-header__user-meta {
+    display: block;
+  }
+}
+
+.app-header__user-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.app-header__user-role {
+  display: block;
+  color: var(--text-subtle);
+  font-size: 11px;
+}
+
+.app-body.nav-open {
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#flash .notice,
+#flash .alert {
+  margin: 0 16px 12px;
+  border-radius: 12px;
+  border: 1px solid #d8dfca;
+  background: #eef1e5;
+  padding: 12px 16px;
+  color: #46512f;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (min-width: 640px) {
+  #flash .notice,
+  #flash .alert {
+    margin: 0 24px 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #flash .notice,
+  #flash .alert {
+    margin: 0 32px 12px;
+  }
+}

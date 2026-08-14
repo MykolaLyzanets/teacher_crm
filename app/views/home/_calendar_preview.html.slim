@@ -1,0 +1,89 @@
+- events = calendar_preview_events
+- all_day = calendar_preview_all_day
+- week = t('home.calendar.week_days')
+- dates = %w[12 13 14 15 16 17 18]
+- times = t('home.calendar.times')
+- views = t('home.calendar.views')
+- mini_days = calendar_preview_mini_days
+- filters = calendar_preview_filters
+
+.calendar-preview
+  .cal-top
+    .cal-top-row
+      div
+        h3 = t('home.calendar.title')
+        p = t('home.calendar.subtitle')
+      button.cal-create type="button"
+        = icon_tag 'plus', size: 16
+        = t('home.calendar.create')
+        = icon_tag 'chevron-down', size: 16
+    .cal-toolbar
+      .cal-toolbar-left
+        button.cal-ctrl type="button" = t('home.calendar.today')
+        button.cal-ctrl.icon type="button" aria-label=t('home.calendar.prev')
+          = icon_tag 'chevron-left', size: 16
+        button.cal-ctrl.icon type="button" aria-label=t('home.calendar.next')
+          = icon_tag 'chevron-right', size: 16
+        button.cal-ctrl type="button"
+          = t('home.calendar.range')
+          = icon_tag 'chevron-down', size: 16
+      .cal-toolbar-right
+        .cal-views
+          - views.each do |view|
+            button type="button" class="#{'is-active' if view == views[1]}" = view
+        button.cal-ctrl.icon type="button" aria-label=t('home.calendar.settings')
+          = icon_tag 'settings', size: 16
+  .cal-body
+    div
+      .cal-week
+        div
+        - week.zip(dates).each_with_index do |(day, date), index|
+          .cal-week-cell
+            p.d = day
+            p.n class="#{'on' if index == 2}" = date
+      .cal-allday
+        span.cal-allday-label = t('home.calendar.all_day')
+        - week.each_with_index do |day, index|
+          .cal-allday-cell
+            - event = all_day.find { |item| item[:column] == index + 1 }
+            - if event
+              p.cal-chip class="tone-#{event[:tone]}" = event[:title]
+      .cal-grid-wrap
+        .cal-times
+          - times.each do |time|
+            span = time
+        .cal-slots
+          - 70.times do
+            i
+          .cal-now
+            span 11:30
+            b
+            i
+          - events.each do |event|
+            article.cal-event class="tone-#{event[:tone]}" style="grid-column: #{event[:column]}; grid-row: #{event[:row]} / span #{event[:span]}"
+              p.t = event[:title]
+              p.m = event[:detail]
+              - if event[:person]
+                p.p = event[:person]
+    aside.cal-aside
+      .mini-cal-head
+        h4 = t('home.calendar.month')
+        .mini-nav
+          button type="button" aria-label=t('home.calendar.prev')
+            = icon_tag 'chevron-left', size: 16
+          button type="button" aria-label=t('home.calendar.next')
+            = icon_tag 'chevron-right', size: 16
+      .mini-grid
+        - t('home.calendar.mini_head').each do |day|
+          span.h = day
+        - mini_days.each do |day, outside|
+          span class="#{day == 14 && !outside ? 'on' : (outside ? 'out' : nil)}" = day
+      .cal-filters
+        .cal-filters-head
+          h4 = t('home.calendar.calendars')
+          button type="button" = t('home.calendar.select_all')
+        - filters.each do |color, label|
+          .cal-filter
+            span.cal-dot style="background: #{color}"
+              = icon_tag 'check', size: 10
+            = label
