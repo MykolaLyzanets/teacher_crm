@@ -286,6 +286,15 @@ const initRegister = (form) => {
     if (typeInput) typeInput.value = values.workspaceType;
     if (nameInput) nameInput.value = values.workspaceName;
     if (termsInput) termsInput.value = "1";
+
+    const url = new URL(
+      googleForm.getAttribute("action") || googleForm.action,
+      window.location.origin,
+    );
+    url.searchParams.set("workspace_type", values.workspaceType);
+    url.searchParams.set("workspace_name", values.workspaceName.trim());
+    url.searchParams.set("terms", "1");
+    googleForm.setAttribute("action", `${url.pathname}${url.search}`);
   });
 
   form.addEventListener("submit", (event) => {

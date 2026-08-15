@@ -22,7 +22,9 @@ module Users
     private
 
     def oauth_params
-      request.env['omniauth.params'] || {}
+      omniauth = request.env['omniauth.params'] || {}
+      stored = session.delete('google_signup') || session.delete(:google_signup) || {}
+      omniauth.with_indifferent_access.merge(stored.to_h.compact_blank)
     end
   end
 end

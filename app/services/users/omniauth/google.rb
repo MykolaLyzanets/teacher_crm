@@ -54,17 +54,15 @@ module Users
         )
         service = Registrations::CreateOwner.new(
           user:,
-          workspace_type: params[:workspace_type],
+          workspace_type:,
           workspace_name: params[:workspace_name],
-          terms: params[:terms]
+          terms: true
         )
 
         if service.save
           Result.new(user: service.user)
         else
-          message = service.user.errors.full_messages.to_sentence.presence ||
-                    I18n.t('registrations.errors.google_workspace')
-          Result.new(error: message)
+          Result.new(error: owner_error(service))
         end
       end
 
@@ -76,6 +74,20 @@ module Users
         auth.info.name.presence ||
           [auth.info.first_name, auth.info.last_name].compact_blank.join(' ').presence ||
           email.split('@').first
+      end
+
+      def workspace_type
+        type = params[:workspace_type].to_s
+        Workspace.workspace_types.key?(type) ? type : 'individual'
+      end
+
+      def owner_error(service)
+        connector = " #{I18n.t('registrations.and')} "
+        service.user.errors.full_messages.to_sentence(
+          words_connector: ', ',
+          two_words_connector: connector,
+          last_word_connector: connector
+        ).presence || I18n.t('registrations.errors.google_workspace')
       end
 
       def failure(message)
