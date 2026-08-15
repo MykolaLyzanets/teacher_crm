@@ -9,12 +9,12 @@ require 'capistrano/rvm'
 require 'capistrano/puma'
 require 'capistrano/rails/assets'
 require 'capistrano/rails/migrations'
-# require 'capistrano/sidekiq'
+require 'capistrano/sidekiq'
 
 install_plugin Capistrano::SCM::Git
 #
-# install_plugin Capistrano::Sidekiq
-# install_plugin Capistrano::Sidekiq::Systemd
+install_plugin Capistrano::Sidekiq
+install_plugin Capistrano::Sidekiq::Systemd
 
 install_plugin Capistrano::Puma
 install_plugin Capistrano::Puma::Systemd
