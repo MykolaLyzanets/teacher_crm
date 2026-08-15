@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-server '', port: 22, roles: %i[web app db worker], primary: true
+server '138.68.102.223', port: 22, roles: %i[web app db worker], primary: true
 
 set :repo_url,        'git@github.com:MykolaLyzanets/teacher_crm.git'
 set :application,     'teacher_crm'
