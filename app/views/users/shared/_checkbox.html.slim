@@ -1,0 +1,4 @@
+.auth-check
+  span.auth-check-control
+    = f.check_box name, { class: 'auth-check-input' }.merge(local_assigns.fetch(:input_html, {}))
+  = f.label name, label

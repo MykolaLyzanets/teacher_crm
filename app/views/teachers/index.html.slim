@@ -1,13 +1,13 @@
-- content_for :title, 'Teachers | danlio'
+- content_for :title, "#{t('app.teachers.title')} | danlio"
 
-.teachers-page data-controller="teachers"
+.teachers-page data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common')
   .teachers-page__header
     div
-      h1.teachers-page__title Teachers
-      p.teachers-page__subtitle Manage teacher profiles, availability and workspace access.
+      h1.teachers-page__title = t('app.teachers.title')
+      p.teachers-page__subtitle = t('app.teachers.subtitle')
     = link_to new_teacher_path, class: 'teachers-page__primary-btn' do
       = icon_tag 'plus', size: 20
-      span Add teacher
+      span = t('app.teachers.add')
 
   = render 'stats', stats: @stats
 
@@ -15,36 +15,36 @@
     .teachers-page__toolbar
       .teachers-page__search
         = icon_tag 'search', size: 18
-        input type="search" placeholder="Search teachers…" aria-label="Search teachers" data-teachers-target="search" data-action="input->teachers#filter"
+        input type="search" placeholder=t('app.teachers.search_placeholder') aria-label=t('app.teachers.search_placeholder') data-teachers-target="search" data-action="input->teachers#filter"
       .teachers-page__filters
-        select aria-label="Filter by status" data-teachers-target="status" data-action="change->teachers#filter"
-          option value="" All statuses
-          option value="active" Active
-          option value="invited" Invited
-          option value="on_leave" On leave
-          option value="inactive" Inactive
-        select aria-label="Filter by student assignment" data-teachers-target="assignment" data-action="change->teachers#filter"
-          option value="all" All assignments
-          option value="assigned" With students
-        span.teachers-page__chip.teachers-page__chip--hidden data-teachers-target="newChip" Created this month
+        select aria-label=t('app.students.filter_status') data-teachers-target="status" data-action="change->teachers#filter"
+          option value="" = t('app.teachers.all_statuses')
+          option value="active" = t('app.statuses.active')
+          option value="invited" = t('app.statuses.invited')
+          option value="on_leave" = t('app.statuses.on_leave')
+          option value="inactive" = t('app.statuses.inactive')
+        select aria-label=t('app.students.filter_teacher') data-teachers-target="assignment" data-action="change->teachers#filter"
+          option value="all" = t('app.teachers.all_assignments')
+          option value="assigned" = t('app.teachers.with_students')
+        span.teachers-page__chip.teachers-page__chip--hidden data-teachers-target="newChip" = t('app.teachers.created_this_month')
 
     .teachers-page__empty.teachers-page__empty--hidden data-teachers-target="empty"
       .teachers-page__empty-icon
         = icon_tag 'user', size: 24
-      h2 data-teachers-target="emptyTitle" No teachers match your filters
-      p data-teachers-target="emptyText" Try a different search or clear the active filters.
-      button.teachers-page__secondary-btn type="button" data-action="teachers#clearFilters" data-teachers-target="clearBtn" Clear filters
+      h2 data-teachers-target="emptyTitle" = t('app.teachers.empty_filtered_title')
+      p data-teachers-target="emptyText" = t('app.teachers.empty_filtered_text')
+      button.teachers-page__secondary-btn type="button" data-action="teachers#clearFilters" data-teachers-target="clearBtn" = t('app.common.clear_filters')
       = link_to new_teacher_path, class: 'teachers-page__primary-btn teachers-page__empty-add teachers-page__empty-add--hidden', data: { teachers_target: 'addBtn' } do
         = icon_tag 'plus', size: 20
-        span Add teacher
+        span = t('app.teachers.add')
 
     .teachers-page__table data-teachers-target="table"
       .teachers-page__table-head
-        span Teacher
-        span Contact
-        span Role
-        span Status
-        span.teachers-page__actions-head Actions
+        span = t('app.common.teacher')
+        span = t('app.students.col_contact')
+        span = t('app.teachers.col_role')
+        span = t('app.students.col_status')
+        span.teachers-page__actions-head = t('app.students.col_actions')
       ul.teachers-page__list
         - @teachers.each do |teacher|
           = render 'teacher_row', teacher: teacher, students: @students

@@ -1,5 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"]
+
 export default class extends Controller {
   static targets = [
     "search",
@@ -21,16 +24,53 @@ export default class extends Controller {
     "inviteToggle",
     "inviteFields",
     "notes",
-    "notesCount"
+    "notesCount",
+    "photoInput",
+    "photoImage",
+    "photoPick",
+    "photoRemove",
+    "photoError",
+    "workingDay",
+    "hoursRow",
+    "copyMonday",
+    "hoursError",
+    "assignedSearch",
+    "assignedRow",
+    "assignedList",
+    "assignedEmpty",
+    "assignedCount",
+    "assignDialog",
+    "assignBox",
+    "removeDialog",
+    "removeConfirm",
+    "toast"
   ]
 
+  static values = {
+    i18n: Object,
+    name: String
+  }
+
   connect() {
+    this.removeId = null
+    this.photoUrl = ""
     if (this.hasRowTarget) {
       this.statsFilterValue = "all"
       this.filter()
     }
     if (this.hasNotesTarget) this.updateNotesCount()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
+    this.syncHoursUi()
+    if (this.hasAssignedRowTarget) this.filterAssigned()
+  }
+
+  t(group, key, vars = {}) {
+    const source = this.i18nValue?.[group] || {}
+    let text = source[key] || key
+    Object.entries(vars).forEach(([name, value]) => {
+      text = text.replace(`%{${name}}`, value)
+    })
+    return text
   }
 
   filter() {
@@ -76,13 +116,13 @@ export default class extends Controller {
     if (visible === 0) {
       if (this.hasEmptyTitleTarget) {
         this.emptyTitleTarget.textContent = hasFilters
-          ? "No teachers match your filters"
-          : "No teachers yet"
+          ? this.t("teachers", "empty_filtered_title")
+          : this.t("teachers", "empty_title")
       }
       if (this.hasEmptyTextTarget) {
         this.emptyTextTarget.textContent = hasFilters
-          ? "Try a different search or clear the active filters."
-          : "Add your first teacher to assign lessons and manage access."
+          ? this.t("teachers", "empty_filtered_text")
+          : this.t("teachers", "empty_text")
       }
       if (this.hasClearBtnTarget) this.clearBtnTarget.hidden = !hasFilters
       if (this.hasAddBtnTarget) {
@@ -163,5 +203,235 @@ export default class extends Controller {
   updateNotesCount() {
     if (!this.hasNotesTarget || !this.hasNotesCountTarget) return
     this.notesCountTarget.textContent = `${this.notesTarget.value.length}/500`
+  }
+
+  pickPhoto() {
+    if (this.hasPhotoInputTarget) this.photoInputTarget.click()
+  }
+
+  previewPhoto() {
+    const file = this.hasPhotoInputTarget ? this.photoInputTarget.files?.[0] : null
+    this.setPhotoError()
+    if (!file) {
+      this.clearPhoto()
+      return
+    }
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      this.setPhotoError(this.t("teachers", "photo_type_error"))
+      this.photoInputTarget.value = ""
+      return
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      this.setPhotoError(this.t("teachers", "photo_size_error"))
+      this.photoInputTarget.value = ""
+      return
+    }
+    if (this.photoUrl) URL.revokeObjectURL(this.photoUrl)
+    this.photoUrl = URL.createObjectURL(file)
+    if (this.hasPhotoImageTarget) {
+      this.photoImageTarget.src = this.photoUrl
+      this.photoImageTarget.hidden = false
+    }
+    if (this.hasInitialsPreviewTarget) this.initialsPreviewTarget.hidden = true
+    if (this.hasPhotoRemoveTarget) this.photoRemoveTarget.hidden = false
+    if (this.hasPhotoPickTarget) {
+      const label = this.photoPickTarget.querySelector("span")
+      if (label) label.textContent = this.t("teachers", "replace_photo")
+    }
+  }
+
+  removePhoto() {
+    this.clearPhoto()
+    if (this.hasPhotoInputTarget) this.photoInputTarget.value = ""
+  }
+
+  clearPhoto() {
+    if (this.photoUrl) URL.revokeObjectURL(this.photoUrl)
+    this.photoUrl = ""
+    if (this.hasPhotoImageTarget) {
+      this.photoImageTarget.removeAttribute("src")
+      this.photoImageTarget.hidden = true
+    }
+    if (this.hasInitialsPreviewTarget) this.initialsPreviewTarget.hidden = false
+    if (this.hasPhotoRemoveTarget) this.photoRemoveTarget.hidden = true
+    if (this.hasPhotoPickTarget) {
+      const label = this.photoPickTarget.querySelector("span")
+      if (label) label.textContent = this.t("teachers", "choose_file")
+    }
+  }
+
+  setPhotoError(message) {
+    if (!this.hasPhotoErrorTarget) return
+    this.photoErrorTarget.textContent = message || ""
+    this.photoErrorTarget.hidden = !message
+  }
+
+  toggleWorkingDay() {
+    this.syncHoursUi()
+  }
+
+  syncHoursUi() {
+    if (!this.hasHoursRowTarget) return
+    const selected = this.selectedDays()
+    this.hoursRowTargets.forEach((row) => {
+      row.hidden = !selected.includes(row.dataset.day)
+    })
+    if (this.hasCopyMondayTarget) {
+      this.copyMondayTarget.hidden = !(selected.includes("Monday") && selected.length > 1)
+    }
+  }
+
+  selectedDays() {
+    if (!this.hasWorkingDayTarget) return []
+    return this.workingDayTargets.filter((input) => input.checked).map((input) => input.dataset.day)
+  }
+
+  copyMonday() {
+    const monday = this.hoursRowTargets.find((row) => row.dataset.day === "Monday")
+    if (!monday) return
+    const start = monday.querySelector('[data-role="start"]')?.value
+    const end = monday.querySelector('[data-role="end"]')?.value
+    this.hoursRowTargets.forEach((row) => {
+      if (row.hidden) return
+      const startInput = row.querySelector('[data-role="start"]')
+      const endInput = row.querySelector('[data-role="end"]')
+      if (startInput) startInput.value = start
+      if (endInput) endInput.value = end
+    })
+  }
+
+  validateHours(event) {
+    if (!this.hasHoursRowTarget) return
+    const error = this.hoursErrorMessage()
+    if (this.hasHoursErrorTarget) {
+      this.hoursErrorTarget.textContent = error || ""
+      this.hoursErrorTarget.hidden = !error
+    }
+    if (error) event.preventDefault()
+  }
+
+  hoursErrorMessage() {
+    for (const row of this.hoursRowTargets) {
+      if (row.hidden) continue
+      const start = row.querySelector('[data-role="start"]')?.value
+      const end = row.querySelector('[data-role="end"]')?.value
+      if (!start || !end) return this.t("teachers", "working_hours_error")
+      if (end <= start) return this.t("teachers", "hours_order_error")
+    }
+    return null
+  }
+
+  filterAssigned() {
+    if (!this.hasAssignedRowTarget && !this.hasAssignedEmptyTarget) return
+    const query = this.hasAssignedSearchTarget ? this.assignedSearchTarget.value.trim().toLowerCase() : ""
+    let visible = 0
+    this.assignedRowTargets.forEach((row) => {
+      const haystack = `${row.dataset.search || ""} ${row.dataset.subjects || ""}`.toLowerCase()
+      const show = !query || haystack.includes(query)
+      row.hidden = !show
+      if (show) visible += 1
+    })
+    const total = this.assignedRowTargets.length
+    if (this.hasAssignedListTarget) this.assignedListTarget.hidden = visible === 0
+    if (this.hasAssignedEmptyTarget) this.assignedEmptyTarget.hidden = visible > 0
+    this.updateAssignedCount(total)
+  }
+
+  updateAssignedCount(total = this.assignedRowTargets.length) {
+    if (!this.hasAssignedCountTarget) return
+    this.assignedCountTarget.textContent =
+      total === 1
+        ? this.t("teachers", "assigned_count_one")
+        : this.t("teachers", "assigned_count", { count: total })
+  }
+
+  openAssign() {
+    if (this.hasAssignDialogTarget) this.assignDialogTarget.hidden = false
+  }
+
+  closeAssign() {
+    if (this.hasAssignDialogTarget) this.assignDialogTarget.hidden = true
+  }
+
+  confirmAssign() {
+    const selected = this.hasAssignBoxTarget ? this.assignBoxTargets.filter((box) => box.checked) : []
+    selected.forEach((box) => {
+      this.appendAssignedStudent(box)
+      box.closest("li")?.remove()
+    })
+    this.closeAssign()
+    if (this.hasAssignedListTarget) this.assignedListTarget.hidden = this.assignedListTarget.children.length === 0
+    if (this.hasAssignedEmptyTarget) this.assignedEmptyTarget.hidden = this.assignedListTarget?.children.length > 0
+    if (selected.length > 0) {
+      this.showToast(
+        this.t("teachers", "assigned_toast", {
+          count: selected.length,
+          name: this.nameValue || this.t("common", "teacher")
+        })
+      )
+    }
+    this.filterAssigned()
+  }
+
+  appendAssignedStudent(box) {
+    if (!this.hasAssignedListTarget) return
+    const name = box.dataset.name
+    const initials = box.dataset.initials || "ST"
+    const subjects = box.dataset.subjects || ""
+    const status = box.dataset.status || "active"
+    const path = box.dataset.path || "#"
+    const statusLabel = this.i18nValue?.statuses?.[status] || status
+    const li = document.createElement("li")
+    li.dataset.teachersTarget = "assignedRow"
+    li.dataset.id = box.dataset.id
+    li.dataset.search = name.toLowerCase()
+    li.dataset.subjects = subjects
+    li.dataset.status = status
+    li.innerHTML = `
+      <div class="teachers-page__assigned-main">
+        <span class="teachers-page__avatar teachers-page__avatar--sm">${initials}</span>
+        <div>
+          <a class="teachers-page__name" href="${path}">${name}</a>
+          <p class="teachers-page__meta">${subjects || statusLabel}</p>
+        </div>
+      </div>
+      <div class="teachers-page__assigned-actions">
+        <span class="status-badge status-badge--olive">${statusLabel}</span>
+        <button class="teachers-page__danger-btn" type="button" data-action="teachers#openRemove" data-id="${box.dataset.id}" data-name="${name}">
+          <span>${this.t("teachers", "remove")}</span>
+        </button>
+      </div>
+    `
+    this.assignedListTarget.appendChild(li)
+  }
+
+  openRemove(event) {
+    this.removeId = event.currentTarget.dataset.id
+    this.removeName = event.currentTarget.dataset.name
+    if (this.hasRemoveDialogTarget) this.removeDialogTarget.hidden = false
+  }
+
+  closeRemove() {
+    this.removeId = null
+    if (this.hasRemoveDialogTarget) this.removeDialogTarget.hidden = true
+  }
+
+  confirmRemove() {
+    const row = this.assignedRowTargets.find((item) => item.dataset.id === this.removeId)
+    const name = this.removeName || row?.querySelector(".teachers-page__name")?.textContent?.trim()
+    row?.remove()
+    this.closeRemove()
+    if (name) this.showToast(this.t("teachers", "removed_toast", { name }))
+    this.filterAssigned()
+  }
+
+  showToast(message) {
+    if (!this.hasToastTarget) return
+    this.toastTarget.textContent = message
+    this.toastTarget.hidden = false
+    window.clearTimeout(this.toastTimer)
+    this.toastTimer = window.setTimeout(() => {
+      this.toastTarget.hidden = true
+    }, 3200)
   }
 }

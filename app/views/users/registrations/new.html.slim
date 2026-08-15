@@ -4,55 +4,74 @@
   h1 = t('registrations.heading')
   p = t('registrations.description')
 
-= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: 'auth-fields register', novalidate: true, data: { auth_register: true } }) do |f|
+= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: 'auth-fields register', novalidate: true, data: { auth_form: 'register', auth_i18n: auth_form_i18n(:register) } }) do |f|
   = render 'users/shared/error_messages'
+
+  fieldset.auth-workspace
+    legend = t('registrations.workspace_legend')
+    p.auth-workspace-hint = t('registrations.workspace_hint')
+    .auth-workspace-grid
+      label.auth-workspace-card
+        input.sr-only type="radio" name="workspace_type" value="individual" checked="checked" data-auth-workspace-type=""
+        span.auth-workspace-face
+          span.auth-workspace-icon
+            = icon_tag 'user', size: 22
+          span.auth-workspace-copy
+            span.auth-workspace-title = t('registrations.workspace_individual')
+            span.auth-workspace-text = t('registrations.workspace_individual_text')
+          span.auth-workspace-radio aria-hidden="true"
+            span.auth-workspace-dot
+      label.auth-workspace-card
+        input.sr-only type="radio" name="workspace_type" value="school" data-auth-workspace-type=""
+        span.auth-workspace-face
+          span.auth-workspace-icon
+            = icon_tag 'school', size: 22
+          span.auth-workspace-copy
+            span.auth-workspace-title = t('registrations.workspace_school')
+            span.auth-workspace-text = t('registrations.workspace_school_text')
+          span.auth-workspace-radio aria-hidden="true"
+            span.auth-workspace-dot
+    p.auth-error hidden=true role="alert" data-auth-error="workspace_type"
+
+  .auth-field hidden="hidden" data-auth-workspace-name-field=""
+    label for="workspace_name" = t('registrations.workspace_name')
+    .auth-input
+      = icon_tag 'building', size: 20
+      input#workspace_name name="workspace_name" type="text" autocomplete="organization" placeholder=t('registrations.workspace_name_placeholder')
+    p.auth-error hidden=true role="alert" data-auth-error="workspace_name"
+
   .auth-field
     label for="user_full_name" = t('registrations.full_name')
     .auth-input
       = icon_tag 'user', size: 20
       input#user_full_name name="full_name" type="text" autocomplete="name" placeholder=t('registrations.full_name_placeholder') required="required"
+    p.auth-error hidden=true role="alert" data-auth-error="full_name"
   .auth-field
     = f.label :email, t('sessions.email')
     .auth-input
       = icon_tag 'mail', size: 20
       = f.email_field :email, autocomplete: 'email', required: true, placeholder: t('sessions.email_placeholder')
+    p.auth-error hidden=true role="alert" data-auth-error="email"
   .auth-field
     = f.label :password, t('sessions.password')
     .auth-input
       = icon_tag 'lock', size: 20
-      = f.password_field :password, autocomplete: 'new-password', required: true, placeholder: t('registrations.password_placeholder'), data: { auth_password: true, auth_new_password: true }
+      = f.password_field :password, autocomplete: 'new-password', required: true, placeholder: t('registrations.password_placeholder'), aria: { describedby: 'password-requirements' }, data: { auth_password: true, auth_new_password: true }
       button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
         = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
         = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
-    ul.auth-reqs#password-requirements
-      li data-auth-req="length"
-        span.dot
-        = t('registrations.req_length')
-      li data-auth-req="upper"
-        span.dot
-        = t('registrations.req_upper')
-      li data-auth-req="lower"
-        span.dot
-        = t('registrations.req_lower')
-      li data-auth-req="number"
-        span.dot
-        = t('registrations.req_number')
-  .auth-field
-    = f.label :password_confirmation, t('registrations.confirm_password')
-    .auth-input
-      = icon_tag 'lock', size: 20
-      = f.password_field :password_confirmation, autocomplete: 'new-password', required: true, placeholder: t('registrations.confirm_placeholder'), data: { auth_password: true }
-      button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
-        = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
-        = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
+    p.auth-error hidden=true role="alert" data-auth-error="password"
+    = render 'users/shared/password_reqs', id: 'password-requirements'
+  = render 'users/shared/password_field', f: f, name: :password_confirmation, label: t('registrations.confirm_password'), placeholder: t('registrations.confirm_placeholder'), autocomplete: 'new-password', error_key: 'password_confirmation'
   .auth-check
-    input#terms name="terms" type="checkbox" required="required"
+    span.auth-check-control
+      input#terms.auth-check-input name="terms" type="checkbox"
     label for="terms"
-      = t('registrations.agree')
-      =< link_to t('registrations.terms'), '#', target: '_blank'
-      =< t('registrations.and')
-      =< link_to t('registrations.privacy'), '#', target: '_blank'
-  = f.submit t('registrations.submit'), class: 'auth-submit'
+      = t('registrations.agree_html', terms: link_to(t('registrations.terms'), '#', target: '_blank', rel: 'noopener'), privacy: link_to(t('registrations.privacy'), '#', target: '_blank', rel: 'noopener'))
+    p.auth-error.auth-check-error hidden=true role="alert" data-auth-error="terms"
+  button.auth-submit type="submit" data-auth-submit="" disabled="disabled"
+    = icon_tag 'loader', size: 20, class: 'auth-submit-spinner'
+    span data-auth-submit-label="" = t('registrations.submit')
   .auth-divider
     span
     p = t('sessions.or')

@@ -15,27 +15,8 @@
       button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
         = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
         = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
-    ul.auth-reqs
-      li data-auth-req="length"
-        span.dot
-        = t('registrations.req_length')
-      li data-auth-req="upper"
-        span.dot
-        = t('registrations.req_upper')
-      li data-auth-req="lower"
-        span.dot
-        = t('registrations.req_lower')
-      li data-auth-req="number"
-        span.dot
-        = t('registrations.req_number')
-  .auth-field
-    = f.label :password_confirmation, t('registrations.confirm_password')
-    .auth-input
-      = icon_tag 'lock', size: 20
-      = f.password_field :password_confirmation, autocomplete: 'new-password', required: true, placeholder: t('registrations.confirm_placeholder'), data: { auth_password: true }
-      button.auth-eye type="button" data-auth-toggle-password="" aria-label=t('sessions.show_password')
-        = icon_tag 'eye', size: 20, data: { auth_eye: 'show' }
-        = icon_tag 'eye-off', size: 20, data: { auth_eye: 'hide' }, style: 'display:none'
+    = render 'users/shared/password_reqs'
+  = render 'users/shared/password_field', f: f, name: :password_confirmation, label: t('registrations.confirm_password'), placeholder: t('registrations.confirm_placeholder'), autocomplete: 'new-password', error_key: 'password_confirmation'
   = f.submit t('passwords.update'), class: 'auth-submit'
 
 p.auth-switch

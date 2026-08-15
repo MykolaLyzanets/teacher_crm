@@ -1,88 +1,104 @@
-- content_for :title, 'Create teacher | danlio'
+- content_for :title, "#{t('app.teachers.create_title')} | danlio"
 
-.teachers-page.teachers-page--form data-controller="teachers"
+.teachers-page.teachers-page--form data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common')
   nav.teachers-page__breadcrumb aria-label="Breadcrumb"
-    = link_to 'Teachers', teachers_path
+    = link_to t('app.teachers.title'), teachers_path
     = icon_tag 'chevron-right', size: 16
-    span Create teacher
+    span = t('app.teachers.create_title')
 
   .teachers-page__form-header
     .teachers-page__form-intro
       .teachers-page__empty-icon
         = icon_tag 'user', size: 24
       div
-        h1.teachers-page__title Create teacher
-        p.teachers-page__subtitle Add a teacher, configure their teaching details and control workspace access.
+        h1.teachers-page__title = t('app.teachers.create_title')
+        p.teachers-page__subtitle = t('app.teachers.create_subtitle')
     .teachers-page__form-actions.teachers-page__form-actions--top
-      = link_to 'Cancel', teachers_path, class: 'teachers-page__secondary-btn'
-      button.teachers-page__primary-btn type="submit" form="create-teacher-form" Create teacher
+      = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
+      button.teachers-page__primary-btn type="submit" form="create-teacher-form" = t('app.teachers.create_teacher')
 
-  = form_with url: teachers_path, method: :post, html: { id: 'create-teacher-form', class: 'teachers-page__form', novalidate: true } do
+  = form_with url: teachers_path, method: :post, html: { id: 'create-teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateHours' } } do
     section.teachers-page__card
-      h2 Basic information
-      p.teachers-page__section-sub Add the teacher’s primary profile details.
-      .teachers-page__avatar-upload
-        span.teachers-page__avatar.teachers-page__avatar--lg data-teachers-target="initialsPreview" TC
+      h2 = t('app.teachers.basic_info')
+      p.teachers-page__section-sub = t('app.teachers.basic_info_sub')
+      .teachers-page__photo
+        .teachers-page__photo-avatar
+          span data-teachers-target="initialsPreview" TC
+          img.teachers-page__photo-img alt="" hidden="hidden" data-teachers-target="photoImage"
+          span.teachers-page__photo-badge
+            = icon_tag 'user', size: 16
+        .teachers-page__photo-copy
+          p.teachers-page__photo-title = t('app.teachers.photo')
+          p.teachers-page__photo-hint = t('app.teachers.photo_hint')
+          .teachers-page__photo-actions
+            button.teachers-page__olive-btn type="button" data-action="teachers#pickPhoto" data-teachers-target="photoPick"
+              = icon_tag 'file', size: 18
+              span = t('app.teachers.choose_file')
+            button.teachers-page__secondary-btn type="button" hidden="hidden" data-action="teachers#removePhoto" data-teachers-target="photoRemove"
+              = icon_tag 'x', size: 18
+              span = t('app.teachers.remove_photo')
+          p.teachers-page__field-error hidden="hidden" data-teachers-target="photoError"
+          input.sr-only type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-teachers-target="photoInput" data-action="change->teachers#previewPhoto"
       .teachers-page__fields
         label.teachers-page__field
-          span First name *
+          span = t('app.teachers.first_name') + ' *'
           input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Olivia" data-teachers-target="firstName" data-action="input->teachers#updateInitials"
         label.teachers-page__field
-          span Last name *
+          span = t('app.teachers.last_name') + ' *'
           input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Anderson" data-teachers-target="lastName" data-action="input->teachers#updateInitials"
         label.teachers-page__field
-          span Display name
-          input type="text" name="display_name" placeholder="Name shown to students" data-teachers-target="displayName" data-action="input->teachers#updateInitials"
+          span = t('app.teachers.display_name')
+          input type="text" name="display_name" placeholder=t('app.teachers.display_placeholder') data-teachers-target="displayName" data-action="input->teachers#updateInitials"
         label.teachers-page__field
-          span Job title
-          input type="text" name="job_title" placeholder="English teacher" list="teacher-job-title-examples"
+          span = t('app.teachers.job_title')
+          input type="text" name="job_title" placeholder=t('app.teachers.job_placeholder') list="teacher-job-title-examples"
           datalist#teacher-job-title-examples
             option value="English teacher"
             option value="Mathematics tutor"
             option value="Senior teacher"
             option value="Academic coordinator"
         label.teachers-page__field
-          span Teacher status *
+          span = t('app.teachers.teacher_status') + ' *'
           select name="status" required=true
-            option value="active" selected="selected" Active
-            option value="invited" Invited
-            option value="on_leave" On leave
-            option value="inactive" Inactive
+            option value="active" selected="selected" = t('app.statuses.active')
+            option value="invited" = t('app.statuses.invited')
+            option value="on_leave" = t('app.statuses.on_leave')
+            option value="inactive" = t('app.statuses.inactive')
 
     section.teachers-page__card
-      h2 Contact information
-      p.teachers-page__section-sub Add contact details used by the workspace.
+      h2 = t('app.teachers.contact')
+      p.teachers-page__section-sub = t('app.teachers.contact_sub')
       .teachers-page__fields
         label.teachers-page__field
-          span Email address
+          span = t('app.teachers.email')
           .teachers-page__input-icon
             = icon_tag 'mail', size: 18
             input type="email" name="email" autocomplete="email" placeholder="olivia@example.com"
         label.teachers-page__field
-          span Phone number
+          span = t('app.teachers.phone')
           .teachers-page__input-icon
             = icon_tag 'message', size: 18
             input type="tel" name="phone" autocomplete="tel" placeholder="+1 555 0100"
         label.teachers-page__field
-          span Preferred contact
+          span = t('app.teachers.preferred_contact')
           select name="preferred_contact_method"
-            option value="email" selected="selected" Email
-            option value="phone" Phone
-            option value="either" Either
+            option value="email" selected="selected" = t('app.teachers.email')
+            option value="phone" = t('app.teachers.phone')
+            option value="either" = t('app.teachers.contact_either')
         label.teachers-page__field
-          span Timezone
+          span = t('app.teachers.timezone')
           select name="timezone"
             - TeachersHelper::TIMEZONES.each do |tz|
               option value=tz selected=(tz == 'America/New_York') = tz
         label.teachers-page__field.teachers-page__field--full
-          span Location
-          input type="text" name="location" placeholder="City, Country"
+          span = t('app.teachers.location')
+          input type="text" name="location" placeholder=t('app.teachers.location_placeholder')
 
     section.teachers-page__card
-      h2 Teaching details
-      p.teachers-page__section-sub Configure what the teacher teaches and how they work with students.
+      h2 = t('app.teachers.teaching')
+      p.teachers-page__section-sub = t('app.teachers.teaching_sub')
       .teachers-page__chips-block
-        p.teachers-page__chips-label Subjects or courses
+        p.teachers-page__chips-label = t('app.teachers.subjects')
         .teachers-page__chips
           - TeachersHelper::SUBJECTS.each do |subject|
             label.teachers-page__chip-toggle
@@ -90,27 +106,27 @@
               span = subject
       .teachers-page__fields
         label.teachers-page__field
-          span Workspace role
+          span = t('app.teachers.workspace_role')
           select name="workspace_role"
-            option value="" Select workspace role
-            option value="teacher" Teacher
-            option value="senior_teacher" Senior teacher
-            option value="administrator" Administrator
+            option value="" = t('app.teachers.select_role')
+            option value="teacher" = t('app.teachers.role_teacher')
+            option value="senior_teacher" = t('app.teachers.role_senior')
+            option value="administrator" = t('app.teachers.role_admin')
         label.teachers-page__field
-          span Experience (years)
-          input type="number" name="experience_years" min="0" step="1" placeholder="e.g. 5"
+          span = t('app.teachers.experience')
+          input type="number" name="experience_years" min="0" step="1" placeholder=t('app.teachers.experience_placeholder')
         label.teachers-page__field.teachers-page__field--full
-          span Bio
-          textarea name="bio" rows="4" placeholder="Short teaching bio…"
+          span = t('app.teachers.bio')
+          textarea name="bio" rows="4" placeholder=t('app.teachers.bio_placeholder')
       .teachers-page__chips-block
-        p.teachers-page__chips-label Languages
+        p.teachers-page__chips-label = t('app.teachers.languages')
         .teachers-page__chips
           - TeachersHelper::LANGUAGES.each do |code, label|
             label.teachers-page__chip-toggle
               input type="checkbox" name="languages[]" value=code
               span = label
       .teachers-page__chips-block
-        p.teachers-page__chips-label Tags
+        p.teachers-page__chips-label = t('app.teachers.tags')
         .teachers-page__chips
           - TeachersHelper::TAGS.each do |tag|
             label.teachers-page__chip-toggle
@@ -118,73 +134,86 @@
               span = tag
 
     section.teachers-page__card
-      h2 Availability and lesson settings
-      p.teachers-page__section-sub Set the teacher’s regular working hours and lesson defaults.
+      h2 = t('app.teachers.availability')
+      p.teachers-page__section-sub = t('app.teachers.availability_sub')
       .teachers-page__chips-block
-        p.teachers-page__chips-label Working days
+        p.teachers-page__chips-label = t('app.teachers.working_days')
         .teachers-page__chips
           - TeachersHelper::WEEK_DAYS.each do |day|
             label.teachers-page__chip-toggle
-              input type="checkbox" name="working_days[]" value=day checked=%w[Monday Tuesday Wednesday Thursday Friday].include?(day)
-              span = day[0, 3]
+              input type="checkbox" name="working_days[]" value=day checked=%w[Monday Tuesday Wednesday Thursday Friday].include?(day) data-teachers-target="workingDay" data-day=day data-action="change->teachers#toggleWorkingDay"
+              span = weekday_short_label(day)
+      .teachers-page__hours
+        .teachers-page__hours-head
+          p.teachers-page__chips-label = t('app.teachers.available_hours')
+          button.teachers-page__link-btn type="button" data-action="teachers#copyMonday" data-teachers-target="copyMonday" = t('app.teachers.copy_monday')
+        .teachers-page__hours-list
+          - TeachersHelper::WEEK_DAYS.each do |day|
+            .teachers-page__hours-row data-teachers-target="hoursRow" data-day=day hidden=(%w[Monday Tuesday Wednesday Thursday Friday].include?(day) ? nil : true)
+              span = weekday_short_label(day)
+              label.sr-only for="start-#{day}" = "#{day} start"
+              input id="start-#{day}" type="time" name="working_hours[#{day}][start]" value="09:00" data-role="start"
+              label.sr-only for="end-#{day}" = "#{day} end"
+              input id="end-#{day}" type="time" name="working_hours[#{day}][end]" value="17:00" data-role="end"
+        p.teachers-page__field-error hidden="hidden" data-teachers-target="hoursError"
       .teachers-page__fields
         label.teachers-page__field
-          span Default lesson duration
+          span = t('app.teachers.default_duration')
           select name="default_lesson_duration_minutes"
             - [30, 45, 60, 90].each do |minutes|
-              option value=minutes selected=(minutes == 60) = "#{minutes} minutes"
+              option value=minutes selected=(minutes == 60) = t('app.teachers.minutes', count: minutes)
         label.teachers-page__field
-          span Maximum lessons per day
-          input type="number" name="max_lessons_per_day" min="1" step="1" placeholder="Optional"
+          span = t('app.teachers.max_lessons')
+          input type="number" name="max_lessons_per_day" min="1" step="1" placeholder=t('app.teachers.max_lessons_placeholder')
         label.teachers-page__field.teachers-page__field--full
-          span Lesson formats
+          span = t('app.teachers.lesson_formats')
           .teachers-page__chips
-            - [['online', 'Online'], ['in_person', 'In person'], ['hybrid', 'Hybrid']].each do |value, label|
+            - [['online', t('app.common.online')], ['in_person', t('app.common.in_person')], ['hybrid', t('app.common.hybrid')]].each do |value, label|
               label.teachers-page__chip-toggle
                 input type="checkbox" name="lesson_formats[]" value=value checked=(value == 'online')
                 span = label
         label.teachers-page__field
-          span Default meeting link
-          input type="url" name="default_meeting_link" placeholder="https://meet.example.com/…"
+          span = t('app.teachers.meeting_link')
+          input type="url" name="default_meeting_link" placeholder=t('app.teachers.meeting_placeholder')
         label.teachers-page__field
-          span Calendar color
+          span = t('app.teachers.calendar_color')
           select name="calendar_color"
             - TeachersHelper::CALENDAR_COLORS.each do |id, _|
-              option value=id selected=(id == 'olive') = id.humanize
+              option value=id selected=(id == 'olive') = teacher_color_label(id)
 
     section.teachers-page__card
-      h2 Workspace access
-      p.teachers-page__section-sub Choose whether this teacher can sign in to Danlio.
+      h2 = t('app.teachers.workspace_access')
+      p.teachers-page__section-sub = t('app.teachers.workspace_access_sub')
       .teachers-page__invite
         div
-          p.teachers-page__invite-title Invite teacher to Danlio
-          p.teachers-page__invite-copy Teacher profile only: can be assigned students and lessons, but cannot sign in and no invitation is sent.
+          p.teachers-page__invite-title = t('app.teachers.invite_title')
+          p.teachers-page__invite-copy = t('app.teachers.invite_copy')
         label.teachers-page__switch
           input type="checkbox" name="invite_to_workspace" value="1" data-teachers-target="inviteToggle" data-action="change->teachers#toggleInvite"
           span
       .teachers-page__invite-fields.teachers-page__invite-fields--hidden data-teachers-target="inviteFields"
         .teachers-page__fields
           label.teachers-page__field
-            span Send invitation
+            span = t('app.teachers.send_invitation')
             select name="invitation_timing"
-              option value="send_now" selected="selected" Send now
-              option value="create_pending" Create and send later
+              option value="send_now" selected="selected" = t('app.teachers.send_now')
+              option value="create_pending" = t('app.teachers.send_later')
           label.teachers-page__field.teachers-page__field--full
-            span Invitation message
-            textarea name="invitation_message" rows="3" placeholder="Optional message included with the invitation…"
+            span = t('app.teachers.invitation_message')
+            textarea name="invitation_message" rows="3" placeholder=t('app.teachers.invitation_placeholder')
 
     section.teachers-page__card
-      h2 Internal notes
-      p.teachers-page__section-sub Add information visible only to authorized workspace staff.
+      h2 = t('app.teachers.internal_notes')
+      p.teachers-page__section-sub = t('app.teachers.internal_notes_sub')
       label.teachers-page__field.teachers-page__field--full
-        span Notes
-        textarea name="notes" rows="4" maxlength="500" placeholder="Add internal information about this teacher…" data-teachers-target="notes" data-action="input->teachers#updateNotesCount"
+        span = t('app.teachers.notes')
+        textarea name="notes" rows="4" maxlength="500" placeholder=t('app.teachers.notes_placeholder') data-teachers-target="notes" data-action="input->teachers#updateNotesCount"
       .teachers-page__notes-meta
         p
           = icon_tag 'lock', size: 14
-          span Teachers and students cannot see these notes unless their role has permission.
+          span = t('app.teachers.notes_visible')
         p data-teachers-target="notesCount" 0/500
 
     .teachers-page__form-actions
-      = link_to 'Cancel', teachers_path, class: 'teachers-page__secondary-btn'
-      button.teachers-page__primary-btn type="submit" Create teacher
+      = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
+      button.teachers-page__primary-btn type="submit" = t('app.teachers.create_teacher')

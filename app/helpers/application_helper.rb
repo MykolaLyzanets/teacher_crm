@@ -67,15 +67,52 @@ module ApplicationHelper
 
   def app_nav_items
     [
-      { path: dashboard_path, label: 'Dashboard', icon: 'dashboard', match: 'dashboard' },
-      { path: students_path, label: 'Students', icon: 'students', match: 'students' },
-      { path: teachers_path, label: 'Teachers', icon: 'teachers', match: 'teachers' },
-      { path: calendar_path, label: 'Calendar', icon: 'calendar', match: 'calendar' },
-      { path: lessons_path, label: 'Lessons', icon: 'book', match: 'lessons' },
-      { path: homework_path, label: 'Homework', icon: 'homework', match: 'homework' },
-      { path: payments_path, label: 'Payments', icon: 'payments', match: 'payments' },
-      { path: reports_path, label: 'Reports', icon: 'reports', match: 'reports' },
-      { path: messages_path, label: 'Messages', icon: 'messages', match: 'messages' }
+      { path: dashboard_path, label: t('app.nav.dashboard'), icon: 'dashboard', match: 'dashboard' },
+      { path: students_path, label: t('app.nav.students'), icon: 'students', match: 'students' },
+      { path: teachers_path, label: t('app.nav.teachers'), icon: 'teachers', match: 'teachers' },
+      { path: calendar_path, label: t('app.nav.calendar'), icon: 'calendar', match: 'calendar' },
+      { path: lessons_path, label: t('app.nav.lessons'), icon: 'book', match: 'lessons' },
+      { path: homework_path, label: t('app.nav.homework'), icon: 'homework', match: 'homework' },
+      { path: payments_path, label: t('app.nav.payments'), icon: 'payments', match: 'payments' },
+      { path: reports_path, label: t('app.nav.reports'), icon: 'reports', match: 'reports' },
+      { path: messages_path, label: t('app.nav.messages'), icon: 'messages', match: 'messages' }
     ]
+  end
+
+  def app_i18n_json(*roots)
+    roots.flatten.each_with_object({}) do |root, hash|
+      key = root.to_s.split('.').last
+      hash[key] = I18n.t(root)
+    end.to_json
+  end
+
+  def auth_form_i18n(kind)
+    strings = {
+      email_blank: t('sessions.errors.email_blank'),
+      email_invalid: t('sessions.errors.email_invalid'),
+      show_password: t('sessions.show_password'),
+      hide_password: t('sessions.hide_password')
+    }
+
+    case kind.to_sym
+    when :login
+      strings[:password_blank] = t('sessions.errors.password_blank')
+    when :register
+      strings.merge!(
+        name_blank: t('registrations.errors.name_blank'),
+        name_short: t('registrations.errors.name_short'),
+        password_blank: t('registrations.errors.password_blank'),
+        password_requirements: t('registrations.errors.password_requirements'),
+        confirm_blank: t('registrations.errors.confirm_blank'),
+        confirm_mismatch: t('registrations.errors.confirm_mismatch'),
+        terms: t('registrations.errors.terms'),
+        workspace_type: t('registrations.errors.workspace_type'),
+        workspace_name: t('registrations.errors.workspace_name'),
+        submit: t('registrations.submit'),
+        creating: t('registrations.creating')
+      )
+    end
+
+    strings.to_json
   end
 end

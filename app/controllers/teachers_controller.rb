@@ -14,6 +14,9 @@ class TeachersController < AppController
     @assigned_students = catalog_students.select do |student|
       student[:deletedAt].blank? && student[:teacherId].to_s == @teacher[:id].to_s
     end
+    @unassigned_students = catalog_students.select do |student|
+      student[:deletedAt].blank? && student[:teacherId].blank?
+    end
   end
 
   def new
@@ -29,7 +32,7 @@ class TeachersController < AppController
     target = find_teacher(params[:id]) || catalog_teachers.first
     target_id = target&.dig(:id) || 'tch-ava'
 
-    redirect_to teacher_path(target_id), notice: "#{name} created successfully."
+    redirect_to teacher_path(target_id), notice: I18n.t('app.teachers.created', name: name)
   end
 
   private

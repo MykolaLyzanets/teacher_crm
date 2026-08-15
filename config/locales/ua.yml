@@ -123,6 +123,11 @@ ua:
     no_account: Немає акаунта?
     create_account: Створити акаунт
     show_password: Показати пароль
+    hide_password: Приховати пароль
+    errors:
+      email_blank: Вкажіть email.
+      email_invalid: Вкажіть коректний email.
+      password_blank: Введіть пароль.
 
   registrations:
     title: Реєстрація
@@ -138,11 +143,31 @@ ua:
     req_lower: Одна мала літера
     req_number: Одна цифра
     agree: Я погоджуюсь з
+    agree_html: Я погоджуюсь з %{terms} та %{privacy}.
     terms: Умовами використання
     and: та
     privacy: Політикою конфіденційності
     submit: Створити акаунт
+    creating: Створюємо акаунт…
     have_account: Вже є акаунт?
+    workspace_legend: Як ви користуватиметесь Danlio?
+    workspace_hint: Оберіть варіант, який найкраще описує ваш робочий простір.
+    workspace_individual: Незалежний викладач
+    workspace_individual_text: Я викладаю і веду учнів самостійно.
+    workspace_school: Школа або команда викладачів
+    workspace_school_text: Я керую кількома викладачами, учнями або локаціями.
+    workspace_name: Назва школи або простору
+    workspace_name_placeholder: Bright Minds Academy
+    errors:
+      name_blank: Вкажіть повне імʼя.
+      name_short: Імʼя має містити щонайменше 2 символи.
+      password_blank: Створіть пароль.
+      password_requirements: Пароль не відповідає всім вимогам.
+      confirm_blank: Повторіть пароль.
+      confirm_mismatch: Паролі не збігаються.
+      terms: Прийміть Умови використання та Політику конфіденційності, щоб продовжити.
+      workspace_type: Оберіть, як ви користуватиметесь Danlio.
+      workspace_name: Вкажіть назву школи або робочого простору.
 
   passwords:
     title: Скидання пароля

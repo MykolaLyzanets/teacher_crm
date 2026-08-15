@@ -9,6 +9,7 @@ class StudentsController < AppController
 
   def show
     @student = Demo::Catalog.find_student(params[:id])
+    @teachers = Demo::Catalog.teachers
     @teacher = @student && @student[:teacherId].present? ? Demo::Catalog.find_teacher(@student[:teacherId]) : nil
   end
 
@@ -26,7 +27,7 @@ class StudentsController < AppController
     target = Demo::Catalog.find_student(params[:id]) || Demo::Catalog.active_students.first
     target_id = target&.dig(:id) || 'stu-emma'
 
-    redirect_to student_path(target_id), notice: "#{name} created successfully."
+    redirect_to student_path(target_id), notice: I18n.t('app.students.created', name: name)
   end
 
   private

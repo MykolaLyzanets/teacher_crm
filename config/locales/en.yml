@@ -123,6 +123,11 @@ en:
     no_account: Don't have an account?
     create_account: Create account
     show_password: Show password
+    hide_password: Hide password
+    errors:
+      email_blank: Enter your email address.
+      email_invalid: Enter a valid email address.
+      password_blank: Enter your password.
 
   registrations:
     title: Create account
@@ -138,11 +143,31 @@ en:
     req_lower: One lowercase letter
     req_number: One number
     agree: I agree to the
+    agree_html: I agree to the %{terms} and %{privacy}.
     terms: Terms of Service
     and: and
     privacy: Privacy Policy
     submit: Create account
+    creating: Creating account…
     have_account: Already have an account?
+    workspace_legend: How will you use Danlio?
+    workspace_hint: Choose the option that best describes your teaching workspace.
+    workspace_individual: Independent teacher
+    workspace_individual_text: I teach and manage my students independently.
+    workspace_school: School or teaching team
+    workspace_school_text: I manage multiple teachers, students or locations.
+    workspace_name: School or workspace name
+    workspace_name_placeholder: Bright Minds Academy
+    errors:
+      name_blank: Enter your full name.
+      name_short: Full name must be at least 2 characters.
+      password_blank: Create a password.
+      password_requirements: Password does not meet all requirements.
+      confirm_blank: Repeat your password.
+      confirm_mismatch: Passwords do not match.
+      terms: Accept the Terms of Service and Privacy Policy to continue.
+      workspace_type: Choose how you will use Danlio.
+      workspace_name: Enter your school or workspace name.
 
   passwords:
     title: Reset password

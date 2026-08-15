@@ -1,107 +1,216 @@
-- content_for :title, 'Create student | danlio'
+- content_for :title, "#{t('app.students.create_title')} | danlio"
+- enrollment_default = Date.current.iso8601
 
-.students-page.students-page--form data-controller="students"
+.students-page.students-page--form data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
   nav.students-page__breadcrumb aria-label="Breadcrumb"
-    = link_to 'Students', students_path
+    = link_to t('app.students.title'), students_path
     = icon_tag 'chevron-right', size: 16
-    span Create student
+    span = t('app.students.create_title')
 
   .students-page__form-header
     .students-page__form-intro
       .students-page__empty-icon
         = icon_tag 'user-plus', size: 24
       div
-        h1.students-page__title Create student
-        p.students-page__subtitle Add a student profile, contacts and learning preferences.
-    .students-page__form-actions
-      = link_to 'Cancel', students_path, class: 'students-page__secondary-btn'
-      button.students-page__primary-btn type="submit" form="create-student-form" Create student
+        h1.students-page__title = t('app.students.create_title')
+        p.students-page__subtitle = t('app.students.create_subtitle')
+    .students-page__form-actions.students-page__form-actions--top
+      = link_to t('app.common.cancel'), students_path, class: 'students-page__secondary-btn'
+      button.students-page__primary-btn type="submit" form="create-student-form" data-students-target="submitBtn" = t('app.students.create_student')
 
-  = form_with url: students_path, method: :post, html: { id: 'create-student-form', class: 'students-page__form', novalidate: true } do
+  = form_with url: students_path, method: :post, html: { id: 'create-student-form', class: 'students-page__form', novalidate: true, data: { action: 'submit->students#validateSubmit' } } do
     section.students-page__card
-      h2 Basic information
-      p.students-page__section-sub Primary profile details for the student.
+      h2 = t('app.students.basic_info')
+      p.students-page__section-sub = t('app.students.basic_info_sub')
+      .students-page__photo
+        .students-page__photo-avatar
+          span data-students-target="initialsPreview" ST
+          img.students-page__photo-img alt="" hidden="hidden" data-students-target="photoImage"
+          span.students-page__photo-badge
+            = icon_tag 'user', size: 16
+        .students-page__photo-copy
+          p.students-page__photo-title = t('app.students.photo')
+          p.students-page__photo-hint = t('app.students.photo_hint')
+          .students-page__photo-actions
+            button.students-page__olive-btn type="button" data-action="students#pickPhoto" data-students-target="photoPick"
+              = icon_tag 'file', size: 18
+              span = t('app.students.choose_file')
+            button.students-page__secondary-btn.students-page__photo-remove type="button" hidden="hidden" data-action="students#removePhoto" data-students-target="photoRemove"
+              = icon_tag 'x', size: 18
+              span = t('app.students.remove_photo')
+          p.students-page__field-error hidden="hidden" data-students-target="photoError"
+          input.sr-only type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-students-target="photoInput" data-action="change->students#previewPhoto"
       .students-page__fields
         label.students-page__field
-          span First name *
-          input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Emma" data-students-target="firstName" data-action="input->students#updateInitials"
+          span = t('app.students.first_name') + ' *'
+          input type="text" name="first_name" required=true autocomplete="given-name" data-students-target="firstName" data-action="input->students#updateInitials blur->students#markTouched"
+          p.students-page__field-error hidden="hidden" data-error-for="firstName"
         label.students-page__field
-          span Last name *
-          input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Johnson" data-students-target="lastName" data-action="input->students#updateInitials"
+          span = t('app.students.last_name') + ' *'
+          input type="text" name="last_name" required=true autocomplete="family-name" data-students-target="lastName" data-action="input->students#updateInitials blur->students#markTouched"
+          p.students-page__field-error hidden="hidden" data-error-for="lastName"
         label.students-page__field
-          span Preferred name
-          input type="text" name="preferred_name" placeholder="Shown in the workspace"
+          span = t('app.students.preferred_name')
+          span.students-page__hint = t('app.students.preferred_name_hint')
+          input type="text" name="preferred_name" placeholder=t('app.students.preferred_name_hint') data-students-target="preferredName" data-action="input->students#updateInitials"
         label.students-page__field
-          span Status *
-          select name="status" required=true
-            option value="active" selected="selected" Active
-            option value="trial" Trial
-            option value="paused" Paused
-            option value="archived" Archived
+          span = t('app.students.date_of_birth')
+          input type="date" name="date_of_birth"
         label.students-page__field
-          span Grade
-          input type="text" name="grade" placeholder="Grade 8"
-
-    section.students-page__card
-      h2 Contact
-      p.students-page__section-sub How to reach the student.
-      .students-page__fields
+          span = t('app.students.gender')
+          select name="gender"
+            option value="" = t('app.students.select_gender')
+            option value="female" = t('app.students.gender_female')
+            option value="male" = t('app.students.gender_male')
+            option value="non_binary" = t('app.students.gender_non_binary')
+            option value="prefer_not" = t('app.students.gender_prefer_not')
         label.students-page__field
-          span Email
-          .students-page__input-icon
-            = icon_tag 'mail', size: 18
-            input type="email" name="email" autocomplete="email" placeholder="emma@example.com"
-        label.students-page__field
-          span Phone
-          input type="tel" name="phone" autocomplete="tel" placeholder="+1 555 0101"
-
-    section.students-page__card
-      h2 Learning
-      p.students-page__section-sub Subjects and lesson preferences.
-      .students-page__fields
-        label.students-page__field
-          span Level
-          input type="text" name="level" placeholder="Intermediate"
-        label.students-page__field
-          span Location preference
-          select name="location_preference"
-            option value="online" selected="selected" Online
-            option value="in_person" In person
-            option value="hybrid" Hybrid
+          span = t('app.students.status') + ' *'
+          select name="status" required=true data-students-target="formStatus" data-action="blur->students#markTouched"
+            option value="active" selected="selected" = t('app.statuses.active')
+            option value="trial" = t('app.statuses.trial')
+            option value="paused" = t('app.statuses.paused')
+            option value="archived" = t('app.statuses.archived')
+          p.students-page__field-error hidden="hidden" data-error-for="status"
         label.students-page__field.students-page__field--full
-          span Assigned teacher
+          span = t('app.students.assigned_teacher')
+          span.students-page__hint = t('app.students.assigned_teacher_hint')
           select name="teacher_id"
-            option value="" Unassigned
+            option value="" = t('app.students.select_teacher')
             - @teachers.each do |teacher|
               - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
               option value=teacher[:id] = name
-        label.students-page__field.students-page__field--full
-          span Notes
-          textarea name="notes" rows="4" placeholder="Anything the teacher should know"
 
     section.students-page__card
-      h2 Guardian
-      p.students-page__section-sub Parent or guardian contact details.
+      h2 = t('app.students.contact_info')
+      p.students-page__section-sub = t('app.students.contact_info_sub')
       .students-page__fields
         label.students-page__field
-          span Name
-          input type="text" name="parent_name" placeholder="Sarah Johnson"
+          span = t('app.students.email')
+          .students-page__input-icon
+            = icon_tag 'mail', size: 18
+            input type="email" name="email" autocomplete="email" data-students-target="email" data-action="blur->students#markTouched"
+          p.students-page__field-error hidden="hidden" data-error-for="email"
         label.students-page__field
-          span Relationship
-          select name="relationship"
-            option value="" —
-            option value="mother" Mother
-            option value="father" Father
-            option value="guardian" Guardian
-            option value="parent" Parent
-            option value="other" Other
-        label.students-page__field
-          span Email
-          input type="email" name="parent_email" placeholder="parent@example.com"
-        label.students-page__field
-          span Phone
-          input type="tel" name="parent_phone" placeholder="+1 555 0102"
+          span = t('app.students.phone')
+          input type="tel" name="phone" autocomplete="tel"
+        label.students-page__field.students-page__field--full
+          span = t('app.students.address')
+          input type="text" name="address" autocomplete="street-address"
+      .students-page__subblock
+        h3 = t('app.students.parent_guardian')
+        .students-page__fields
+          label.students-page__field
+            span = t('app.students.parent_name') + ' *'
+            input type="text" name="parent_name" required=true data-students-target="parentName" data-action="blur->students#markTouched"
+            p.students-page__field-error hidden="hidden" data-error-for="parentName"
+          label.students-page__field
+            span = t('app.students.relationship')
+            select name="relationship"
+              option value="" = t('app.students.select_relationship')
+              option value="mother" = t('app.students.relationship_mother')
+              option value="father" = t('app.students.relationship_father')
+              option value="parent" = t('app.students.relationship_parent')
+              option value="guardian" = t('app.students.relationship_guardian')
+              option value="other" = t('app.students.relationship_other')
+          label.students-page__field
+            span = t('app.students.email') + ' *'
+            input type="email" name="parent_email" required=true data-students-target="parentEmail" data-action="blur->students#markTouched"
+            p.students-page__field-error hidden="hidden" data-error-for="parentEmail"
+          label.students-page__field
+            span = t('app.students.phone') + ' *'
+            input type="tel" name="parent_phone" required=true data-students-target="parentPhone" data-action="blur->students#markTouched"
+            p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
 
-    .students-page__form-actions.students-page__form-actions--bottom
-      = link_to 'Cancel', students_path, class: 'students-page__secondary-btn'
-      button.students-page__primary-btn type="submit" Create student
+    section.students-page__card
+      h2 = t('app.students.learning')
+      p.students-page__section-sub = t('app.students.learning_sub')
+      .students-page__fields
+        label.students-page__field
+          span = t('app.students.grade') + ' *'
+          select name="grade" required=true data-students-target="grade" data-action="blur->students#markTouched"
+            option value="" = t('app.students.select_grade')
+            - t('app.students.grades').each do |grade|
+              option = grade
+          p.students-page__field-error hidden="hidden" data-error-for="grade"
+        label.students-page__field
+          span = t('app.students.student_id')
+          span.students-page__hint = t('app.students.student_id_hint')
+          input type="text" name="student_code"
+        label.students-page__field
+          span = t('app.students.enrollment') + ' *'
+          input type="date" name="enrollment_date" required=true value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"
+          p.students-page__field-error hidden="hidden" data-error-for="enrollmentDate"
+        label.students-page__field
+          span = t('app.students.academic_year') + ' *'
+          select name="academic_year" required=true data-students-target="academicYear" data-action="blur->students#markTouched"
+            - StudentsHelper::ACADEMIC_YEARS.each do |year|
+              option value=year selected=(year == '2025/2026') = year
+          p.students-page__field-error hidden="hidden" data-error-for="academicYear"
+        label.students-page__field
+          span = t('app.students.level')
+          select name="level"
+            option value="" = t('app.students.select_level')
+            - StudentsHelper::LEVELS.each do |value, key|
+              option value=value = t("app.students.levels.#{key}")
+        .students-page__field.students-page__field--full
+          p.students-page__chips-label = t('app.students.subjects')
+          .students-page__chips
+            - StudentsHelper::SUBJECTS.each do |subject|
+              label.students-page__chip-toggle
+                input type="checkbox" name="subjects[]" value=subject
+                span = subject
+
+    section.students-page__card
+      h2 = t('app.students.lesson_preferences')
+      p.students-page__section-sub = t('app.students.lesson_preferences_sub')
+      .students-page__fields
+        label.students-page__field
+          span = t('app.students.preferred_location')
+          select name="location_preference"
+            option value="online" selected="selected" = t('app.common.online')
+            option value="in_person" = t('app.common.in_person')
+            option value="hybrid" = t('app.common.hybrid')
+        label.students-page__field
+          span = t('app.students.preferred_time')
+          input type="text" name="preferred_time_notes" placeholder=t('app.students.preferred_time_hint')
+        .students-page__field.students-page__field--full
+          p.students-page__chips-label = t('app.students.preferred_days')
+          .students-page__chips
+            - StudentsHelper::WEEK_DAYS.each do |day|
+              label.students-page__chip-toggle
+                input type="checkbox" name="preferred_days[]" value=day
+                span = weekday_short_label(day)
+
+    section.students-page__card
+      h2 = t('app.students.emergency')
+      p.students-page__section-sub = t('app.students.emergency_sub')
+      .students-page__fields.students-page__fields--three
+        label.students-page__field
+          span = t('app.students.contact_name')
+          input type="text" name="emergency_name"
+        label.students-page__field
+          span = t('app.students.relationship')
+          select name="emergency_relationship"
+            option value="" = t('app.students.select_relationship')
+            option value="parent" = t('app.students.relationship_parent')
+            option value="guardian" = t('app.students.relationship_guardian')
+            option value="other" = t('app.students.relationship_other')
+        label.students-page__field
+          span = t('app.students.phone')
+          input type="tel" name="emergency_phone"
+
+    section.students-page__card
+      h2 = t('app.students.internal_notes')
+      p.students-page__section-sub = t('app.students.internal_notes_sub')
+      label.students-page__field.students-page__field--full
+        span = t('app.students.additional_notes')
+        textarea name="notes" rows="4" maxlength="300" placeholder=t('app.students.notes_placeholder') data-students-target="notes" data-action="input->students#updateNotesCount blur->students#markTouched"
+        p.students-page__field-error hidden="hidden" data-error-for="notes"
+      p.students-page__notes-count data-students-target="notesCount" 0/300
+
+    p.students-page__form-alert hidden="hidden" data-students-target="formAlert" = t('app.students.fix_fields')
+
+    .students-page__form-actions.students-page__form-actions--sticky
+      = link_to t('app.common.cancel'), students_path, class: 'students-page__secondary-btn'
+      button.students-page__primary-btn type="submit" data-students-target="submitBtn" = t('app.students.create_student')

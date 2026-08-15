@@ -212,6 +212,26 @@
   gap: 12px;
 }
 
+.app-header .lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-header .lang-switch a {
+  color: var(--text-muted);
+}
+
+.app-header .lang-switch a.is-active {
+  color: var(--olive-dark);
+}
+
+.app-header .lang-switch-sep {
+  color: var(--line);
+}
+
 .app-header__menu {
   display: grid;
   place-items: center;

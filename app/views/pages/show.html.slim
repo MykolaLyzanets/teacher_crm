@@ -8,6 +8,6 @@
   section.placeholder-page__card
     .placeholder-page__icon
       = icon_tag @page[:icon], size: 28
-    h2 Coming soon
-    p This section is part of the Danlio workspace and will be available in a future update.
-    = link_to 'Back to dashboard', dashboard_path, class: 'placeholder-page__secondary-btn'
+    h2 = t('app.common.coming_soon')
+    p = t('app.pages.coming_soon_text')
+    = link_to t('app.pages.back_dashboard'), dashboard_path, class: 'placeholder-page__secondary-btn'

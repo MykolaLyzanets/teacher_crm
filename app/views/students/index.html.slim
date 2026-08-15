@@ -1,13 +1,14 @@
-- content_for :title, 'Students | danlio'
+- content_for :title, "#{t('app.students.title')} | danlio"
 
-.students-page data-controller="students"
+.students-page data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
+  p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
   .students-page__header
     div
-      h1.students-page__title Students
-      p.students-page__subtitle Manage student profiles, contacts and learning details.
+      h1.students-page__title = t('app.students.title')
+      p.students-page__subtitle = t('app.students.subtitle')
     = link_to new_student_path, class: 'students-page__primary-btn' do
       = icon_tag 'plus', size: 20
-      span Add student
+      span = t('app.students.add')
 
   = render 'stats', stats: @stats
 
@@ -16,45 +17,45 @@
       .students-page__toolbar-row
         .students-page__search
           = icon_tag 'search', size: 18
-          input type="search" placeholder="Search students…" aria-label="Search students" data-students-target="search" data-action="input->students#filter"
+          input type="search" placeholder=t('app.students.search_placeholder') aria-label=t('app.students.search_aria') data-students-target="search" data-action="input->students#filter"
         .students-page__filters
-          select aria-label="Filter by status" data-students-target="status" data-action="change->students#filter"
-            option value="" All statuses
-            option value="active" Active
-            option value="trial" Trial
-            option value="paused" Paused
-            option value="archived" Archived
-          select aria-label="Filter by teacher assignment" data-students-target="teacher" data-action="change->students#filter"
-            option value="all" All teachers
-            option value="assigned" Assigned
-            option value="unassigned" Unassigned
+          select aria-label=t('app.students.filter_status') data-students-target="status" data-action="change->students#filter"
+            option value="" = t('app.students.all_statuses')
+            option value="active" = t('app.statuses.active')
+            option value="trial" = t('app.statuses.trial')
+            option value="paused" = t('app.statuses.paused')
+            option value="archived" = t('app.statuses.archived')
+          select aria-label=t('app.students.filter_teacher') data-students-target="teacher" data-action="change->students#filter"
+            option value="all" = t('app.students.all_teachers')
+            option value="assigned" = t('app.students.assigned')
+            option value="unassigned" = t('app.students.unassigned')
             - @teachers.each do |teacher|
               - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
               option value=teacher[:id] = name
 
       .students-page__bulk.students-page__bulk--hidden data-students-target="bulk"
-        p data-students-target="bulkCount" 0 selected
-        button.students-page__secondary-btn type="button" data-action="students#openAssign" Assign teacher
+        p data-students-target="bulkCount" = t('app.common.selected', count: 0)
+        button.students-page__secondary-btn type="button" data-action="students#openAssign" = t('app.students.assign_teacher')
 
     .students-page__empty.students-page__empty--hidden data-students-target="empty"
       .students-page__empty-icon
         = icon_tag 'students', size: 24
-      h2 data-students-target="emptyTitle" No students match your filters
-      p data-students-target="emptyText" Try a different search or clear the filters.
+      h2 data-students-target="emptyTitle" = t('app.students.empty_filtered_title')
+      p data-students-target="emptyText" = t('app.students.empty_filtered_text')
       = link_to new_student_path, class: 'students-page__primary-btn students-page__empty-add students-page__empty-add--hidden', data: { students_target: 'addBtn' } do
         = icon_tag 'plus', size: 20
-        span Add student
+        span = t('app.students.add')
 
     .students-page__table-wrap data-students-target="table"
       .students-page__table-head
         span
-          input type="checkbox" aria-label="Select all visible students" data-students-target="selectAll" data-action="change->students#toggleAll"
-        span Student
-        span Contact
-        span Grade
-        span Teacher
-        span Status
-        span.students-page__align-right Actions
+          input type="checkbox" aria-label=t('app.students.select_all') data-students-target="selectAll" data-action="change->students#toggleAll"
+        span = t('app.students.col_student')
+        span = t('app.students.col_contact')
+        span = t('app.students.col_grade')
+        span = t('app.students.col_teacher')
+        span = t('app.students.col_status')
+        span.students-page__align-right = t('app.students.col_actions')
       ul.students-page__list
         - @students.each do |student|
           = render 'student_row', student: student, teachers: @teachers
@@ -62,13 +63,13 @@
   .students-page__dialog[hidden] data-students-target="dialog"
     .students-page__dialog-backdrop data-action="click->students#closeAssign"
     .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
-      h2#assign-teacher-title Assign teacher
-      p Choose a teacher for the selected students.
+      h2#assign-teacher-title = t('app.students.assign_dialog_title')
+      p = t('app.students.assign_dialog_text')
       select data-students-target="assignSelect"
-        option value="" Select teacher
+        option value="" = t('app.students.select_teacher')
         - @teachers.each do |teacher|
           - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
           option value=teacher[:id] = name
       .students-page__dialog-actions
-        button.students-page__secondary-btn type="button" data-action="students#closeAssign" Cancel
-        button.students-page__primary-btn type="button" data-action="students#confirmAssign" Confirm
+        button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
+        button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')

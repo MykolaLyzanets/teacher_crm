@@ -15,10 +15,10 @@ module TeachersHelper
     'inactive' => 'rose'
   }.freeze
 
-  ROLE_LABELS = {
-    'teacher' => 'Teacher',
-    'senior_teacher' => 'Senior teacher',
-    'administrator' => 'Administrator'
+  ROLE_I18N = {
+    'teacher' => 'role_teacher',
+    'senior_teacher' => 'role_senior',
+    'administrator' => 'role_admin'
   }.freeze
 
   LANGUAGE_LABELS = {
@@ -69,7 +69,7 @@ module TeachersHelper
   end
 
   def teacher_status_label(status)
-    STATUS_LABELS[status.to_s] || status.to_s.humanize
+    I18n.t("app.statuses.#{status}", default: status.to_s.humanize)
   end
 
   def teacher_status_tone(status)
@@ -77,9 +77,14 @@ module TeachersHelper
   end
 
   def teacher_role_label(role)
-    return 'Profile only' if role.blank?
+    return t('app.teachers.profile_only') if role.blank?
 
-    ROLE_LABELS[role.to_s] || role.to_s.humanize
+    key = ROLE_I18N[role.to_s]
+    key ? t("app.teachers.#{key}") : role.to_s.humanize
+  end
+
+  def teacher_color_label(id)
+    t("app.teachers.color_#{id}", default: id.to_s.humanize)
   end
 
   def teacher_language_label(code)
@@ -123,21 +128,21 @@ module TeachersHelper
     case key
     when :active
       total = stats[:totalTeachers].to_i
-      return 'No teachers yet' if total.zero?
+      return t('app.teachers.stats_none') if total.zero?
 
       pct = ((stats[:activeTeachers].to_f / total) * 100).round
-      "#{pct}% of all teachers"
+      t('app.teachers.stats_pct', pct: pct)
     when :with_students
       count = stats[:assignedStudents].to_i
-      count == 1 ? '1 student assigned' : "#{count} students assigned"
+      count == 1 ? t('app.teachers.stats_students_one') : t('app.teachers.stats_students_other', count: count)
     when :lessons
       change = monthly_change_text(stats[:lessonsThisMonth], stats[:lessonsLastMonth])
-      change || 'Scheduled this month'
+      change || t('app.teachers.stats_scheduled')
     when :new
       change = monthly_change_text(stats[:newThisMonth], stats[:newLastMonth])
-      change || 'Added this month'
+      change || t('app.teachers.stats_added')
     else
-      'All teachers'
+      t('app.teachers.stats_total_support')
     end
   end
 
@@ -145,18 +150,18 @@ module TeachersHelper
     current = current.to_i
     previous = previous.to_i
     return nil if previous.zero? && current.zero?
-    return 'New this month' if previous.zero?
+    return t('app.teachers.new_this_month_label') if previous.zero?
 
     pct = (((current - previous).to_f / previous) * 100).round
     sign = pct.positive? ? '+' : ''
-    "#{sign}#{pct}% vs last month"
+    t('app.common.vs_last_month', value: "#{sign}#{pct}%")
   end
 
   def lesson_format_label(format)
     case format.to_s
-    when 'in_person' then 'In person'
-    when 'hybrid' then 'Hybrid'
-    else 'Online'
+    when 'in_person' then t('app.common.in_person')
+    when 'hybrid' then t('app.common.hybrid')
+    else t('app.common.online')
     end
   end
 end

@@ -1,0 +1,496 @@
+en:
+  app:
+    nav:
+      main: Main navigation
+      dashboard: Dashboard
+      students: Students
+      teachers: Teachers
+      calendar: Calendar
+      lessons: Lessons
+      homework: Homework
+      payments: Payments
+      reports: Reports
+      messages: Messages
+      settings: Settings
+      home: danlio home
+    header:
+      open_nav: Open navigation
+      close_nav: Close navigation
+      close_menu: Close menu
+      search: Search
+      search_placeholder: Search students, lessons…
+      notifications: Notifications
+      teacher_role: Teacher
+    common:
+      coming_soon: Coming soon
+      view: View
+      cancel: Cancel
+      confirm: Confirm
+      create: Create
+      back: Back
+      clear_filters: Clear filters
+      unassigned: Unassigned
+      assign: Assign
+      selected: "%{count} selected"
+      no_change: No change
+      vs_last_month: "%{value} vs last month"
+      student: Student
+      teacher: Teacher
+      parent: "Parent: %{name}"
+      no_parent: No parent listed
+      no_email: No email
+      no_phone: No phone
+      online: Online
+      in_person: In person
+      hybrid: Hybrid
+    statuses:
+      active: Active
+      trial: Trial
+      paused: Paused
+      archived: Archived
+      invited: Invited
+      on_leave: On leave
+      inactive: Inactive
+      confirmed: Confirmed
+      pending: Pending
+      cancelled: Cancelled
+    students:
+      title: Students
+      subtitle: Manage student profiles, contacts and learning details.
+      add: Add student
+      search_placeholder: Search students…
+      search_aria: Search students
+      filter_status: Filter by status
+      filter_teacher: Filter by teacher assignment
+      all_statuses: All statuses
+      all_teachers: All teachers
+      assigned: Assigned
+      unassigned: Unassigned
+      assign_teacher: Assign teacher
+      assign_dialog_title: Assign teacher
+      assign_dialog_text: Choose a teacher for the selected students.
+      select_teacher: Select teacher
+      empty_filtered_title: No students match your filters
+      empty_filtered_text: Try a different search or clear the filters.
+      empty_title: No students yet
+      empty_text: Add your first student to keep contact and lesson details organized.
+      col_student: Student
+      col_contact: Contact
+      col_grade: Grade
+      col_teacher: Teacher
+      col_status: Status
+      col_actions: Actions
+      select_all: Select all visible students
+      select_one: "Select %{name}"
+      not_found_title: Student not found
+      not_found_text: This student may have been removed or is not available in the current session.
+      back: Back to students
+      schedule_lesson: Schedule lesson
+      learning: Learning
+      guardian: Guardian
+      grade: Grade
+      student_id: Student ID
+      enrollment: Enrollment
+      subjects: Subjects
+      name: Name
+      email: Email
+      phone: Phone
+      preferred_days: Preferred days
+      notes: Notes
+      assigned_teacher: Assigned teacher
+      no_teacher: No teacher assigned yet.
+      view_teacher: View teacher
+      create_title: Create student
+      create_subtitle: Add a student profile, contacts and learning preferences.
+      create_student: Create student
+      basic_info: Basic information
+      basic_info_sub: Primary profile details for the student.
+      first_name: First name
+      last_name: Last name
+      preferred_name: Preferred name
+      preferred_name_hint: Shown in the workspace
+      status: Status
+      contact: Contact
+      contact_sub: How to reach the student.
+      learning_sub: Subjects and lesson preferences.
+      level: Level
+      location_preference: Location preference
+      guardian_sub: Parent or guardian contact details.
+      relationship: Relationship
+      stats_total: Total Students
+      stats_total_support: All students
+      stats_active: Active Students
+      stats_assigned: Assigned to Teachers
+      stats_unassigned: Unassigned Students
+      stats_new: New This Month
+      stats_total_aria: Show all students
+      stats_active_aria: Filter active students
+      stats_assigned_aria: Filter students assigned to teachers
+      stats_unassigned_aria: Filter unassigned students
+      stats_new_aria: Filter students created this month
+      created: "%{name} created successfully."
+      profile_fallback: Student profile
+      photo: Profile photo
+      photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
+      upload_photo: Upload photo
+      remove_photo: Remove
+      date_of_birth: Date of birth
+      gender: Gender
+      gender_female: Female
+      gender_male: Male
+      gender_other: Other
+      gender_unspecified: Prefer not to say
+      address: Address
+      student_code: Student code
+      academic_year: Academic year
+      preferred_time: Preferred time notes
+      preferred_time_hint: e.g. After 4 PM on weekdays
+      lesson_preferences: Lesson preferences
+      lesson_preferences_sub: Help schedule future lessons around what works best.
+      emergency: Emergency contact
+      emergency_sub: Optional details for urgent situations.
+      contact_name: Contact name
+      internal_notes: Internal notes
+      internal_notes_sub: Private notes visible to your teaching team.
+      notes_placeholder: Add helpful context about goals, needs or scheduling.
+      change_teacher: Change teacher
+      remove_assignment: Remove assignment
+      assign_teacher_cta: Assign teacher
+      no_teacher_hint: Assign a teacher to manage this student’s lessons and progress.
+      view_profile: View profile
+      assigned_toast: "Assigned %{name}."
+      removed_toast: Teacher assignment removed.
+      relationship_mother: Mother
+      relationship_father: Father
+      relationship_guardian: Guardian
+      relationship_parent: Parent
+      relationship_other: Other
+      grades:
+        - Grade 1
+        - Grade 2
+        - Grade 3
+        - Grade 4
+        - Grade 5
+        - Grade 6
+        - Grade 7
+        - Grade 8
+        - Grade 9
+        - Grade 10
+        - Grade 11
+        - Grade 12
+        - Adult learner
+      choose_file: Choose file
+      replace_photo: Replace photo
+      photo_type_error: Use a JPG, PNG or WEBP image.
+      photo_size_error: Keep the photo under 2 MB.
+      select_gender: Select gender
+      gender_non_binary: Non-binary
+      gender_prefer_not: Prefer not to say
+      contact_info: Contact information
+      contact_info_sub: Keep student and guardian contact details easy to find.
+      parent_guardian: Parent / guardian
+      parent_name: Parent / guardian name
+      select_relationship: Select relationship
+      student_id_hint: Optional internal reference.
+      select_grade: Select grade
+      select_level: Select level
+      preferred_location: Preferred location
+      additional_notes: Additional notes
+      creating: Creating…
+      fix_fields: Please fix the highlighted fields before creating this student.
+      assigned_teacher_hint: Optional. You can assign later from the student profile.
+      assigned_teacher_auto: Automatically assigned — this workspace has one available teacher.
+      remove_confirm_title: Remove teacher assignment?
+      remove_confirm_text: This student will become unassigned. Existing lessons will not be changed.
+      removing: Removing…
+      reassigned_toast: "Student reassigned to %{name}."
+      assigned_to_toast: "Student assigned to %{name}."
+      assignment_assigned: Assigned
+      assignment_unassigned: Unassigned
+      enter_first_name: Enter a first name.
+      enter_last_name: Enter a last name.
+      enter_email: Enter a valid email address.
+      select_status: Select a status.
+      select_grade_error: Select a grade or class.
+      choose_enrollment: Choose an enrollment date.
+      select_year: Select an academic year.
+      enter_parent_name: Enter a parent or guardian name.
+      enter_parent_email: Enter a parent or guardian email.
+      enter_parent_phone: Enter a parent or guardian phone number.
+      notes_too_long: Notes must be 300 characters or fewer.
+      levels:
+        beginner: Beginner
+        elementary: Elementary
+        intermediate: Intermediate
+        upper_intermediate: Upper-intermediate
+        advanced: Advanced
+    teachers:
+      title: Teachers
+      subtitle: Manage teacher profiles, availability and workspace access.
+      add: Add teacher
+      search_placeholder: Search teachers…
+      all_statuses: All statuses
+      all_assignments: All assignments
+      with_students: With students
+      created_this_month: Created this month
+      empty_filtered_title: No teachers match your filters
+      empty_filtered_text: Try a different search or clear the active filters.
+      empty_title: No teachers yet
+      empty_text: Add your first teacher to assign lessons and manage access.
+      not_found_title: Teacher not found
+      not_found_text: This teacher may have been removed or is not available in the current session.
+      back: Back to teachers
+      schedule_lesson: Schedule lesson
+      create_title: Create teacher
+      create_subtitle: Add a teacher, configure their teaching details and control workspace access.
+      create_teacher: Create teacher
+      created: "%{name} created successfully."
+      stats_total: Total Teachers
+      stats_total_support: All teachers
+      stats_active: Active Teachers
+      stats_with_students: With Students
+      stats_lessons: Lessons This Month
+      stats_new: New This Month
+      stats_none: No teachers yet
+      stats_pct: "%{pct}% of all teachers"
+      stats_students_one: 1 student assigned
+      stats_students_other: "%{count} students assigned"
+      stats_scheduled: Scheduled this month
+      stats_added: Added this month
+      new_this_month_label: New this month
+      col_role: Role
+      profile_only: Profile only
+      basic_info: Basic information
+      basic_info_sub: Add the teacher’s primary profile details.
+      first_name: First name
+      last_name: Last name
+      display_name: Display name
+      display_name_hint: Name shown to students
+      job_title: Job title
+      teacher_status: Teacher status
+      contact: Contact information
+      contact_sub: Add contact details used by the workspace.
+      email: Email address
+      phone: Phone number
+      preferred_contact: Preferred contact
+      timezone: Timezone
+      location: Location
+      teaching: Teaching details
+      teaching_sub: Configure what the teacher teaches and how they work with students.
+      subjects: Subjects or courses
+      workspace_role: Workspace role
+      select_role: Select workspace role
+      role_teacher: Teacher
+      role_senior: Senior teacher
+      role_admin: Administrator
+      experience: Experience (years)
+      bio: Bio
+      languages: Languages
+      tags: Tags
+      availability: Availability and lesson settings
+      availability_title: Availability
+      availability_sub: Set the teacher’s regular working hours and lesson defaults.
+      working_days: Working days
+      working_hours: Working hours
+      copy_monday: Copy Monday to selected days
+      default_duration: Default lesson duration
+      minutes: "%{count} minutes"
+      max_lessons: Maximum lessons per day
+      lesson_formats: Lesson formats
+      meeting_link: Default meeting link
+      calendar_color: Calendar color
+      workspace_access: Workspace access
+      workspace_access_sub: Choose whether this teacher can sign in to Danlio.
+      invite_title: Invite teacher to Danlio
+      invite_copy: "Teacher profile only: can be assigned students and lessons, but cannot sign in and no invitation is sent."
+      send_invitation: Send invitation
+      send_now: Send now
+      send_later: Create and send later
+      invitation_message: Invitation message
+      internal_notes: Internal notes
+      internal_notes_sub: Add information visible only to authorized workspace staff.
+      notes_visible: Teachers and students cannot see these notes unless their role has permission.
+      assigned_students: Assigned students
+      assigned_students_sub: Students currently assigned to this teacher.
+      no_students: No students assigned
+      no_students_text: Assign students from the students list to see them here.
+      search_assigned: Search assigned students
+      assign_students: Assign students
+      remove: Remove
+      teaching_details: Teaching details
+      experience_years: "%{count} years"
+      invited_status: "Invited · %{status}"
+      profile_only_access: Profile only — no login access
+      photo: Profile photo
+      photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
+      choose_file: Upload photo
+      replace_photo: Replace photo
+      remove_photo: Remove photo
+      photo_type_error: Use a JPG, PNG or WEBP image.
+      photo_size_error: Keep the photo under 2 MB.
+      available_hours: Available hours
+      contact_either: Either
+      assigned_count: "%{count} students assigned"
+      assigned_count_one: 1 student assigned
+      remove_confirm_title: Remove teacher assignment?
+      remove_confirm_text: This student will become unassigned. Existing lessons will not be changed.
+      removing: Removing…
+      removed_toast: "Removed assignment for %{name}."
+      assigned_toast: "Assigned %{count} students to %{name}."
+      assign_dialog_title: Assign students
+      assign_dialog_text: Choose students to assign to this teacher.
+      no_unassigned: No unassigned students available.
+      working_hours_error: Set start and end times for each selected day.
+      hours_order_error: End time must be later than start time.
+      color_olive: Olive
+      color_slate: Slate
+      color_amber: Amber
+      color_plum: Plum
+      color_terra: Terra
+      color_teal: Teal
+      default_lesson: Default lesson
+      workspace_access_label: Workspace access
+      notes: Notes
+      invitation_placeholder: Optional message included with the invitation…
+      notes_placeholder: Add internal information about this teacher…
+      bio_placeholder: Short teaching bio…
+      job_placeholder: English teacher
+      display_placeholder: Name shown to students
+      location_placeholder: City, Country
+      experience_placeholder: e.g. 5
+      meeting_placeholder: "https://meet.example.com/…"
+      max_lessons_placeholder: Optional
+      select_students: Select students
+      remove_for: "Remove assignment for %{name}"
+    calendar:
+      title: Calendar
+      subtitle: Manage your lessons, availability and events.
+      create_lesson: Create lesson
+      today: Today
+      filters: Filters
+      close: Close
+      clear_filters: Clear filters
+      apply_filters: Apply filters
+      teacher: Teacher
+      student: Student
+      lesson_type: Lesson type
+      status: Status
+      location: Location
+      all_teachers: All teachers
+      all_students: All students
+      all_types: All types
+      all_statuses: All statuses
+      all_locations: All locations
+      individual: Individual
+      group: Group
+      trial: Trial
+      consultation: Consultation
+      views:
+        day: Day
+        week: Week
+        month: Month
+        agenda: Agenda
+      view_aria: Calendar view
+      previous: Previous period
+      next: Next period
+      selected_day: Selected day
+      create: Create
+      no_lessons_scheduled: No lessons scheduled
+      no_lessons_hint: Create a lesson or adjust your filters.
+      no_lessons_day: No lessons on this day.
+      week_hint: Week view shows lessons for the selected week.
+      drawer_title: Create lesson
+      drawer_sub: Schedule a lesson with a student and teacher.
+      select_teacher: Select a teacher
+      select_student: Select a student
+      lesson_title: Title
+      date: Date
+      start: Start
+      end: End
+      type: Type
+      notes: Notes
+      notes_placeholder: Optional lesson notes…
+      title_placeholder: English lesson
+      participants: Participants
+      date_time: Date and time
+      details: Details
+      meeting_link: Meeting link
+      place: Place
+      place_placeholder: Studio, classroom or address
+      repeat_settings: Repeat settings
+      repeat: Repeat
+      repeat_none: Does not repeat
+      repeat_weekly: Every week
+      repeat_biweekly: Every two weeks
+      repeat_end: End date
+      add_student_hint: "Missing someone?"
+      lesson_details: Lesson details
+      time: Time
+      edit: Edit
+      edit_lesson: Edit lesson
+      save_lesson: Save lesson
+      duplicate: Duplicate
+      copy: copy
+      cancel_lesson: Cancel lesson
+      cancel_confirm: Cancel this lesson? This action can be reviewed later.
+      more: more
+      need_title_date: Please enter a title and date.
+      created: Lesson created successfully.
+      created_many: "%{count} lessons created successfully."
+      updated: Lesson updated successfully.
+      months:
+        january: January
+        february: February
+        march: March
+        april: April
+        may: May
+        june: June
+        july: July
+        august: August
+        september: September
+        october: October
+        november: November
+        december: December
+      weekdays_short:
+        mon: Mon
+        tue: Tue
+        wed: Wed
+        thu: Thu
+        fri: Fri
+        sat: Sat
+        sun: Sun
+      weekdays:
+        monday: Monday
+        tuesday: Tuesday
+        wednesday: Wednesday
+        thursday: Thursday
+        friday: Friday
+        saturday: Saturday
+        sunday: Sunday
+    dashboard:
+      title: Dashboard
+      subtitle: Your teaching workspace overview.
+      coming_soon_text: Insights, upcoming lessons and quick actions will appear here.
+      open_calendar: Open calendar
+      view_students: View students
+    pages:
+      coming_soon_text: This section is part of the Danlio workspace and will be available in a future update.
+      back_dashboard: Back to dashboard
+      lessons:
+        title: Lessons
+        description: Track lesson history, attendance and outcomes.
+      homework:
+        title: Homework
+        description: Assign and review student homework in one place.
+      payments:
+        title: Payments
+        description: Manage invoices, balances and payment status.
+      reports:
+        title: Reports
+        description: See teaching and business insights at a glance.
+      messages:
+        title: Messages
+        description: Stay in touch with students and parents.
+      settings:
+        title: Settings
+        description: Configure your workspace preferences.

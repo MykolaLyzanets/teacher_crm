@@ -1,16 +1,21 @@
 import { Controller } from "@hotwired/stimulus"
 
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+const MONTH_KEYS = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december"
 ]
-const WEEKDAY_FULL = [
-  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+const WEEKDAY_KEYS = [
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
 ]
+const DAY_START_HOUR = 7
+const DAY_END_HOUR = 21
+const HOUR_HEIGHT = 64
+const HOURS = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR }, (_, i) => DAY_START_HOUR + i)
 
 export default class extends Controller {
   static targets = [
     "title",
+    "toast",
     "viewTab",
     "viewSelect",
     "filters",
@@ -24,9 +29,9 @@ export default class extends Controller {
     "monthView",
     "grid",
     "weekView",
-    "weekList",
+    "weekGrid",
     "dayView",
-    "dayList",
+    "dayGrid",
     "agendaView",
     "agendaList",
     "selectedDay",
@@ -35,6 +40,8 @@ export default class extends Controller {
     "emptyBanner",
     "drawer",
     "drawerBackdrop",
+    "drawerTitle",
+    "drawerSubmit",
     "draftTeacher",
     "draftStudent",
     "draftTitle",
@@ -42,14 +49,48 @@ export default class extends Controller {
     "draftStart",
     "draftEnd",
     "draftType",
+    "draftStatus",
     "draftLocation",
-    "draftNotes"
+    "draftMeeting",
+    "draftPlace",
+    "draftRepeat",
+    "draftRepeatEnd",
+    "draftNotes",
+    "onlineField",
+    "placeField",
+    "repeatExtra",
+    "details",
+    "detailsTitle",
+    "detailsTone",
+    "detailsStudent",
+    "detailsTeacher",
+    "detailsDate",
+    "detailsTime",
+    "detailsLocation",
+    "detailsNotes",
+    "detailsNotesRow",
+    "overflow",
+    "overflowTitle",
+    "overflowList"
   ]
 
   static values = {
     lessons: Array,
     teacherId: String,
-    studentId: String
+    studentId: String,
+    i18n: Object
+  }
+
+  monthName(index) {
+    return this.i18nValue?.calendar?.months?.[MONTH_KEYS[index]] || MONTH_KEYS[index]
+  }
+
+  weekdayName(index) {
+    return this.i18nValue?.calendar?.weekdays?.[WEEKDAY_KEYS[index]] || WEEKDAY_KEYS[index]
+  }
+
+  t(group, key) {
+    return this.i18nValue?.[group]?.[key] || key
   }
 
   connect() {
@@ -61,8 +102,12 @@ export default class extends Controller {
     this.filtersOpen = false
     this.appliedFilters = emptyFilters()
     this.lessons = Array.isArray(this.lessonsValue) ? [...this.lessonsValue] : []
+    this.editingId = null
+    this.activeLessonId = null
+    this.overflowDate = null
 
     this.render()
+    this.syncDrawerFields()
 
     if (this.teacherIdValue || this.studentIdValue) {
       this.openCreate()
@@ -75,18 +120,22 @@ export default class extends Controller {
     }
 
     this.boundKeydown = this.onKeydown.bind(this)
+    this.boundResize = this.render.bind(this)
     document.addEventListener("keydown", this.boundKeydown)
+    window.addEventListener("resize", this.boundResize)
   }
 
   disconnect() {
     document.removeEventListener("keydown", this.boundKeydown)
+    window.removeEventListener("resize", this.boundResize)
   }
 
   onKeydown(event) {
-    if (event.key === "Escape") {
-      this.closeCreate()
-      this.closeFilters()
-    }
+    if (event.key !== "Escape") return
+    this.closeCreate()
+    this.closeFilters()
+    this.closeLesson()
+    this.closeOverflow()
   }
 
   previous() {
@@ -147,13 +196,7 @@ export default class extends Controller {
 
   clearFilters() {
     this.appliedFilters = emptyFilters()
-    ;[
-      "filterTeacher",
-      "filterStudent",
-      "filterType",
-      "filterStatus",
-      "filterLocation"
-    ].forEach((name) => {
+    ;["filterTeacher", "filterStudent", "filterType", "filterStatus", "filterLocation"].forEach((name) => {
       if (this[`has${capitalize(name)}Target`]) this[`${name}Target`].value = ""
     })
     this.filtersOpen = false
@@ -161,67 +204,186 @@ export default class extends Controller {
     this.render()
   }
 
-  openCreate() {
-    if (this.hasDraftDateTarget) this.draftDateTarget.value = toDateKey(this.selectedDate)
-    if (this.hasDraftStartTarget && !this.draftStartTarget.value) this.draftStartTarget.value = "10:00"
-    if (this.hasDraftEndTarget && !this.draftEndTarget.value) this.draftEndTarget.value = "11:00"
-    this.drawerTarget.classList.remove("calendar-page__drawer--hidden")
-    this.drawerBackdropTarget.classList.remove("calendar-page__drawer-backdrop--hidden")
+  openCreate(event) {
+    event?.preventDefault?.()
+    event?.stopPropagation?.()
+    this.editingId = null
+    const dateKey = event?.currentTarget?.dataset?.date || toDateKey(this.selectedDate)
+    const start = event?.currentTarget?.dataset?.start || "10:00"
+    this.selectedDate = parseDateKey(dateKey)
+    if (this.view === "day") this.cursor = new Date(this.selectedDate)
+    this.fillDraft({
+      date: dateKey,
+      startTime: start,
+      endTime: addHour(start),
+      title: "",
+      type: "individual",
+      status: "confirmed",
+      location: "online",
+      meetingLink: "",
+      locationText: "",
+      repeat: "none",
+      notes: "",
+      teacherId: this.teacherIdValue || "",
+      studentId: this.studentIdValue || ""
+    })
+    this.setDrawerMode("create")
+    this.showDrawer()
   }
 
   closeCreate() {
-    this.drawerTarget.classList.add("calendar-page__drawer--hidden")
-    this.drawerBackdropTarget.classList.add("calendar-page__drawer-backdrop--hidden")
+    this.hideDrawer()
+    this.editingId = null
+  }
+
+  syncDrawerFields() {
+    const location = this.hasDraftLocationTarget ? this.draftLocationTarget.value : "online"
+    if (this.hasOnlineFieldTarget) {
+      this.onlineFieldTarget.hidden = location !== "online"
+    }
+    if (this.hasPlaceFieldTarget) {
+      this.placeFieldTarget.hidden = location === "online"
+    }
+    const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
+    if (this.hasRepeatExtraTarget) {
+      this.repeatExtraTarget.hidden = repeat === "none" || Boolean(this.editingId)
+    }
   }
 
   submitCreate() {
     const title = this.hasDraftTitleTarget ? this.draftTitleTarget.value.trim() : ""
-    const teacherOption = this.hasDraftTeacherTarget
-      ? this.draftTeacherTarget.selectedOptions[0]
-      : null
-    const studentOption = this.hasDraftStudentTarget
-      ? this.draftStudentTarget.selectedOptions[0]
-      : null
+    const teacherOption = this.hasDraftTeacherTarget ? this.draftTeacherTarget.selectedOptions[0] : null
+    const studentOption = this.hasDraftStudentTarget ? this.draftStudentTarget.selectedOptions[0] : null
     const date = this.hasDraftDateTarget ? this.draftDateTarget.value : toDateKey(this.selectedDate)
     const startTime = this.hasDraftStartTarget ? this.draftStartTarget.value : "10:00"
     const endTime = this.hasDraftEndTarget ? this.draftEndTarget.value : "11:00"
     const type = this.hasDraftTypeTarget ? this.draftTypeTarget.value : "individual"
+    const status = this.hasDraftStatusTarget ? this.draftStatusTarget.value : "confirmed"
     const location = this.hasDraftLocationTarget ? this.draftLocationTarget.value : "online"
+    const meetingLink = this.hasDraftMeetingTarget ? this.draftMeetingTarget.value.trim() : ""
+    const locationText = this.hasDraftPlaceTarget ? this.draftPlaceTarget.value.trim() : ""
     const notes = this.hasDraftNotesTarget ? this.draftNotesTarget.value.trim() : ""
+    const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
+    const repeatEnd = this.hasDraftRepeatEndTarget ? this.draftRepeatEndTarget.value : ""
 
     if (!title || !date) {
-      window.alert("Please enter a title and date.")
+      window.alert(this.t("calendar", "need_title_date"))
       return
     }
 
-    this.lessons.push({
-      id: `local-${Date.now()}`,
+    const payload = {
       title,
-      student: studentOption?.textContent?.trim() || "Student",
-      teacher: teacherOption?.textContent?.trim() || "Teacher",
+      student: studentOption?.textContent?.trim() || this.t("common", "student"),
+      teacher: teacherOption?.textContent?.trim() || this.t("common", "teacher"),
+      teacherId: this.hasDraftTeacherTarget ? this.draftTeacherTarget.value : "",
+      studentId: this.hasDraftStudentTarget ? this.draftStudentTarget.value : "",
       date,
       startTime,
       endTime,
       type,
-      status: "confirmed",
+      status,
       location,
+      meetingLink: location === "online" ? meetingLink : undefined,
+      locationText: location === "in_person" ? locationText : undefined,
       notes: notes || undefined
-    })
+    }
+
+    if (this.editingId) {
+      this.lessons = this.lessons.map((lesson) =>
+        lesson.id === this.editingId ? { ...lesson, ...payload } : lesson
+      )
+      this.showToast(this.t("calendar", "updated"))
+    } else {
+      const created = expandRepeat({ ...payload, id: `local-${Date.now()}` }, repeat, repeatEnd)
+      this.lessons.push(...created)
+      if (created.length > 1) {
+        this.showToast(this.t("calendar", "created_many").replace("%{count}", created.length))
+      } else {
+        this.showToast(this.t("calendar", "created"))
+      }
+    }
 
     this.selectedDate = parseDateKey(date)
-    this.cursor = new Date(this.selectedDate)
+    this.cursor = this.view === "month" || this.view === "agenda" ? this.cursor : new Date(this.selectedDate)
     this.closeCreate()
     this.render()
   }
 
   selectDay(event) {
+    if (event.target.closest("[data-lesson-id], .calendar-page__more, .calendar-page__event")) return
     const key = event.currentTarget.dataset.date
     if (!key) return
     this.selectedDate = parseDateKey(key)
-    if (this.view === "month" && window.matchMedia("(min-width: 768px)").matches) {
-      this.openCreate()
-    }
+    const mobile = window.matchMedia("(max-width: 767px)").matches
+    if (this.view === "month" && !mobile) this.openCreate()
     this.render()
+  }
+
+  openLesson(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
+    const id = event.currentTarget.dataset.lessonId
+    const lesson = this.lessons.find((item) => String(item.id) === String(id))
+    if (!lesson) return
+    this.activeLessonId = id
+    this.closeOverflow()
+    this.renderDetails(lesson)
+  }
+
+  closeLesson() {
+    this.activeLessonId = null
+    if (this.hasDetailsTarget) this.detailsTarget.hidden = true
+  }
+
+  editLesson() {
+    const lesson = this.lessons.find((item) => item.id === this.activeLessonId)
+    if (!lesson) return
+    this.closeLesson()
+    this.editingId = lesson.id
+    this.fillDraft(lesson)
+    this.setDrawerMode("edit")
+    this.showDrawer()
+  }
+
+  duplicateLesson() {
+    const lesson = this.lessons.find((item) => item.id === this.activeLessonId)
+    if (!lesson) return
+    this.closeLesson()
+    this.editingId = null
+    this.fillDraft({
+      ...lesson,
+      title: `${lesson.title} (${this.t("calendar", "copy")})`,
+      status: "confirmed",
+      repeat: "none"
+    })
+    this.setDrawerMode("create")
+    this.showDrawer()
+  }
+
+  cancelLesson() {
+    if (!window.confirm(this.t("calendar", "cancel_confirm"))) return
+    this.lessons = this.lessons.map((lesson) =>
+      lesson.id === this.activeLessonId ? { ...lesson, status: "cancelled" } : lesson
+    )
+    this.closeLesson()
+    this.render()
+  }
+
+  showOverflow(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
+    const key = event.currentTarget.dataset.date
+    if (!key) return
+    this.selectedDate = parseDateKey(key)
+    this.overflowDate = key
+    this.renderOverflow()
+  }
+
+  closeOverflow() {
+    this.overflowDate = null
+    if (this.hasOverflowTarget) this.overflowTarget.hidden = true
   }
 
   filteredLessons() {
@@ -250,12 +412,14 @@ export default class extends Controller {
   render() {
     const lessons = this.filteredLessons()
     const byDate = this.lessonsByDate(lessons)
-    this.titleTarget.textContent = periodTitle(this.cursor, this.view)
+    this.months = MONTH_KEYS.map((_, index) => this.monthName(index))
+    this.weekdays = WEEKDAY_KEYS.map((_, index) => this.weekdayName(index))
+    this.titleTarget.textContent = periodTitle(this.cursor, this.view, this.months, this.weekdays)
     this.syncViewTabs()
     this.syncFilterCount()
     this.renderMonth(byDate)
-    this.renderWeek(byDate)
-    this.renderDay(byDate)
+    this.renderTimeGrid(this.hasWeekGridTarget ? this.weekGridTarget : null, getWeekDays(this.cursor), byDate)
+    this.renderTimeGrid(this.hasDayGridTarget ? this.dayGridTarget : null, [this.cursor], byDate)
     this.renderAgenda(lessons)
     this.renderSelectedDay(byDate)
     this.syncViewVisibility()
@@ -293,38 +457,64 @@ export default class extends Controller {
       } else {
         const visible = list.slice(0, 3)
         const overflow = Math.max(0, list.length - 3)
-        body = `<div class="calendar-page__day-events">${visible.map((lesson) => eventHtml(lesson, list.length > 2 ? "compact" : "month")).join("")}${
-          overflow > 0 ? `<span class="calendar-page__more">+${overflow} more</span>` : ""
+        body = `<div class="calendar-page__day-events">${visible.map((lesson) => eventHtml(lesson, list.length > 2 ? "compact" : "month", this)).join("")}${
+          overflow > 0 ? `<button type="button" class="calendar-page__more" data-date="${key}" data-action="calendar#showOverflow">+${overflow} ${this.t("calendar", "more")}</button>` : ""
         }</div>`
       }
 
-      return `<button type="button" class="${classes}" data-date="${key}" data-action="calendar#selectDay" aria-label="${WEEKDAY_FULL[(day.getDay() + 6) % 7]}, ${day.getMonth() + 1}/${day.getDate()}/${day.getFullYear()}">
+      return `<div class="${classes}" data-date="${key}" data-action="click->calendar#selectDay" role="button" tabindex="0" aria-label="${this.weekdays[(day.getDay() + 6) % 7]}, ${day.getMonth() + 1}/${day.getDate()}/${day.getFullYear()}">
         <span class="${numberClass}">${day.getDate()}</span>
         ${body}
-      </button>`
+      </div>`
     }).join("")
   }
 
-  renderWeek(byDate) {
-    if (!this.hasWeekListTarget) return
-    const days = getWeekDays(this.cursor)
-    this.weekListTarget.innerHTML = days.map((day) => {
+  renderTimeGrid(container, days, byDate) {
+    if (!container) return
+    const nowTop = currentTimeTop(this.today)
+    const showNow = days.some((day) => isSameDay(day, this.today))
+    const columns = `64px repeat(${days.length}, minmax(0, 1fr))`
+
+    const headers = days.map((day, index) => {
+      const isToday = isSameDay(day, this.today)
+      return `<div class="calendar-page__time-head">
+        <p>${this.weekdays[index % 7]?.slice(0, 3) || ""}</p>
+        <span class="${isToday ? "is-today" : ""}">${day.getDate()}</span>
+      </div>`
+    }).join("")
+
+    const hourLabels = HOURS.map((hour) =>
+      `<div class="calendar-page__time-hour"><span>${escapeHtml(formatTimeLabel(`${String(hour).padStart(2, "0")}:00`))}</span></div>`
+    ).join("")
+
+    const columnsHtml = days.map((day) => {
       const key = toDateKey(day)
       const list = byDate[key] || []
-      return `<section class="calendar-page__agenda-group">
-        <h3>${formatAgendaDate(day)}${isSameDay(day, this.today) ? ' <span class="calendar-page__today-pill">Today</span>' : ""}</h3>
-        ${list.length ? list.map((lesson) => eventHtml(lesson, "agenda")).join("") : `<p class="calendar-page__event-meta">No lessons</p>`}
-      </section>`
-    }).join("")
-  }
+      const dayIsToday = isSameDay(day, this.today)
+      const slots = HOURS.map((hour) => {
+        const start = `${String(hour).padStart(2, "0")}:00`
+        return `<button type="button" class="calendar-page__time-slot" style="top: ${(hour - DAY_START_HOUR) * HOUR_HEIGHT}px" data-date="${key}" data-start="${start}" data-action="calendar#openCreate" aria-label="${this.t("calendar", "create_lesson")}"></button>`
+      }).join("")
+      const now = showNow && dayIsToday && nowTop !== null
+        ? `<div class="calendar-page__time-now" style="top: ${nowTop}px"><span></span><i></i></div>`
+        : ""
+      const events = list.map((lesson) => {
+        const start = timeToMinutes(lesson.startTime)
+        const end = timeToMinutes(lesson.endTime)
+        const top = ((start - DAY_START_HOUR * 60) / 60) * HOUR_HEIGHT
+        const height = Math.max(((end - start) / 60) * HOUR_HEIGHT, 28)
+        return `<div class="calendar-page__time-event" style="top: ${top}px; height: ${height}px">${eventHtml(lesson, "block", this)}</div>`
+      }).join("")
 
-  renderDay(byDate) {
-    if (!this.hasDayListTarget) return
-    const key = toDateKey(this.cursor)
-    const list = byDate[key] || []
-    this.dayListTarget.innerHTML = list.length
-      ? list.map((lesson) => eventHtml(lesson, "agenda")).join("")
-      : `<div class="calendar-page__agenda-empty"><p>No lessons on this day.</p><button type="button" class="calendar-page__primary-btn" data-action="calendar#openCreate">Create lesson</button></div>`
+      return `<div class="calendar-page__time-day" style="height: ${HOURS.length * HOUR_HEIGHT}px">${slots}${now}${events}</div>`
+    }).join("")
+
+    container.innerHTML = `<div class="calendar-page__time-inner" style="grid-template-columns: ${columns}">
+      <div class="calendar-page__time-corner"></div>
+      ${headers}
+      <div class="calendar-page__time-hours">${hourLabels}</div>
+      ${columnsHtml}
+    </div>`
   }
 
   renderAgenda(lessons) {
@@ -338,7 +528,7 @@ export default class extends Controller {
       .sort((a, b) => `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`))
 
     if (!monthLessons.length) {
-      this.agendaListTarget.innerHTML = `<div class="calendar-page__agenda-empty"><p>No lessons scheduled</p><button type="button" class="calendar-page__primary-btn" data-action="calendar#openCreate">Create lesson</button></div>`
+      this.agendaListTarget.innerHTML = `<div class="calendar-page__agenda-empty"><p>${this.t("calendar", "no_lessons_scheduled")}</p><button type="button" class="calendar-page__primary-btn" data-action="calendar#openCreate">${this.t("calendar", "create_lesson")}</button></div>`
       return
     }
 
@@ -351,8 +541,8 @@ export default class extends Controller {
     this.agendaListTarget.innerHTML = Object.keys(groups).map((key) => {
       const date = parseDateKey(key)
       return `<section class="calendar-page__agenda-group">
-        <h3>${isSameDay(date, this.today) ? '<span class="calendar-page__today-pill">Today</span>' : ""}${formatAgendaDate(date)}</h3>
-        <div class="calendar-page__agenda-list">${groups[key].map((lesson) => eventHtml(lesson, "agenda")).join("")}</div>
+        <h3>${isSameDay(date, this.today) ? `<span class="calendar-page__today-pill">${this.t("calendar", "today")}</span>` : ""}${formatAgendaDate(date, this.months, this.weekdays)}</h3>
+        <div class="calendar-page__agenda-list">${groups[key].map((lesson) => eventHtml(lesson, "agenda", this)).join("")}</div>
       </section>`
     }).join("")
   }
@@ -361,10 +551,99 @@ export default class extends Controller {
     if (!this.hasSelectedTitleTarget || !this.hasSelectedListTarget) return
     const key = toDateKey(this.selectedDate)
     const list = byDate[key] || []
-    this.selectedTitleTarget.textContent = formatAgendaDate(this.selectedDate)
+    this.selectedTitleTarget.textContent = formatAgendaDate(this.selectedDate, this.months, this.weekdays)
     this.selectedListTarget.innerHTML = list.length
-      ? list.map((lesson) => eventHtml(lesson, "agenda")).join("")
-      : `<p class="calendar-page__event-meta">No lessons on this day.</p>`
+      ? list.map((lesson) => eventHtml(lesson, "agenda", this)).join("")
+      : `<p class="calendar-page__event-meta">${this.t("calendar", "no_lessons_day")}</p>`
+  }
+
+  renderDetails(lesson) {
+    if (!this.hasDetailsTarget) return
+    this.detailsTitleTarget.textContent = lesson.title
+    const tone = lesson.status === "cancelled" ? "cancelled" : lesson.type
+    this.detailsToneTarget.className = `calendar-page__details-tone calendar-page__event--${tone}`
+    this.detailsToneTarget.textContent = `${this.statusLabel(lesson.status)} · ${this.typeLabel(lesson.type)}`
+    this.detailsStudentTarget.textContent = lesson.student
+    this.detailsTeacherTarget.textContent = lesson.teacher
+    this.detailsDateTarget.textContent = formatAgendaDate(parseDateKey(lesson.date), this.months, this.weekdays)
+    this.detailsTimeTarget.textContent = formatTimeRange(lesson.startTime, lesson.endTime)
+    this.detailsLocationTarget.textContent = lesson.location === "online"
+      ? (lesson.meetingLink || this.t("common", "online"))
+      : (lesson.locationText || this.t("common", "in_person"))
+    if (this.hasDetailsNotesRowTarget) {
+      this.detailsNotesRowTarget.hidden = !lesson.notes
+    }
+    if (this.hasDetailsNotesTarget) this.detailsNotesTarget.textContent = lesson.notes || ""
+    this.detailsTarget.hidden = false
+  }
+
+  renderOverflow() {
+    if (!this.hasOverflowTarget || !this.overflowDate) return
+    const date = parseDateKey(this.overflowDate)
+    const list = this.lessonsByDate(this.filteredLessons())[this.overflowDate] || []
+    this.overflowTitleTarget.textContent = formatAgendaDate(date, this.months, this.weekdays)
+    this.overflowListTarget.innerHTML = list.map((lesson) =>
+      `<button type="button" class="calendar-page__overflow-item" data-lesson-id="${escapeHtml(lesson.id)}" data-action="click->calendar#openLesson">
+        <p>${escapeHtml(lesson.title)}</p>
+        <span>${escapeHtml(formatTimeRange(lesson.startTime, lesson.endTime))} · ${escapeHtml(lesson.student)}</span>
+      </button>`
+    ).join("")
+    this.overflowTarget.hidden = false
+  }
+
+  statusLabel(status) {
+    return this.i18nValue?.statuses?.[status] || status
+  }
+
+  typeLabel(type) {
+    return this.i18nValue?.calendar?.[type] || type
+  }
+
+  fillDraft(lesson) {
+    if (this.hasDraftDateTarget) this.draftDateTarget.value = lesson.date || toDateKey(this.selectedDate)
+    if (this.hasDraftStartTarget) this.draftStartTarget.value = lesson.startTime || "10:00"
+    if (this.hasDraftEndTarget) this.draftEndTarget.value = lesson.endTime || "11:00"
+    if (this.hasDraftTitleTarget) this.draftTitleTarget.value = lesson.title || ""
+    if (this.hasDraftTypeTarget) this.draftTypeTarget.value = lesson.type || "individual"
+    if (this.hasDraftStatusTarget) this.draftStatusTarget.value = lesson.status === "cancelled" ? "pending" : (lesson.status || "confirmed")
+    if (this.hasDraftLocationTarget) this.draftLocationTarget.value = lesson.location || "online"
+    if (this.hasDraftMeetingTarget) this.draftMeetingTarget.value = lesson.meetingLink || ""
+    if (this.hasDraftPlaceTarget) this.draftPlaceTarget.value = lesson.locationText || ""
+    if (this.hasDraftRepeatTarget) this.draftRepeatTarget.value = "none"
+    if (this.hasDraftNotesTarget) this.draftNotesTarget.value = lesson.notes || ""
+    if (this.hasDraftTeacherTarget && lesson.teacherId) this.draftTeacherTarget.value = lesson.teacherId
+    if (this.hasDraftStudentTarget && lesson.studentId) this.draftStudentTarget.value = lesson.studentId
+    this.syncDrawerFields()
+  }
+
+  setDrawerMode(mode) {
+    if (this.hasDrawerTitleTarget) {
+      this.drawerTitleTarget.textContent = mode === "edit" ? this.t("calendar", "edit_lesson") : this.t("calendar", "drawer_title")
+    }
+    if (this.hasDrawerSubmitTarget) {
+      this.drawerSubmitTarget.textContent = mode === "edit" ? this.t("calendar", "save_lesson") : this.t("calendar", "create_lesson")
+    }
+    if (this.hasRepeatExtraTarget && mode === "edit") this.repeatExtraTarget.hidden = true
+  }
+
+  showDrawer() {
+    this.drawerTarget.classList.remove("calendar-page__drawer--hidden")
+    this.drawerBackdropTarget.classList.remove("calendar-page__drawer-backdrop--hidden")
+  }
+
+  hideDrawer() {
+    this.drawerTarget.classList.add("calendar-page__drawer--hidden")
+    this.drawerBackdropTarget.classList.add("calendar-page__drawer-backdrop--hidden")
+  }
+
+  showToast(message) {
+    if (!this.hasToastTarget) return
+    this.toastTarget.textContent = message
+    this.toastTarget.hidden = false
+    window.clearTimeout(this.toastTimer)
+    this.toastTimer = window.setTimeout(() => {
+      this.toastTarget.hidden = true
+    }, 3200)
   }
 
   syncViewTabs() {
@@ -384,9 +663,12 @@ export default class extends Controller {
     }
     Object.entries(map).forEach(([name, el]) => {
       if (!el) return
-      const hiddenClass = `calendar-page__${name}--hidden`
-      el.classList.toggle(hiddenClass, name !== this.view)
+      el.classList.toggle(`calendar-page__${name}--hidden`, name !== this.view)
     })
+    if (this.hasSelectedDayTarget) {
+      const mobile = window.matchMedia("(max-width: 767px)").matches
+      this.selectedDayTarget.hidden = this.view !== "month" || !mobile
+    }
   }
 
   syncFiltersPanel() {
@@ -485,23 +767,23 @@ function shiftPeriod(date, view, direction) {
   return addMonths(date, direction)
 }
 
-function periodTitle(date, view) {
+function periodTitle(date, view, months, weekdays) {
   if (view === "day") {
-    return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+    return `${weekdays[mondayIndex(date)]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
   }
   if (view === "week") {
     const start = startOfWeek(date)
     const end = addDays(start, 6)
     if (start.getMonth() === end.getMonth()) {
-      return `${MONTH_NAMES[start.getMonth()]} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`
+      return `${months[start.getMonth()]} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`
     }
-    return `${MONTH_NAMES[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${MONTH_NAMES[end.getMonth()].slice(0, 3)} ${end.getDate()}, ${end.getFullYear()}`
+    return `${months[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${months[end.getMonth()].slice(0, 3)} ${end.getDate()}, ${end.getFullYear()}`
   }
-  return `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`
+  return `${months[date.getMonth()]} ${date.getFullYear()}`
 }
 
-function formatAgendaDate(date) {
-  return `${WEEKDAY_FULL[mondayIndex(date)]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}`
+function formatAgendaDate(date, months, weekdays) {
+  return `${weekdays[mondayIndex(date)]}, ${months[date.getMonth()]} ${date.getDate()}`
 }
 
 function formatTimeLabel(value) {
@@ -515,29 +797,72 @@ function formatTimeRange(start, end) {
   return `${formatTimeLabel(start)} – ${formatTimeLabel(end)}`
 }
 
-function eventHtml(lesson, density) {
+function timeToMinutes(value) {
+  const [h, m] = String(value || "00:00").split(":").map(Number)
+  return h * 60 + m
+}
+
+function addHour(value) {
+  const minutes = Math.min(timeToMinutes(value) + 60, (DAY_END_HOUR) * 60)
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+}
+
+function currentTimeTop(now) {
+  const minutes = now.getHours() * 60 + now.getMinutes()
+  const start = DAY_START_HOUR * 60
+  const end = DAY_END_HOUR * 60
+  if (minutes < start || minutes > end) return null
+  return ((minutes - start) / 60) * HOUR_HEIGHT
+}
+
+function expandRepeat(lesson, repeat, endDate) {
+  if (!repeat || repeat === "none" || !endDate) return [lesson]
+  const step = repeat === "biweekly" ? 14 : 7
+  const lessons = [lesson]
+  let date = parseDateKey(lesson.date)
+  const end = parseDateKey(endDate)
+  for (let index = 0; index < 52; index += 1) {
+    date = addDays(date, step)
+    if (date > end) break
+    lessons.push({ ...lesson, id: `${lesson.id}-${index + 1}`, date: toDateKey(date) })
+  }
+  return lessons
+}
+
+function eventHtml(lesson, density, controller) {
   const tone = lesson.status === "cancelled" ? "cancelled" : lesson.type
+  const online = lesson.location === "online" ? controller.t("common", "online") : controller.t("common", "in_person")
+  const action = `data-lesson-id="${escapeHtml(lesson.id)}" data-action="click->calendar#openLesson"`
   if (density === "compact") {
-    return `<div class="calendar-page__event calendar-page__event--compact calendar-page__event--${tone}">
+    return `<button type="button" class="calendar-page__event calendar-page__event--compact calendar-page__event--${tone}" ${action}>
       <span class="calendar-page__event-time">${escapeHtml(formatTimeLabel(lesson.startTime))}</span>
       <span class="calendar-page__event-title">${escapeHtml(lesson.title)}</span>
-    </div>`
+    </button>`
   }
   if (density === "agenda") {
-    return `<div class="calendar-page__event calendar-page__event--agenda calendar-page__event--${tone}">
+    return `<button type="button" class="calendar-page__event calendar-page__event--agenda calendar-page__event--${tone}" ${action}>
       <div class="calendar-page__event-time">${escapeHtml(formatTimeRange(lesson.startTime, lesson.endTime))}</div>
       <div>
         <div class="calendar-page__event-title">${escapeHtml(lesson.title)}</div>
         <div class="calendar-page__event-meta">${escapeHtml(lesson.student)} · ${escapeHtml(lesson.teacher)}</div>
-        <div class="calendar-page__event-meta">${escapeHtml(lesson.status)} · ${escapeHtml(lesson.type)} · ${lesson.location === "online" ? "Online" : "In person"}</div>
+        <div class="calendar-page__event-meta">${escapeHtml(controller.statusLabel(lesson.status))} · ${escapeHtml(controller.typeLabel(lesson.type))} · ${escapeHtml(online)}</div>
       </div>
-    </div>`
+    </button>`
   }
-  return `<div class="calendar-page__event calendar-page__event--${tone}">
+  if (density === "block") {
+    return `<button type="button" class="calendar-page__event calendar-page__event--block calendar-page__event--${tone}" ${action}>
+      <p class="calendar-page__event-time">${escapeHtml(formatTimeRange(lesson.startTime, lesson.endTime))}</p>
+      <p class="calendar-page__event-title">${escapeHtml(lesson.title)}</p>
+      <p class="calendar-page__event-meta">${escapeHtml(lesson.student)}</p>
+    </button>`
+  }
+  return `<button type="button" class="calendar-page__event calendar-page__event--${tone}" ${action}>
     <span class="calendar-page__event-time">${escapeHtml(formatTimeLabel(lesson.startTime))}</span>
     <span class="calendar-page__event-title">${escapeHtml(lesson.title)}</span>
     <span class="calendar-page__event-meta">${escapeHtml(lesson.student)}</span>
-  </div>`
+  </button>`
 }
 
 function escapeHtml(value) {

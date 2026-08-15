@@ -12,19 +12,19 @@ li.students-page__row[
   data-created=(student[:createdAt].to_s)
 ]
   .students-page__cell
-    input type="checkbox" aria-label="Select #{name}" data-students-target="checkbox" data-action="change->students#syncSelection" data-id=student[:id]
+    input type="checkbox" aria-label=t('app.students.select_one', name: name) data-students-target="checkbox" data-action="change->students#syncSelection" data-id=student[:id]
   .students-page__cell.students-page__student
     span.students-page__avatar = student_initials(student)
     div
       = link_to name, student_path(student[:id]), class: 'students-page__name'
       p.students-page__meta
         - if student[:parentName].present?
-          | Parent: #{student[:parentName]}
+          = t('app.common.parent', name: student[:parentName])
         - else
-          = student[:studentCode].presence || 'No parent listed'
+          = student[:studentCode].presence || t('app.common.no_parent')
   .students-page__cell.students-page__contact
-    p = student[:email].presence || 'No email'
-    p = student[:phone].presence || 'No phone'
+    p = student[:email].presence || t('app.common.no_email')
+    p = student[:phone].presence || t('app.common.no_phone')
   .students-page__cell.students-page__grade = student[:grade].presence || '—'
   .students-page__cell.students-page__teacher
     - if teacher_name.present?
@@ -38,11 +38,11 @@ li.students-page__row[
         span = teacher_name
     - else
       .students-page__assign-wrap
-        span.status-badge.status-badge--neutral Unassigned
+        span.status-badge.status-badge--neutral = t('app.common.unassigned')
         button.students-page__assign-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
           = icon_tag 'user-plus', size: 14
-          | Assign
+          = t('app.common.assign')
   .students-page__cell
     span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
   .students-page__cell.students-page__align-right
-    = link_to 'View', student_path(student[:id]), class: 'students-page__view-btn'
+    = link_to t('app.common.view'), student_path(student[:id]), class: 'students-page__view-btn'
