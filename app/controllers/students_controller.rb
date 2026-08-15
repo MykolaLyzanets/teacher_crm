@@ -1,36 +1,50 @@
 # frozen_string_literal: true
 
 class StudentsController < AppController
+  before_action :require_workspace!, only: %i[new create]
+
   def index
-    @students = Demo::Catalog.active_students
-    @teachers = Demo::Catalog.teachers
+    @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @stats = calculate_stats(@students)
   end
 
   def show
-    @student = Demo::Catalog.find_student(params[:id])
-    @teachers = Demo::Catalog.teachers
-    @teacher = @student && @student[:teacherId].present? ? Demo::Catalog.find_teacher(@student[:teacherId]) : nil
+    record = student_profiles_scope.find_by(id: params[:id])
+    @student = record&.as_catalog
+    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teacher = record&.teacher_profile&.as_catalog
   end
 
   def new
     @student = default_student_attrs
-    @teachers = Demo::Catalog.teachers
+    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
   end
 
   def create
-    first_name = params[:first_name].to_s.strip
-    last_name = params[:last_name].to_s.strip
-    preferred = params[:preferred_name].to_s.strip
-    name = preferred.presence || [first_name, last_name].reject(&:blank?).join(' ').presence || 'Student'
-
-    target = Demo::Catalog.find_student(params[:id]) || Demo::Catalog.active_students.first
-    target_id = target&.dig(:id) || 'stu-emma'
-
-    redirect_to student_path(target_id), notice: I18n.t('app.students.created', name: name)
+    service = Students::Create.new(workspace: current_workspace, actor: current_user, params: student_params)
+    if service.save
+      name = service.student_profile.display_label
+      redirect_to student_path(service.student_profile), notice: I18n.t('app.students.created', name:)
+    else
+      @student = default_student_attrs
+      @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+      flash.now[:alert] = service.error_messages.to_sentence
+      render :new, status: :unprocessable_entity
+    end
   end
 
   private
+
+  def student_params
+    params.permit(
+      :first_name, :last_name, :preferred_name, :date_of_birth, :gender, :status,
+      :teacher_id, :email, :phone, :address, :parent_name, :relationship, :parent_email,
+      :parent_phone, :grade, :student_code, :enrollment_date, :academic_year, :level,
+      :location_preference, :preferred_time_notes, :emergency_name, :emergency_relationship,
+      :emergency_phone, :notes, subjects: [], preferred_days: []
+    )
+  end
 
   def default_student_attrs
     {
@@ -61,11 +75,11 @@ class StudentsController < AppController
     last_month = month_start.prev_month
 
     total = students.size
-    active = students.count { |s| s[:status].to_s == 'active' }
-    assigned = students.count { |s| s[:teacherId].present? }
+    active = students.count { |student| student[:status].to_s == 'active' }
+    assigned = students.count { |student| student[:teacherId].present? }
     unassigned = total - assigned
-    new_this_month = students.count { |s| created_in_range?(s, month_start, next_month) }
-    new_last_month = students.count { |s| created_in_range?(s, last_month, month_start) }
+    new_this_month = students.count { |student| created_in_range?(student, month_start, next_month) }
+    new_last_month = students.count { |student| created_in_range?(student, last_month, month_start) }
     monthly_change =
       if new_last_month.zero?
         new_this_month.positive? ? 100.0 : nil

@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class AppController < ApplicationController
+  include WorkspaceScoping
+
+  prepend_before_action :authenticate_user!
+
   layout 'app'
 
   helper_method :app_page_stylesheet

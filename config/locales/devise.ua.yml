@@ -19,6 +19,9 @@ ua:
       signed_in: Ви успішно увійшли.
       signed_out: Ви вийшли з акаунта.
       already_signed_out: Ви вийшли з акаунта.
+    omniauth_callbacks:
+      failure: Не вдалося увійти через %{kind} (%{reason}).
+      success: Ви успішно увійшли через %{kind}.
   errors:
     messages:
       not_saved:

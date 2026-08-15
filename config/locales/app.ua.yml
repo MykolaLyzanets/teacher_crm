@@ -21,6 +21,9 @@ ua:
       search_placeholder: Шукати учнів, уроки…
       notifications: Сповіщення
       teacher_role: Викладач
+      owner_role: Власник
+      student_role: Учень
+      admin_role: Адмін
     common:
       coming_soon: Незабаром
       view: Переглянути
@@ -281,6 +284,7 @@ ua:
       workspace_role: Роль у просторі
       select_role: Оберіть роль
       role_teacher: Викладач
+      role_owner: Власник
       role_senior: Старший викладач
       role_admin: Адміністратор
       experience: Досвід (роки)
@@ -321,6 +325,7 @@ ua:
       experience_years: "%{count} років"
       invited_status: "Запрошено · %{status}"
       profile_only_access: Лише профіль — без входу
+      has_workspace_access: Може входити в Danlio
       photo: Фото профілю
       photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
       choose_file: Завантажити фото
@@ -494,3 +499,5 @@ ua:
       settings:
         title: Налаштування
         description: Налаштуйте параметри робочого простору.
+    workspace:
+      required: Спочатку створіть або приєднайтесь до робочого простору, щоб додавати викладачів і учнів.

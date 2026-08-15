@@ -51,8 +51,8 @@
           p.students-page__field-error hidden="hidden" data-error-for="lastName"
         label.students-page__field
           span = t('app.students.preferred_name')
+          input type="text" name="preferred_name" data-students-target="preferredName" data-action="input->students#updateInitials"
           span.students-page__hint = t('app.students.preferred_name_hint')
-          input type="text" name="preferred_name" placeholder=t('app.students.preferred_name_hint') data-students-target="preferredName" data-action="input->students#updateInitials"
         label.students-page__field
           span = t('app.students.date_of_birth')
           input type="date" name="date_of_birth"
@@ -101,9 +101,8 @@
         h3 = t('app.students.parent_guardian')
         .students-page__fields
           label.students-page__field
-            span = t('app.students.parent_name') + ' *'
-            input type="text" name="parent_name" required=true data-students-target="parentName" data-action="blur->students#markTouched"
-            p.students-page__field-error hidden="hidden" data-error-for="parentName"
+            span = t('app.students.parent_name')
+            input type="text" name="parent_name" data-students-target="parentName"
           label.students-page__field
             span = t('app.students.relationship')
             select name="relationship"
@@ -114,13 +113,12 @@
               option value="guardian" = t('app.students.relationship_guardian')
               option value="other" = t('app.students.relationship_other')
           label.students-page__field
-            span = t('app.students.email') + ' *'
-            input type="email" name="parent_email" required=true data-students-target="parentEmail" data-action="blur->students#markTouched"
+            span = t('app.students.email')
+            input type="email" name="parent_email" data-students-target="parentEmail" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentEmail"
           label.students-page__field
-            span = t('app.students.phone') + ' *'
-            input type="tel" name="parent_phone" required=true data-students-target="parentPhone" data-action="blur->students#markTouched"
-            p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
+            span = t('app.students.phone')
+            input type="tel" name="parent_phone" data-students-target="parentPhone"
 
     section.students-page__card
       h2 = t('app.students.learning')
@@ -135,8 +133,8 @@
           p.students-page__field-error hidden="hidden" data-error-for="grade"
         label.students-page__field
           span = t('app.students.student_id')
-          span.students-page__hint = t('app.students.student_id_hint')
           input type="text" name="student_code"
+          span.students-page__hint = t('app.students.student_id_hint')
         label.students-page__field
           span = t('app.students.enrollment') + ' *'
           input type="date" name="enrollment_date" required=true value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"

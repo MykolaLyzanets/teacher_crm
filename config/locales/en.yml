@@ -119,7 +119,6 @@ en:
     submit: Sign in
     or: or continue with
     google: Continue with Google
-    apple: Continue with Apple
     no_account: Don't have an account?
     create_account: Create account
     show_password: Show password
@@ -168,6 +167,9 @@ en:
       terms: Accept the Terms of Service and Privacy Policy to continue.
       workspace_type: Choose how you will use Danlio.
       workspace_name: Enter your school or workspace name.
+      google_workspace: Choose how you will use Danlio, accept the terms, then continue with Google.
+      google_email: Google did not provide an email address.
+      google_failed: Could not sign in with Google. Try again.
 
   passwords:
     title: Reset password

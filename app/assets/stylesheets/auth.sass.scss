@@ -467,9 +467,22 @@
   color: var(--text-subtle);
 }
 
+.auth-continue {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .auth-social {
   display: grid;
   gap: 12px;
+}
+
+.auth-social form {
+  display: block;
+  width: 100%;
+  margin: 0;
 }
 
 .auth-social-btn {

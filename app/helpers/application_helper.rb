@@ -115,4 +115,31 @@ module ApplicationHelper
 
     strings.to_json
   end
+
+  def current_user_display_name
+    current_user&.full_name.presence || current_user&.email
+  end
+
+  def current_user_initials
+    parts = current_user_display_name.to_s.split(/\s+/).compact_blank
+    return 'U' if parts.empty?
+    return parts.first[0, 2].upcase if parts.size == 1
+
+    "#{parts[0][0]}#{parts[1][0]}".upcase
+  end
+
+  def current_user_role_label
+    role = current_user&.role
+    key = {
+      'owner' => 'owner_role',
+      'teacher' => 'teacher_role',
+      'student' => 'student_role',
+      'admin' => 'admin_role'
+    }[role]
+    key ? t("app.header.#{key}") : role.to_s.humanize
+  end
+
+  def google_oauth_enabled?
+    GoogleOauth.configured?
+  end
 end

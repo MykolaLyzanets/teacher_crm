@@ -16,9 +16,10 @@ module TeachersHelper
   }.freeze
 
   ROLE_I18N = {
+    'owner' => 'role_owner',
     'teacher' => 'role_teacher',
-    'senior_teacher' => 'role_senior',
-    'administrator' => 'role_admin'
+    'admin' => 'role_admin',
+    'student' => 'role_teacher'
   }.freeze
 
   LANGUAGE_LABELS = {

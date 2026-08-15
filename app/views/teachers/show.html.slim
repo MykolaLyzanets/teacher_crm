@@ -77,10 +77,10 @@
           div
             dt = t('app.teachers.workspace_access_label')
             dd
-              - if teacher[:inviteToWorkspace]
+              - if teacher[:status].to_s == 'invited'
                 = t('app.teachers.invited_status', status: teacher[:invitationStatus].presence || t('app.statuses.pending'))
               - else
-                = t('app.teachers.profile_only_access')
+                = t('app.teachers.has_workspace_access')
 
     - if teacher[:notes].present?
       section.teachers-page__card

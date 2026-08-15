@@ -1,7 +1,9 @@
 .auth-social
-  button.auth-social-btn type="button" data-auth-social="google"
-    = image_tag 'brand/google.svg', alt: '', width: 20, height: 20
-    = t('sessions.google')
-  button.auth-social-btn type="button" data-auth-social="apple"
-    = image_tag 'brand/apple.svg', alt: '', width: 20, height: 20
-    = t('sessions.apple')
+  - if google_oauth_enabled?
+    = button_to user_google_oauth2_omniauth_authorize_path, method: :post, params: { workspace_type: '', workspace_name: '', terms: '' }, form: { data: { turbo: false, auth_google_form: true } }, class: 'auth-social-btn', data: { auth_social: 'google' } do
+      = image_tag 'brand/google.svg', alt: '', width: 20, height: 20
+      span = t('sessions.google')
+  - else
+    button.auth-social-btn type="button" disabled="disabled"
+      = image_tag 'brand/google.svg', alt: '', width: 20, height: 20
+      span = t('sessions.google')

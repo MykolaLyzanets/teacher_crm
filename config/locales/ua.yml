@@ -119,7 +119,6 @@ ua:
     submit: Увійти
     or: або продовжити з
     google: Продовжити з Google
-    apple: Продовжити з Apple
     no_account: Немає акаунта?
     create_account: Створити акаунт
     show_password: Показати пароль
@@ -168,6 +167,9 @@ ua:
       terms: Прийміть Умови використання та Політику конфіденційності, щоб продовжити.
       workspace_type: Оберіть, як ви користуватиметесь Danlio.
       workspace_name: Вкажіть назву школи або робочого простору.
+      google_workspace: Оберіть, як ви користуватиметесь Danlio, прийміть умови, тоді продовжуйте з Google.
+      google_email: Google не надав email-адресу.
+      google_failed: Не вдалося увійти через Google. Спробуйте ще раз.
 
   passwords:
     title: Скидання пароля

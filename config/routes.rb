@@ -13,8 +13,14 @@ Rails.application.routes.draw do
     request.original_url.sub('www.', '')
   }, constraints: { host: /^www\./ }
 
+  devise_for :users,
+             only: :omniauth_callbacks,
+             controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
+
   scope '(:locale)', locale: /(#{I18n.available_locales.map(&:to_s).join('|')})/ do
-    devise_for :users
+    devise_for :users,
+               skip: :omniauth_callbacks,
+               controllers: { registrations: 'users/registrations' }
 
     root 'home#index'
 

@@ -262,8 +262,30 @@ const initRegister = (form) => {
     sync();
   });
 
-  form.querySelectorAll("[data-auth-social]").forEach((button) => {
-    button.addEventListener("click", persistWorkspaceIntent);
+  const googleForm = document.querySelector("[data-auth-google-form]");
+  googleForm?.addEventListener("submit", (event) => {
+    persistWorkspaceIntent();
+    const values = registerValues(form);
+    const errors = {};
+    if (values.workspaceType !== "individual" && values.workspaceType !== "school") {
+      errors.workspace_type = i18n.workspace_type;
+    } else if (values.workspaceType === "school" && !values.workspaceName.trim()) {
+      errors.workspace_name = i18n.workspace_name;
+    }
+    if (!values.terms) errors.terms = i18n.terms;
+
+    if (Object.keys(errors).length) {
+      event.preventDefault();
+      applyErrors(form, errors, ["workspace_type", "workspace_name", "terms"]);
+      return;
+    }
+
+    const typeInput = googleForm.querySelector("[name='workspace_type']");
+    const nameInput = googleForm.querySelector("[name='workspace_name']");
+    const termsInput = googleForm.querySelector("[name='terms']");
+    if (typeInput) typeInput.value = values.workspaceType;
+    if (nameInput) nameInput.value = values.workspaceName;
+    if (termsInput) termsInput.value = "1";
   });
 
   form.addEventListener("submit", (event) => {

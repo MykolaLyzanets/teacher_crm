@@ -6,13 +6,15 @@
 
 = form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: 'auth-fields register', novalidate: true, data: { auth_form: 'register', auth_i18n: auth_form_i18n(:register) } }) do |f|
   = render 'users/shared/error_messages'
+  - workspace_type = params[:workspace_type].presence || 'individual'
+  - school_selected = workspace_type == 'school'
 
   fieldset.auth-workspace
     legend = t('registrations.workspace_legend')
     p.auth-workspace-hint = t('registrations.workspace_hint')
     .auth-workspace-grid
       label.auth-workspace-card
-        input.sr-only type="radio" name="workspace_type" value="individual" checked="checked" data-auth-workspace-type=""
+        input.sr-only type="radio" name="workspace_type" value="individual" checked=(!school_selected) data-auth-workspace-type=""
         span.auth-workspace-face
           span.auth-workspace-icon
             = icon_tag 'user', size: 22
@@ -22,7 +24,7 @@
           span.auth-workspace-radio aria-hidden="true"
             span.auth-workspace-dot
       label.auth-workspace-card
-        input.sr-only type="radio" name="workspace_type" value="school" data-auth-workspace-type=""
+        input.sr-only type="radio" name="workspace_type" value="school" checked=school_selected data-auth-workspace-type=""
         span.auth-workspace-face
           span.auth-workspace-icon
             = icon_tag 'school', size: 22
@@ -33,18 +35,18 @@
             span.auth-workspace-dot
     p.auth-error hidden=true role="alert" data-auth-error="workspace_type"
 
-  .auth-field hidden="hidden" data-auth-workspace-name-field=""
+  .auth-field hidden=(!school_selected) data-auth-workspace-name-field=""
     label for="workspace_name" = t('registrations.workspace_name')
     .auth-input
       = icon_tag 'building', size: 20
-      input#workspace_name name="workspace_name" type="text" autocomplete="organization" placeholder=t('registrations.workspace_name_placeholder')
+      input#workspace_name name="workspace_name" type="text" autocomplete="organization" placeholder=t('registrations.workspace_name_placeholder') value=params[:workspace_name] disabled=(!school_selected) required=school_selected
     p.auth-error hidden=true role="alert" data-auth-error="workspace_name"
 
   .auth-field
-    label for="user_full_name" = t('registrations.full_name')
+    = f.label :full_name, t('registrations.full_name')
     .auth-input
       = icon_tag 'user', size: 20
-      input#user_full_name name="full_name" type="text" autocomplete="name" placeholder=t('registrations.full_name_placeholder') required="required"
+      = f.text_field :full_name, id: 'user_full_name', autocomplete: 'name', required: true, placeholder: t('registrations.full_name_placeholder')
     p.auth-error hidden=true role="alert" data-auth-error="full_name"
   .auth-field
     = f.label :email, t('sessions.email')
@@ -72,6 +74,8 @@
   button.auth-submit type="submit" data-auth-submit="" disabled="disabled"
     = icon_tag 'loader', size: 20, class: 'auth-submit-spinner'
     span data-auth-submit-label="" = t('registrations.submit')
+
+.auth-continue
   .auth-divider
     span
     p = t('sessions.or')

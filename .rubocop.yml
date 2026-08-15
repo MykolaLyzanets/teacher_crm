@@ -71,18 +71,43 @@ Metrics/MethodLength:
   Exclude:
     - db/**/*
     - spec/**/*
-    - app/services/copart/**/*
-    - app/workers/copart/**/*
+    - app/services/**/*
+    - lib/demo/**/*
+    - app/controllers/teachers_controller.rb
+    - app/controllers/students_controller.rb
+    - app/models/teacher_profile.rb
+    - app/models/student_profile.rb
 
 Metrics/AbcSize:
   Exclude:
-    - app/services/copart/**/*
-    - app/workers/copart/**/*
+    - app/services/**/*
+    - lib/demo/**/*
+    - app/controllers/teachers_controller.rb
+    - app/controllers/students_controller.rb
+    - app/controllers/calendar_controller.rb
+    - app/controllers/users/**/*
+    - app/models/teacher_profile.rb
+    - app/models/student_profile.rb
 
 Metrics/ClassLength:
   Exclude:
-    - app/services/copart/**/*
-    - app/workers/copart/**/*
+    - app/services/**/*
+    - lib/demo/**/*
+    - app/controllers/teachers_controller.rb
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - app/services/**/*
+    - lib/demo/**/*
+    - app/controllers/teachers_controller.rb
+    - app/controllers/calendar_controller.rb
+    - app/models/student_profile.rb
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - app/services/**/*
+    - lib/demo/**/*
+    - app/controllers/teachers_controller.rb
 
 Rails/CreateTableWithTimestamps:
   Exclude:

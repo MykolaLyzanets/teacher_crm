@@ -15,7 +15,7 @@ header.app-header
       button.app-header__icon-btn type="button" aria-label=t('app.header.notifications')
         = icon_tag 'bell', size: 20
       button.app-header__user type="button"
-        span.app-header__avatar AT
+        span.app-header__avatar = current_user_initials
         span.app-header__user-meta
-          span.app-header__user-name Ava Thompson
-          span.app-header__user-role = t('app.header.teacher_role')
+          span.app-header__user-name = current_user_display_name
+          span.app-header__user-role = current_user_role_label

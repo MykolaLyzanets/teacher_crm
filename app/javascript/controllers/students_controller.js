@@ -393,7 +393,7 @@ export default class extends Controller {
   validateSubmit(event) {
     this.touched = new Set([
       "firstName", "lastName", "email", "status", "grade",
-      "enrollmentDate", "academicYear", "parentName", "parentEmail", "parentPhone", "notes"
+      "enrollmentDate", "academicYear", "parentEmail", "notes"
     ])
     const errors = this.validate()
     this.renderErrors(errors)
@@ -418,9 +418,7 @@ export default class extends Controller {
     const grade = this.hasGradeTarget ? this.gradeTarget.value.trim() : ""
     const enrollment = this.hasEnrollmentDateTarget ? this.enrollmentDateTarget.value : ""
     const year = this.hasAcademicYearTarget ? this.academicYearTarget.value : ""
-    const parentName = this.hasParentNameTarget ? this.parentNameTarget.value.trim() : ""
     const parentEmail = this.hasParentEmailTarget ? this.parentEmailTarget.value.trim() : ""
-    const parentPhone = this.hasParentPhoneTarget ? this.parentPhoneTarget.value.trim() : ""
     const notes = this.hasNotesTarget ? this.notesTarget.value : ""
 
     if (!first) errors.firstName = this.t("students", "enter_first_name")
@@ -430,10 +428,7 @@ export default class extends Controller {
     if (!grade) errors.grade = this.t("students", "select_grade_error")
     if (!enrollment) errors.enrollmentDate = this.t("students", "choose_enrollment")
     if (!year) errors.academicYear = this.t("students", "select_year")
-    if (!parentName) errors.parentName = this.t("students", "enter_parent_name")
-    if (!parentEmail) errors.parentEmail = this.t("students", "enter_parent_email")
-    else if (!EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
-    if (!parentPhone) errors.parentPhone = this.t("students", "enter_parent_phone")
+    if (parentEmail && !EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
     if (notes.length > 300) errors.notes = this.t("students", "notes_too_long")
     return errors
   }

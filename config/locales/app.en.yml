@@ -21,6 +21,9 @@ en:
       search_placeholder: Search students, lessons…
       notifications: Notifications
       teacher_role: Teacher
+      owner_role: Owner
+      student_role: Student
+      admin_role: Admin
     common:
       coming_soon: Coming soon
       view: View
@@ -281,6 +284,7 @@ en:
       workspace_role: Workspace role
       select_role: Select workspace role
       role_teacher: Teacher
+      role_owner: Owner
       role_senior: Senior teacher
       role_admin: Administrator
       experience: Experience (years)
@@ -321,6 +325,7 @@ en:
       experience_years: "%{count} years"
       invited_status: "Invited · %{status}"
       profile_only_access: Profile only — no login access
+      has_workspace_access: Can sign in to Danlio
       photo: Profile photo
       photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
       choose_file: Upload photo
@@ -494,3 +499,5 @@ en:
       settings:
         title: Settings
         description: Configure your workspace preferences.
+    workspace:
+      required: Join or create a workspace before adding teachers or students.

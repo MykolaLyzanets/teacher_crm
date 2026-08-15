@@ -1,22 +1,23 @@
 # frozen_string_literal: true
 
 class TeachersController < AppController
+  before_action :require_workspace!, only: %i[new create]
+
   def index
-    @teachers = catalog_teachers.reject { |t| t[:deletedAt].present? }
-    @students = catalog_students.reject { |s| s[:deletedAt].present? }
+    records = teacher_profiles_scope.order(:first_name, :last_name)
+    @teachers = records.map(&:as_catalog)
+    @students = student_profiles_scope.map(&:as_catalog)
     @stats = calculate_stats(@teachers, @students, catalog_lessons)
   end
 
   def show
-    @teacher = find_teacher(params[:id])
-    return unless @teacher
+    record = teacher_profiles_scope.find_by(id: params[:id])
+    @teacher = record&.as_catalog
+    return unless record
 
-    @assigned_students = catalog_students.select do |student|
-      student[:deletedAt].blank? && student[:teacherId].to_s == @teacher[:id].to_s
-    end
-    @unassigned_students = catalog_students.select do |student|
-      student[:deletedAt].blank? && student[:teacherId].blank?
-    end
+    assigned = record.student_profiles.kept.includes(:user, :teacher_profile)
+    @assigned_students = assigned.map(&:as_catalog)
+    @unassigned_students = student_profiles_scope.where(teacher_id: nil).map(&:as_catalog)
   end
 
   def new
@@ -24,39 +25,42 @@ class TeachersController < AppController
   end
 
   def create
-    first_name = params[:first_name].to_s.strip
-    last_name = params[:last_name].to_s.strip
-    display_name = params[:display_name].to_s.strip
-    name = display_name.presence || [first_name, last_name].reject(&:blank?).join(' ').presence || 'Teacher'
-
-    target = find_teacher(params[:id]) || catalog_teachers.first
-    target_id = target&.dig(:id) || 'tch-ava'
-
-    redirect_to teacher_path(target_id), notice: I18n.t('app.teachers.created', name: name)
+    service = Teachers::Create.new(workspace: current_workspace, actor: current_user, params: teacher_params)
+    if service.save
+      name = service.teacher_profile.display_label
+      redirect_to teacher_path(service.teacher_profile), notice: I18n.t('app.teachers.created', name:)
+    else
+      @teacher = default_teacher_attrs
+      flash.now[:alert] = service.error_messages.to_sentence
+      render :new, status: :unprocessable_entity
+    end
   end
 
   private
 
-  def catalog_teachers
-    Array(Demo::Catalog.teachers).map { |row| row.with_indifferent_access }
+  def teacher_params
+    permitted = params.permit(
+      :first_name, :last_name, :display_name, :job_title, :status, :email, :phone,
+      :preferred_contact_method, :timezone, :location, :experience_years, :bio,
+      :default_lesson_duration_minutes, :max_lessons_per_day, :default_meeting_link,
+      :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
+      :notes, :workspace_role,
+      subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
+    )
+    permitted[:working_hours] = permitted_working_hours
+    permitted
   end
 
-  def catalog_students
-    Array(Demo::Catalog.students).map { |row| row.with_indifferent_access }
+  def permitted_working_hours
+    hours = params[:working_hours]
+    return {} if hours.blank?
+
+    day_keys = TeachersHelper::WEEK_DAYS.index_with { %i[start end] }
+    hours.permit(day_keys)
   end
 
   def catalog_lessons
-    Array(Demo::Catalog.lessons).map { |row| row.with_indifferent_access }
-  end
-
-  def find_teacher(id)
-    return if id.blank?
-
-    if Demo::Catalog.respond_to?(:find_teacher)
-      Demo::Catalog.find_teacher(id)&.with_indifferent_access
-    else
-      catalog_teachers.find { |teacher| teacher[:id].to_s == id.to_s }
-    end
+    Array(Demo::Catalog.lessons).map(&:with_indifferent_access)
   end
 
   def default_teacher_attrs
@@ -93,20 +97,20 @@ class TeachersController < AppController
     next_month_start = this_month_start.next_month
     last_month_start = this_month_start.prev_month
 
-    teacher_ids = teachers.map { |t| t[:id].to_s }
-    active_teachers = teachers.count { |t| t[:status].to_s == 'active' }
+    teacher_ids = teachers.map { |teacher| teacher[:id].to_s }
+    active_teachers = teachers.count { |teacher| teacher[:status].to_s == 'active' }
     with_students = teachers.count do |teacher|
-      students.any? { |s| s[:teacherId].to_s == teacher[:id].to_s }
+      students.any? { |student| student[:teacherId].to_s == teacher[:id].to_s }
     end
-    assigned_students = students.count do |s|
-      s[:teacherId].present? && teacher_ids.include?(s[:teacherId].to_s)
+    assigned_students = students.count do |student|
+      student[:teacherId].present? && teacher_ids.include?(student[:teacherId].to_s)
     end
 
-    counted = lessons.reject { |l| l[:status].to_s == 'cancelled' }
-    lessons_this_month = counted.count { |l| lesson_in_range?(l, this_month_start, next_month_start) }
-    lessons_last_month = counted.count { |l| lesson_in_range?(l, last_month_start, this_month_start) }
-    new_this_month = teachers.count { |t| created_in_range?(t, this_month_start, next_month_start) }
-    new_last_month = teachers.count { |t| created_in_range?(t, last_month_start, this_month_start) }
+    counted = lessons.reject { |lesson| lesson[:status].to_s == 'cancelled' }
+    lessons_this_month = counted.count { |lesson| lesson_in_range?(lesson, this_month_start, next_month_start) }
+    lessons_last_month = counted.count { |lesson| lesson_in_range?(lesson, last_month_start, this_month_start) }
+    new_this_month = teachers.count { |teacher| created_in_range?(teacher, this_month_start, next_month_start) }
+    new_last_month = teachers.count { |teacher| created_in_range?(teacher, last_month_start, this_month_start) }
 
     {
       totalTeachers: teachers.size,
