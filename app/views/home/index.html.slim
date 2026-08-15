@@ -1,3 +1,181 @@
+- content_for :head do
+  = stylesheet_link_tag "css/home.min", "data-turbo-track": "reload"
+  = javascript_include_tag "home", "data-turbo-track": "reload", defer: true
+
 .home
-  h1 teacher_crm
-  p Новий проєкт
+  section.hero#top
+    .hero-blob.hero-blob-a
+    .hero-blob.hero-blob-b
+    .container.hero-grid
+      .hero-copy
+        .hero-title
+          h1.type-hero
+            = t('home.hero.title_lead')
+            br
+            span.green = t('home.hero.title_accent')
+          = icon_tag 'hero-leaf', class: 'hero-leaf'
+        p.subhead.type-body-lg = t('home.hero.subhead')
+        .hero-cta
+          = link_to t('home.hero.get_started'), new_user_registration_path, class: 'btn'
+          a.btn.btn-secondary href="#workflow"
+            = icon_tag 'play', size: 16
+            = t('home.hero.see_how')
+        .trust-row.type-small
+          span.trust-item
+            = icon_tag 'check-circle', size: 16
+            = t('home.hero.no_card')
+          span.trust-item
+            = icon_tag 'check-circle', size: 16
+            = t('home.hero.setup')
+      .calendar-stage
+        .calendar-scale
+          = render 'home/calendar_preview'
+        = icon_tag 'hero-botanical', class: 'hero-botanical'
+
+  section.logos#schools
+    .container
+      h2.type-h2-sm = t('home.logos.trusted')
+      .logo-row
+        .brand-logo
+          = icon_tag 'book', size: 36
+          strong EDU TUTORS
+        .brand-logo
+          = icon_tag 'sun', size: 36
+          span
+            | Bright Minds
+            small Academy
+        .brand-logo
+          = icon_tag 'leaf-mark', size: 36
+          strong Learn & Grow
+        .brand-logo
+          = icon_tag 'school', size: 36
+          strong STUDY HUB
+        .brand-logo
+          = icon_tag 'star', size: 36
+          span
+            | NextGen Tutors
+            small Education
+
+  section.features#features
+    .container
+      h2.type-h2 = t('home.features.title')
+      .grid-6
+        article.feature
+          .icon-box
+            = icon_tag 'students', size: 26
+          h3.type-h3 = t('home.features.students_title')
+          p.type-small = t('home.features.students_text')
+        article.feature
+          .icon-box
+            = icon_tag 'calendar-check', size: 26
+          h3.type-h3 = t('home.features.lessons_title')
+          p.type-small = t('home.features.lessons_text')
+        article.feature
+          .icon-box
+            = icon_tag 'homework', size: 26
+          h3.type-h3 = t('home.features.homework_title')
+          p.type-small = t('home.features.homework_text')
+        article.feature
+          .icon-box
+            = icon_tag 'reports', size: 26
+          h3.type-h3 = t('home.features.progress_title')
+          p.type-small = t('home.features.progress_text')
+        article.feature
+          .icon-box
+            = icon_tag 'payments', size: 26
+          h3.type-h3 = t('home.features.payments_title')
+          p.type-small = t('home.features.payments_text')
+        article.feature
+          .icon-box
+            = icon_tag 'chart-bars', size: 26
+          h3.type-h3 = t('home.features.reports_title')
+          p.type-small = t('home.features.reports_text')
+
+  section.workflow#workflow
+    .container
+      .workflow-panel
+        = icon_tag 'showcase-botanical-1', class: 'showcase-botanical b1'
+        = icon_tag 'showcase-botanical-2', class: 'showcase-botanical b2'
+        .workflow-copy
+          h2.type-h2
+            = t('home.workflow.title_lead')
+            span.green = t('home.workflow.title_accent')
+          .steps
+            .step
+              .icon-box
+                = icon_tag 'students', size: 24
+              div
+                h4.type-h3 = t('home.workflow.step1_title')
+                p.type-small = t('home.workflow.step1_text')
+            .step
+              .icon-box
+                = icon_tag 'calendar', size: 24
+              div
+                h4.type-h3 = t('home.workflow.step2_title')
+                p.type-small = t('home.workflow.step2_text')
+            .step
+              .icon-box
+                = icon_tag 'file', size: 24
+              div
+                h4.type-h3 = t('home.workflow.step3_title')
+                p.type-small = t('home.workflow.step3_text')
+            .step
+              .icon-box
+                = icon_tag 'reports', size: 24
+              div
+                h4.type-h3 = t('home.workflow.step4_title')
+                p.type-small = t('home.workflow.step4_text')
+        .ui-stage
+          .showcase-composition
+            article.ui-card.cal-card
+              h3 = t('home.calendar.month')
+              .week
+                - t('home.dash.days').first(5).each_with_index do |day, index|
+                  div
+                    p = day
+                    b = 6 + index
+              .slots
+                .slot 09:00 AM
+                .slot.on 10:00 AM
+                .slot 11:00 AM
+                .slot 01:00 PM
+                .slot 02:00 PM
+            article.ui-card.profile-card
+              .profile-head
+                .photo
+                  .hair
+                  .face
+                  .shirt
+                .who
+                  strong Emma Johnson
+                  span emma@example.com
+                span.badge = t('home.dash.active')
+              .profile-body
+                p.label = t('home.workflow.next_lesson')
+                p.next-lesson
+                  = icon_tag 'calendar-check', size: 16
+                  = t('home.workflow.next_lesson_date')
+                .progress
+                  .progress-row
+                    span = t('home.workflow.progress')
+                    span 85%
+                  .bar-track
+                    .bar-fill
+            article.ui-card.chart-card
+              h4 = t('home.workflow.progress_overview')
+              .chart-wrap
+                = icon_tag 'progress-line', class: 'line'
+                span.chart-badge 85%
+
+  section.cta#get-started
+    .container
+      .cta-banner
+        = icon_tag 'cta-botanical', class: 'cta-leaf'
+        .cta-copy
+          h2.type-h2 = t('home.cta.title')
+          p.type-body = t('home.cta.text')
+        .cta-actions
+          = link_to t('home.cta.get_started'), new_user_registration_path, class: 'btn btn-light'
+          a.btn.btn-ghost-light href="#workflow"
+            = icon_tag 'play', size: 16
+            = t('home.cta.see_how')

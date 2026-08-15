@@ -1,0 +1,15 @@
+- content_for :title, "#{t('app.dashboard.title')} | danlio"
+
+.dashboard-page
+  .dashboard-page__header
+    div
+      h1.dashboard-page__title = t('app.dashboard.title')
+      p.dashboard-page__subtitle = t('app.dashboard.subtitle')
+  section.dashboard-page__card
+    .dashboard-page__icon
+      = icon_tag 'dashboard', size: 28
+    h2 = t('app.common.coming_soon')
+    p = t('app.dashboard.coming_soon_text')
+    .dashboard-page__actions
+      = link_to t('app.dashboard.open_calendar'), calendar_path, class: 'dashboard-page__primary-btn'
+      = link_to t('app.dashboard.view_students'), students_path, class: 'dashboard-page__secondary-btn'

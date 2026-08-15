@@ -1,0 +1,496 @@
+ua:
+  app:
+    nav:
+      main: Головна навігація
+      dashboard: Огляд
+      students: Учні
+      teachers: Викладачі
+      calendar: Календар
+      lessons: Уроки
+      homework: Домашні
+      payments: Оплати
+      reports: Звіти
+      messages: Повідомлення
+      settings: Налаштування
+      home: Головна danlio
+    header:
+      open_nav: Відкрити меню
+      close_nav: Закрити меню
+      close_menu: Закрити меню
+      search: Пошук
+      search_placeholder: Шукати учнів, уроки…
+      notifications: Сповіщення
+      teacher_role: Викладач
+    common:
+      coming_soon: Незабаром
+      view: Переглянути
+      cancel: Скасувати
+      confirm: Підтвердити
+      create: Створити
+      back: Назад
+      clear_filters: Очистити фільтри
+      unassigned: Без викладача
+      assign: Призначити
+      selected: "Вибрано: %{count}"
+      no_change: Без змін
+      vs_last_month: "%{value} порівняно з минулим місяцем"
+      student: Учень
+      teacher: Викладач
+      parent: "Батьки: %{name}"
+      no_parent: Батьки не вказані
+      no_email: Немає email
+      no_phone: Немає телефону
+      online: Онлайн
+      in_person: Очно
+      hybrid: Гібрид
+    statuses:
+      active: Активний
+      trial: Пробний
+      paused: Призупинений
+      archived: В архіві
+      invited: Запрошений
+      on_leave: У відпустці
+      inactive: Неактивний
+      confirmed: Підтверджено
+      pending: Очікує
+      cancelled: Скасовано
+    students:
+      title: Учні
+      subtitle: Керуйте профілями учнів, контактами та деталями навчання.
+      add: Додати учня
+      search_placeholder: Шукати учнів…
+      search_aria: Пошук учнів
+      filter_status: Фільтр за статусом
+      filter_teacher: Фільтр за викладачем
+      all_statuses: Усі статуси
+      all_teachers: Усі викладачі
+      assigned: Призначені
+      unassigned: Без викладача
+      assign_teacher: Призначити викладача
+      assign_dialog_title: Призначити викладача
+      assign_dialog_text: Оберіть викладача для вибраних учнів.
+      select_teacher: Оберіть викладача
+      empty_filtered_title: Немає учнів за вашими фільтрами
+      empty_filtered_text: Спробуйте інший пошук або очистіть фільтри.
+      empty_title: Ще немає учнів
+      empty_text: Додайте першого учня, щоб упорядкувати контакти та уроки.
+      col_student: Учень
+      col_contact: Контакт
+      col_grade: Клас
+      col_teacher: Викладач
+      col_status: Статус
+      col_actions: Дії
+      select_all: Вибрати всіх видимих учнів
+      select_one: "Вибрати %{name}"
+      not_found_title: Учня не знайдено
+      not_found_text: Цього учня могло бути видалено або він недоступний у поточній сесії.
+      back: До списку учнів
+      schedule_lesson: Запланувати урок
+      learning: Навчання
+      guardian: Опікун
+      grade: Клас
+      student_id: ID учня
+      enrollment: Дата зарахування
+      subjects: Предмети
+      name: Імʼя
+      email: Email
+      phone: Телефон
+      preferred_days: Бажані дні
+      notes: Нотатки
+      assigned_teacher: Призначений викладач
+      no_teacher: Викладача ще не призначено.
+      view_teacher: Переглянути викладача
+      create_title: Створити учня
+      create_subtitle: Додайте профіль учня, контакти та вподобання щодо навчання.
+      create_student: Створити учня
+      basic_info: Основна інформація
+      basic_info_sub: Основні дані профілю учня.
+      first_name: Імʼя
+      last_name: Прізвище
+      preferred_name: Бажане імʼя
+      preferred_name_hint: Відображається в робочому просторі
+      status: Статус
+      contact: Контакти
+      contact_sub: Як звʼязатися з учнем.
+      learning_sub: Предмети та вподобання щодо уроків.
+      level: Рівень
+      location_preference: Формат занять
+      guardian_sub: Контакти батьків або опікуна.
+      relationship: Родинний звʼязок
+      stats_total: Усього учнів
+      stats_total_support: Усі учні
+      stats_active: Активні учні
+      stats_assigned: Призначені викладачам
+      stats_unassigned: Без викладача
+      stats_new: Нові цього місяця
+      stats_total_aria: Показати всіх учнів
+      stats_active_aria: Фільтр активних учнів
+      stats_assigned_aria: Фільтр учнів із викладачем
+      stats_unassigned_aria: Фільтр учнів без викладача
+      stats_new_aria: Фільтр учнів, створених цього місяця
+      created: "%{name} успішно створено."
+      profile_fallback: Профіль учня
+      photo: Фото профілю
+      photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
+      upload_photo: Завантажити фото
+      remove_photo: Прибрати
+      date_of_birth: Дата народження
+      gender: Стать
+      gender_female: Жіноча
+      gender_male: Чоловіча
+      gender_other: Інша
+      gender_unspecified: Не вказувати
+      address: Адреса
+      student_code: Код учня
+      academic_year: Навчальний рік
+      preferred_time: Зручний час
+      preferred_time_hint: напр. після 16:00 у будні
+      lesson_preferences: Уподобання щодо уроків
+      lesson_preferences_sub: Допоможіть планувати уроки зручно для учня.
+      emergency: Екстрений контакт
+      emergency_sub: Необовʼязкові дані на випадок термінової ситуації.
+      contact_name: Імʼя контакту
+      internal_notes: Внутрішні нотатки
+      internal_notes_sub: Приватні нотатки для викладацької команди.
+      notes_placeholder: Додайте контекст про цілі, потреби чи розклад.
+      change_teacher: Змінити викладача
+      remove_assignment: Зняти призначення
+      assign_teacher_cta: Призначити викладача
+      no_teacher_hint: Призначте викладача, щоб вести уроки та прогрес учня.
+      view_profile: Переглянути профіль
+      assigned_toast: "Призначено: %{name}."
+      removed_toast: Призначення викладача знято.
+      relationship_mother: Мати
+      relationship_father: Батько
+      relationship_guardian: Опікун
+      relationship_parent: Батьки
+      relationship_other: Інше
+      grades:
+        - 1 клас
+        - 2 клас
+        - 3 клас
+        - 4 клас
+        - 5 клас
+        - 6 клас
+        - 7 клас
+        - 8 клас
+        - 9 клас
+        - 10 клас
+        - 11 клас
+        - 12 клас
+        - Дорослий
+      choose_file: Обрати файл
+      replace_photo: Замінити фото
+      photo_type_error: Використайте зображення JPG, PNG або WEBP.
+      photo_size_error: Розмір фото має бути до 2 МБ.
+      select_gender: Оберіть стать
+      gender_non_binary: Небінарна
+      gender_prefer_not: Не вказувати
+      contact_info: Контактна інформація
+      contact_info_sub: Зберігайте контакти учня та опікуна в одному місці.
+      parent_guardian: Батьки / опікун
+      parent_name: Імʼя батьків або опікуна
+      select_relationship: Оберіть звʼязок
+      student_id_hint: Необовʼязковий внутрішній код.
+      select_grade: Оберіть клас
+      select_level: Оберіть рівень
+      preferred_location: Бажаний формат
+      additional_notes: Додаткові нотатки
+      creating: Створення…
+      fix_fields: Виправте підсвічені поля, перш ніж створити учня.
+      assigned_teacher_hint: Необовʼязково. Можна призначити пізніше в профілі учня.
+      assigned_teacher_auto: Призначено автоматично — у просторі один доступний викладач.
+      remove_confirm_title: Зняти призначення викладача?
+      remove_confirm_text: Учень стане без викладача. Існуючі уроки не зміняться.
+      removing: Знімаємо…
+      reassigned_toast: "Учня перепризначено до %{name}."
+      assigned_to_toast: "Учня призначено до %{name}."
+      assignment_assigned: Призначено
+      assignment_unassigned: Без викладача
+      enter_first_name: Введіть імʼя.
+      enter_last_name: Введіть прізвище.
+      enter_email: Введіть коректну email-адресу.
+      select_status: Оберіть статус.
+      select_grade_error: Оберіть клас.
+      choose_enrollment: Оберіть дату зарахування.
+      select_year: Оберіть навчальний рік.
+      enter_parent_name: Введіть імʼя батьків або опікуна.
+      enter_parent_email: Введіть email батьків або опікуна.
+      enter_parent_phone: Введіть телефон батьків або опікуна.
+      notes_too_long: Нотатки мають містити не більше 300 символів.
+      levels:
+        beginner: Початковий
+        elementary: Елементарний
+        intermediate: Середній
+        upper_intermediate: Вище середнього
+        advanced: Просунутий
+    teachers:
+      title: Викладачі
+      subtitle: Керуйте профілями викладачів, доступністю та доступом до простору.
+      add: Додати викладача
+      search_placeholder: Шукати викладачів…
+      all_statuses: Усі статуси
+      all_assignments: Усі призначення
+      with_students: З учнями
+      created_this_month: Створені цього місяця
+      empty_filtered_title: Немає викладачів за вашими фільтрами
+      empty_filtered_text: Спробуйте інший пошук або очистіть активні фільтри.
+      empty_title: Ще немає викладачів
+      empty_text: Додайте першого викладача, щоб призначати уроки та керувати доступом.
+      not_found_title: Викладача не знайдено
+      not_found_text: Цього викладача могло бути видалено або він недоступний у поточній сесії.
+      back: До списку викладачів
+      schedule_lesson: Запланувати урок
+      create_title: Створити викладача
+      create_subtitle: Додайте викладача, налаштуйте деталі викладання та доступ.
+      create_teacher: Створити викладача
+      created: "%{name} успішно створено."
+      stats_total: Усього викладачів
+      stats_total_support: Усі викладачі
+      stats_active: Активні викладачі
+      stats_with_students: З учнями
+      stats_lessons: Уроки цього місяця
+      stats_new: Нові цього місяця
+      stats_none: Ще немає викладачів
+      stats_pct: "%{pct}% від усіх викладачів"
+      stats_students_one: Призначено 1 учня
+      stats_students_other: "Призначено учнів: %{count}"
+      stats_scheduled: Заплановано цього місяця
+      stats_added: Додано цього місяця
+      new_this_month_label: Нові цього місяця
+      col_role: Роль
+      profile_only: Лише профіль
+      basic_info: Основна інформація
+      basic_info_sub: Додайте основні дані викладача.
+      first_name: Імʼя
+      last_name: Прізвище
+      display_name: Відображуване імʼя
+      display_name_hint: Імʼя, яке бачать учні
+      job_title: Посада
+      teacher_status: Статус викладача
+      contact: Контакти
+      contact_sub: Контактні дані для робочого простору.
+      email: Email
+      phone: Телефон
+      preferred_contact: Бажаний спосіб звʼязку
+      timezone: Часовий пояс
+      location: Локація
+      teaching: Викладання
+      teaching_sub: Що викладає і як працює з учнями.
+      subjects: Предмети або курси
+      workspace_role: Роль у просторі
+      select_role: Оберіть роль
+      role_teacher: Викладач
+      role_senior: Старший викладач
+      role_admin: Адміністратор
+      experience: Досвід (роки)
+      bio: Біо
+      languages: Мови
+      tags: Теги
+      availability: Доступність і налаштування уроків
+      availability_title: Доступність
+      availability_sub: Звичайний графік і параметри уроків.
+      working_days: Робочі дні
+      working_hours: Робочі години
+      copy_monday: Скопіювати понеділок на вибрані дні
+      default_duration: Тривалість уроку за замовчуванням
+      minutes: "%{count} хв"
+      max_lessons: Максимум уроків на день
+      lesson_formats: Формати уроків
+      meeting_link: Посилання на зустріч
+      calendar_color: Колір календаря
+      workspace_access: Доступ до простору
+      workspace_access_sub: Чи може викладач увійти в Danlio.
+      invite_title: Запросити викладача в Danlio
+      invite_copy: "Лише профіль: можна призначати учнів і уроки, але вхід і запрошення не надсилаються."
+      send_invitation: Надіслати запрошення
+      send_now: Надіслати зараз
+      send_later: Створити і надіслати пізніше
+      invitation_message: Текст запрошення
+      internal_notes: Внутрішні нотатки
+      internal_notes_sub: Інформація лише для уповноважених співробітників.
+      notes_visible: Викладачі та учні не бачать ці нотатки без відповідної ролі.
+      assigned_students: Призначені учні
+      assigned_students_sub: Учні, зараз призначені цьому викладачу.
+      no_students: Немає призначених учнів
+      no_students_text: Призначте учнів зі списку, щоб побачити їх тут.
+      search_assigned: Шукати призначених учнів
+      assign_students: Призначити учнів
+      remove: Зняти
+      teaching_details: Деталі викладання
+      experience_years: "%{count} років"
+      invited_status: "Запрошено · %{status}"
+      profile_only_access: Лише профіль — без входу
+      photo: Фото профілю
+      photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
+      choose_file: Завантажити фото
+      replace_photo: Замінити фото
+      remove_photo: Прибрати фото
+      photo_type_error: Використайте зображення JPG, PNG або WEBP.
+      photo_size_error: Розмір фото має бути до 2 МБ.
+      available_hours: Доступні години
+      contact_either: Будь-який
+      assigned_count: "Призначено учнів: %{count}"
+      assigned_count_one: Призначено 1 учня
+      remove_confirm_title: Зняти призначення викладача?
+      remove_confirm_text: Учень стане без викладача. Існуючі уроки не зміняться.
+      removing: Знімаємо…
+      removed_toast: "Знято призначення для %{name}."
+      assigned_toast: "Призначено учнів (%{count}) до %{name}."
+      assign_dialog_title: Призначити учнів
+      assign_dialog_text: Оберіть учнів для цього викладача.
+      no_unassigned: Немає учнів без викладача.
+      working_hours_error: Вкажіть початок і кінець для кожного вибраного дня.
+      hours_order_error: Час завершення має бути пізніше за початок.
+      color_olive: Оливковий
+      color_slate: Сірий
+      color_amber: Бурштиновий
+      color_plum: Сливовий
+      color_terra: Теракотовий
+      color_teal: Бірюзовий
+      default_lesson: Урок за замовчуванням
+      workspace_access_label: Доступ до простору
+      notes: Нотатки
+      invitation_placeholder: Необовʼязковий текст запрошення…
+      notes_placeholder: Внутрішня інформація про викладача…
+      bio_placeholder: Коротке викладацьке біо…
+      job_placeholder: Викладач англійської
+      display_placeholder: Імʼя, яке бачать учні
+      location_placeholder: Місто, країна
+      experience_placeholder: напр. 5
+      meeting_placeholder: "https://meet.example.com/…"
+      max_lessons_placeholder: Необовʼязково
+      select_students: Оберіть учнів
+      remove_for: "Зняти призначення для %{name}"
+    calendar:
+      title: Календар
+      subtitle: Керуйте уроками, доступністю та подіями.
+      create_lesson: Створити урок
+      today: Сьогодні
+      filters: Фільтри
+      close: Закрити
+      clear_filters: Очистити фільтри
+      apply_filters: Застосувати
+      teacher: Викладач
+      student: Учень
+      lesson_type: Тип уроку
+      status: Статус
+      location: Формат
+      all_teachers: Усі викладачі
+      all_students: Усі учні
+      all_types: Усі типи
+      all_statuses: Усі статуси
+      all_locations: Усі формати
+      individual: Індивідуальний
+      group: Груповий
+      trial: Пробний
+      consultation: Консультація
+      views:
+        day: День
+        week: Тиждень
+        month: Місяць
+        agenda: Порядок
+      view_aria: Вигляд календаря
+      previous: Попередній період
+      next: Наступний період
+      selected_day: Вибраний день
+      create: Створити
+      no_lessons_scheduled: Немає запланованих уроків
+      no_lessons_hint: Створіть урок або змініть фільтри.
+      no_lessons_day: Немає уроків цього дня.
+      week_hint: Тижневий вигляд показує уроки вибраного тижня.
+      drawer_title: Створити урок
+      drawer_sub: Заплануйте урок з учнем і викладачем.
+      select_teacher: Оберіть викладача
+      select_student: Оберіть учня
+      lesson_title: Назва
+      date: Дата
+      start: Початок
+      end: Кінець
+      type: Тип
+      notes: Нотатки
+      notes_placeholder: Необовʼязкові нотатки до уроку…
+      title_placeholder: Урок англійської
+      participants: Учасники
+      date_time: Дата і час
+      details: Деталі
+      meeting_link: Посилання на зустріч
+      place: Місце
+      place_placeholder: Студія, клас або адреса
+      repeat_settings: Повторення
+      repeat: Повторювати
+      repeat_none: Без повторення
+      repeat_weekly: Щотижня
+      repeat_biweekly: Кожні два тижні
+      repeat_end: Дата завершення
+      add_student_hint: "Немає в списку?"
+      lesson_details: Деталі уроку
+      time: Час
+      edit: Редагувати
+      edit_lesson: Редагувати урок
+      save_lesson: Зберегти урок
+      duplicate: Дублювати
+      copy: копія
+      cancel_lesson: Скасувати урок
+      cancel_confirm: Скасувати цей урок? Пізніше його можна буде переглянути.
+      more: ще
+      need_title_date: Вкажіть назву та дату.
+      created: Урок створено.
+      created_many: "Створено уроків: %{count}."
+      updated: Урок оновлено.
+      months:
+        january: Січень
+        february: Лютий
+        march: Березень
+        april: Квітень
+        may: Травень
+        june: Червень
+        july: Липень
+        august: Серпень
+        september: Вересень
+        october: Жовтень
+        november: Листопад
+        december: Грудень
+      weekdays_short:
+        mon: Пн
+        tue: Вт
+        wed: Ср
+        thu: Чт
+        fri: Пт
+        sat: Сб
+        sun: Нд
+      weekdays:
+        monday: Понеділок
+        tuesday: Вівторок
+        wednesday: Середа
+        thursday: Четвер
+        friday: Пʼятниця
+        saturday: Субота
+        sunday: Неділя
+    dashboard:
+      title: Огляд
+      subtitle: Огляд вашого викладацького робочого простору.
+      coming_soon_text: Тут зʼявляться інсайти, найближчі уроки та швидкі дії.
+      open_calendar: Відкрити календар
+      view_students: Переглянути учнів
+    pages:
+      coming_soon_text: Цей розділ є частиною робочого простору Danlio і зʼявиться в наступному оновленні.
+      back_dashboard: До огляду
+      lessons:
+        title: Уроки
+        description: Історія уроків, відвідуваність і результати.
+      homework:
+        title: Домашні завдання
+        description: Призначайте та перевіряйте домашні в одному місці.
+      payments:
+        title: Оплати
+        description: Рахунки, баланси та статус оплат.
+      reports:
+        title: Звіти
+        description: Аналітика викладання та бізнесу під рукою.
+      messages:
+        title: Повідомлення
+        description: Спілкуйтеся з учнями та батьками.
+      settings:
+        title: Налаштування
+        description: Налаштуйте параметри робочого простору.

@@ -1,4 +1,4 @@
 .not-found
   h1 404
-  p Сторінку не знайдено
-  = link_to 'На головну', root_path
+  p = t('not_found.title')
+  = link_to t('not_found.back'), root_path, class: 'btn'

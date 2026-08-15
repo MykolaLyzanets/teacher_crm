@@ -1,0 +1,241 @@
+- content_for :title, "#{t('app.calendar.title')} | danlio"
+
+.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s)
+  p.calendar-page__toast hidden=true role="status" data-calendar-target="toast"
+  .calendar-page__header
+    div
+      h1.calendar-page__title = t('app.calendar.title')
+      p.calendar-page__subtitle = t('app.calendar.subtitle')
+    button.calendar-page__primary-btn type="button" data-action="calendar#openCreate"
+      = icon_tag 'plus', size: 20
+      span = t('app.calendar.create_lesson')
+
+  section.calendar-page__shell
+    .calendar-page__toolbar
+      .calendar-page__nav
+        button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.previous') data-action="calendar#previous"
+          = icon_tag 'chevron-left', size: 20
+        button.calendar-page__today-btn type="button" data-action="calendar#today" = t('app.calendar.today')
+        button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.next') data-action="calendar#next"
+          = icon_tag 'chevron-right', size: 20
+        h2.calendar-page__period data-calendar-target="title" —
+
+      .calendar-page__toolbar-end
+        .calendar-page__views role="tablist" aria-label=t('app.calendar.view_aria')
+          - %w[day week month agenda].each do |view|
+            button.calendar-page__view-btn type="button" role="tab" data-view=view data-action="calendar#setView" data-calendar-target="viewTab" aria-selected=(view == 'month') = t("app.calendar.views.#{view}")
+
+        label.sr-only for="calendar-view-mobile" = t('app.calendar.view_aria')
+        select#calendar-view-mobile.calendar-page__view-select data-calendar-target="viewSelect" data-action="change->calendar#setViewFromSelect"
+          - %w[day week month agenda].each do |view|
+            option value=view selected=(view == 'month') = t("app.calendar.views.#{view}")
+
+        button.calendar-page__filters-btn type="button" aria-expanded="false" aria-controls="calendar-filters" data-action="calendar#toggleFilters" data-calendar-target="filtersToggle"
+          = icon_tag 'filter', size: 20
+          span = t('app.calendar.filters')
+          span.calendar-page__filter-count.calendar-page__filter-count--hidden data-calendar-target="filterCount"
+
+    .calendar-page__filters.calendar-page__filters--hidden id="calendar-filters" data-calendar-target="filters"
+      .calendar-page__filters-head
+        h3 = t('app.calendar.filters')
+        button type="button" data-action="calendar#closeFilters" = t('app.calendar.close')
+      .calendar-page__filters-body
+        label
+          span = t('app.calendar.teacher')
+          select data-calendar-target="filterTeacher"
+            option value="" = t('app.calendar.all_teachers')
+            - @teacher_names.each do |name|
+              option value=name = name
+        label
+          span = t('app.calendar.student')
+          select data-calendar-target="filterStudent"
+            option value="" = t('app.calendar.all_students')
+            - @student_names.each do |name|
+              option value=name = name
+        label
+          span = t('app.calendar.lesson_type')
+          select data-calendar-target="filterType"
+            option value="" = t('app.calendar.all_types')
+            option value="individual" = t('app.calendar.individual')
+            option value="group" = t('app.calendar.group')
+            option value="trial" = t('app.calendar.trial')
+            option value="consultation" = t('app.calendar.consultation')
+        label
+          span = t('app.calendar.status')
+          select data-calendar-target="filterStatus"
+            option value="" = t('app.calendar.all_statuses')
+            option value="confirmed" = t('app.statuses.confirmed')
+            option value="pending" = t('app.statuses.pending')
+            option value="cancelled" = t('app.statuses.cancelled')
+        label
+          span = t('app.calendar.location')
+          select data-calendar-target="filterLocation"
+            option value="" = t('app.calendar.all_locations')
+            option value="online" = t('app.common.online')
+            option value="in_person" = t('app.common.in_person')
+      .calendar-page__filters-actions
+        button.calendar-page__secondary-btn type="button" data-action="calendar#clearFilters" = t('app.calendar.clear_filters')
+        button.calendar-page__primary-btn type="button" data-action="calendar#applyFilters" = t('app.calendar.apply_filters')
+
+    .calendar-page__body
+      .calendar-page__month data-calendar-target="monthView"
+        .calendar-page__weekdays
+          - %w[mon tue wed thu fri sat sun].each do |label|
+            div = t("app.calendar.weekdays_short.#{label}")
+        .calendar-page__grid data-calendar-target="grid"
+
+      .calendar-page__week.calendar-page__week--hidden data-calendar-target="weekView"
+        .calendar-page__time-grid data-calendar-target="weekGrid"
+
+      .calendar-page__day.calendar-page__day--hidden data-calendar-target="dayView"
+        .calendar-page__time-grid data-calendar-target="dayGrid"
+
+      .calendar-page__agenda.calendar-page__agenda--hidden data-calendar-target="agendaView"
+        .calendar-page__agenda-list data-calendar-target="agendaList"
+
+      .calendar-page__selected-day data-calendar-target="selectedDay" hidden="hidden"
+        .calendar-page__selected-head
+          div
+            p.calendar-page__selected-label = t('app.calendar.selected_day')
+            h3 data-calendar-target="selectedTitle" —
+          button.calendar-page__ghost-btn type="button" data-action="calendar#openCreate" = t('app.calendar.create')
+        .calendar-page__selected-list data-calendar-target="selectedList"
+
+      .calendar-page__empty-banner.calendar-page__empty-banner--hidden data-calendar-target="emptyBanner"
+        = icon_tag 'calendar', size: 20
+        div
+          p = t('app.calendar.no_lessons_scheduled')
+          span = t('app.calendar.no_lessons_hint')
+        button.calendar-page__primary-btn type="button" data-action="calendar#openCreate" = t('app.calendar.create_lesson')
+
+  .calendar-page__drawer-backdrop.calendar-page__drawer-backdrop--hidden data-calendar-target="drawerBackdrop" data-action="click->calendar#closeCreate"
+  aside.calendar-page__drawer.calendar-page__drawer--hidden role="dialog" aria-modal="true" aria-labelledby="create-lesson-title" data-calendar-target="drawer"
+    .calendar-page__drawer-head
+      div
+        h2#create-lesson-title data-calendar-target="drawerTitle" = t('app.calendar.drawer_title')
+        p = t('app.calendar.drawer_sub')
+      button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.close') data-action="calendar#closeCreate"
+        = icon_tag 'x', size: 20
+    .calendar-page__drawer-body
+      .calendar-page__section
+        h3 = t('app.calendar.participants')
+        label.calendar-page__field
+          span = t('app.calendar.teacher')
+          select data-calendar-target="draftTeacher"
+            option value="" = t('app.calendar.select_teacher')
+            - @teachers.each do |teacher|
+              - teacher = teacher.with_indifferent_access
+              option value=teacher[:id] = teacher_display_name(teacher)
+        label.calendar-page__field
+          span = t('app.calendar.student')
+          select data-calendar-target="draftStudent"
+            option value="" = t('app.calendar.select_student')
+            - @students.each do |student|
+              - student = student.with_indifferent_access
+              - name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+              option value=student[:id] = name
+          p.calendar-page__hint
+            = t('app.calendar.add_student_hint')
+            =< link_to t('app.students.add'), new_student_path
+      .calendar-page__section
+        h3 = t('app.calendar.date_time')
+        .calendar-page__fields-row
+          label.calendar-page__field
+            span = t('app.calendar.date')
+            input type="date" data-calendar-target="draftDate"
+          label.calendar-page__field
+            span = t('app.calendar.start')
+            input type="time" value="10:00" data-calendar-target="draftStart"
+          label.calendar-page__field
+            span = t('app.calendar.end')
+            input type="time" value="11:00" data-calendar-target="draftEnd"
+      .calendar-page__section
+        h3 = t('app.calendar.details')
+        label.calendar-page__field
+          span = t('app.calendar.lesson_title')
+          input type="text" placeholder=t('app.calendar.title_placeholder') data-calendar-target="draftTitle"
+        label.calendar-page__field
+          span = t('app.calendar.type')
+          select data-calendar-target="draftType"
+            option value="individual" = t('app.calendar.individual')
+            option value="group" = t('app.calendar.group')
+            option value="trial" = t('app.calendar.trial')
+            option value="consultation" = t('app.calendar.consultation')
+        label.calendar-page__field
+          span = t('app.calendar.status')
+          select data-calendar-target="draftStatus"
+            option value="confirmed" = t('app.statuses.confirmed')
+            option value="pending" = t('app.statuses.pending')
+      .calendar-page__section
+        h3 = t('app.calendar.location')
+        label.calendar-page__field
+          span = t('app.calendar.location')
+          select data-calendar-target="draftLocation" data-action="change->calendar#syncDrawerFields"
+            option value="online" = t('app.common.online')
+            option value="in_person" = t('app.common.in_person')
+        label.calendar-page__field data-calendar-target="onlineField"
+          span = t('app.calendar.meeting_link')
+          input type="url" placeholder="https://meet.danlio.app/..." data-calendar-target="draftMeeting"
+        label.calendar-page__field data-calendar-target="placeField" hidden="hidden"
+          span = t('app.calendar.place')
+          input type="text" placeholder=t('app.calendar.place_placeholder') data-calendar-target="draftPlace"
+      .calendar-page__section
+        h3 = t('app.calendar.repeat_settings')
+        label.calendar-page__field
+          span = t('app.calendar.repeat')
+          select data-calendar-target="draftRepeat" data-action="change->calendar#syncDrawerFields"
+            option value="none" = t('app.calendar.repeat_none')
+            option value="weekly" = t('app.calendar.repeat_weekly')
+            option value="biweekly" = t('app.calendar.repeat_biweekly')
+        .calendar-page__fields-row data-calendar-target="repeatExtra" hidden="hidden"
+          label.calendar-page__field
+            span = t('app.calendar.repeat_end')
+            input type="date" data-calendar-target="draftRepeatEnd"
+      label.calendar-page__field
+        span = t('app.calendar.notes')
+        textarea rows="3" placeholder=t('app.calendar.notes_placeholder') data-calendar-target="draftNotes"
+    .calendar-page__drawer-foot
+      button.calendar-page__secondary-btn type="button" data-action="calendar#closeCreate" = t('app.common.cancel')
+      button.calendar-page__primary-btn type="button" data-action="calendar#submitCreate" data-calendar-target="drawerSubmit" = t('app.calendar.create_lesson')
+
+  .calendar-page__modal hidden="hidden" data-calendar-target="details"
+    button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeLesson"
+    .calendar-page__modal-card role="dialog" aria-modal="true" aria-labelledby="lesson-details-title"
+      .calendar-page__modal-head
+        div
+          p.calendar-page__selected-label = t('app.calendar.lesson_details')
+          h2#lesson-details-title data-calendar-target="detailsTitle"
+        button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.close') data-action="calendar#closeLesson"
+          = icon_tag 'x', size: 20
+      .calendar-page__modal-body
+        p.calendar-page__details-tone data-calendar-target="detailsTone"
+        .calendar-page__detail
+          span = t('app.calendar.student')
+          strong data-calendar-target="detailsStudent"
+        .calendar-page__detail
+          span = t('app.calendar.teacher')
+          strong data-calendar-target="detailsTeacher"
+        .calendar-page__detail
+          span = t('app.calendar.date')
+          strong data-calendar-target="detailsDate"
+        .calendar-page__detail
+          span = t('app.calendar.time')
+          strong data-calendar-target="detailsTime"
+        .calendar-page__detail
+          span = t('app.calendar.location')
+          strong data-calendar-target="detailsLocation"
+        .calendar-page__detail data-calendar-target="detailsNotesRow" hidden="hidden"
+          span = t('app.calendar.notes')
+          strong data-calendar-target="detailsNotes"
+      .calendar-page__modal-foot
+        button.calendar-page__primary-btn type="button" data-action="calendar#editLesson" = t('app.calendar.edit')
+        button.calendar-page__secondary-btn type="button" data-action="calendar#duplicateLesson" = t('app.calendar.duplicate')
+        button.calendar-page__danger-btn type="button" data-action="calendar#cancelLesson" = t('app.calendar.cancel_lesson')
+
+  .calendar-page__modal.calendar-page__modal--overflow hidden="hidden" data-calendar-target="overflow"
+    button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeOverflow"
+    .calendar-page__overflow-card
+      .calendar-page__overflow-head
+        h3 data-calendar-target="overflowTitle"
+        button type="button" data-action="calendar#closeOverflow" = t('app.calendar.close')
+      .calendar-page__overflow-list data-calendar-target="overflowList"

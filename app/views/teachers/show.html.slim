@@ -1,0 +1,161 @@
+- if @teacher.blank?
+  - content_for :title, "#{t('app.teachers.not_found_title')} | danlio"
+  .teachers-page
+    .teachers-page__missing
+      .teachers-page__empty-icon
+        = icon_tag 'teachers', size: 24
+      h1 = t('app.teachers.not_found_title')
+      p = t('app.teachers.not_found_text')
+      = link_to t('app.teachers.back'), teachers_path, class: 'teachers-page__primary-btn'
+- else
+  - teacher = @teacher
+  - name = teacher_display_name(teacher)
+  - content_for :title, "#{name} | danlio"
+
+  .teachers-page.teachers-page--profile data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common', 'app.statuses') data-teachers-name-value=name
+    nav.teachers-page__breadcrumb aria-label="Breadcrumb"
+      = link_to t('app.teachers.title'), teachers_path
+      = icon_tag 'chevron-right', size: 16
+      span = name
+
+    section.teachers-page__hero
+      .teachers-page__hero-main
+        span.teachers-page__avatar.teachers-page__avatar--lg
+          = teacher_initials(teacher)
+          span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}"
+        div
+          .teachers-page__hero-title
+            h1 = name
+            = status_badge teacher_status_label(teacher[:status]), tone: teacher_status_tone(teacher[:status])
+          p.teachers-page__hero-sub
+            = [teacher[:jobTitle], teacher_role_label(teacher[:workspaceRole])].compact_blank.join(' · ')
+          .teachers-page__hero-contacts
+            - if teacher[:email].present?
+              span
+                = icon_tag 'mail', size: 18
+                = teacher[:email]
+            - if teacher[:phone].present?
+              span
+                = icon_tag 'message', size: 18
+                = teacher[:phone]
+      = link_to calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn' do
+        = icon_tag 'calendar', size: 18
+        span = t('app.teachers.schedule_lesson')
+
+    .teachers-page__grid
+      section.teachers-page__card
+        h2 = t('app.teachers.teaching_details')
+        dl.teachers-page__dl
+          div
+            dt = t('app.teachers.subjects')
+            dd = Array(teacher[:subjects]).presence&.join(', ') || '—'
+          div
+            dt = t('app.teachers.languages')
+            dd = Array(teacher[:languages]).map { |code| teacher_language_label(code) }.presence&.join(', ') || '—'
+          div
+            dt = t('app.teachers.experience')
+            dd = teacher[:experienceYears].present? ? t('app.teachers.experience_years', count: teacher[:experienceYears]) : '—'
+          - if teacher[:bio].present?
+            div
+              dt = t('app.teachers.bio')
+              dd = teacher[:bio]
+
+      section.teachers-page__card
+        h2 = t('app.teachers.availability_title')
+        dl.teachers-page__dl
+          div
+            dt = t('app.teachers.working_days')
+            dd = Array(teacher[:workingDays]).map { |d| weekday_short_label(d) }.presence&.join(', ') || '—'
+          div
+            dt = t('app.teachers.default_lesson')
+            dd
+              = "#{t('app.teachers.minutes', count: teacher[:defaultLessonDurationMinutes] || 60)} · "
+              = Array(teacher[:lessonFormats]).map { |f| lesson_format_label(f) }.join(', ')
+          div
+            dt = t('app.teachers.timezone')
+            dd = teacher[:timezone].presence || '—'
+          div
+            dt = t('app.teachers.workspace_access_label')
+            dd
+              - if teacher[:inviteToWorkspace]
+                = t('app.teachers.invited_status', status: teacher[:invitationStatus].presence || t('app.statuses.pending'))
+              - else
+                = t('app.teachers.profile_only_access')
+
+    - if teacher[:notes].present?
+      section.teachers-page__card
+        h2.teachers-page__notes-title
+          = icon_tag 'lock', size: 20
+          span = t('app.teachers.internal_notes')
+        p.teachers-page__notes = teacher[:notes]
+
+    section.teachers-page__card
+      .teachers-page__section-head
+        div
+          h2 = t('app.teachers.assigned_students')
+          p.teachers-page__section-sub data-teachers-target="assignedCount"
+            - count = @assigned_students.size
+            = count == 1 ? t('app.teachers.assigned_count_one') : t('app.teachers.assigned_count', count: count)
+        button.teachers-page__primary-btn type="button" data-action="teachers#openAssign"
+          = icon_tag 'user-plus', size: 16
+          span = t('app.teachers.assign_students')
+
+      p.teachers-page__toast hidden="hidden" role="status" data-teachers-target="toast"
+
+      .teachers-page__assigned-search
+        = icon_tag 'search', size: 18
+        input type="search" placeholder=t('app.teachers.search_assigned') aria-label=t('app.teachers.search_assigned') data-teachers-target="assignedSearch" data-action="input->teachers#filterAssigned"
+
+      .teachers-page__empty.teachers-page__empty--compact data-teachers-target="assignedEmpty" hidden=(@assigned_students.any? ? true : nil)
+        .teachers-page__empty-icon
+          = icon_tag 'students', size: 24
+        h3 = t('app.teachers.no_students')
+        p = t('app.teachers.no_students_text')
+        button.teachers-page__primary-btn type="button" data-action="teachers#openAssign"
+          span = t('app.teachers.assign_students')
+
+      ul.teachers-page__assigned data-teachers-target="assignedList" hidden=(@assigned_students.empty? ? true : nil)
+        - @assigned_students.each do |student|
+          - student = student.with_indifferent_access
+          - student_name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+          li data-teachers-target="assignedRow" data-id=student[:id] data-search=student_name.downcase data-subjects=Array(student[:subjects]).join(', ') data-status=student[:status] data-path=student_path(student[:id])
+            .teachers-page__assigned-main
+              span.teachers-page__avatar.teachers-page__avatar--sm = student_name.split.map { |p| p[0] }.first(2).join.upcase
+              div
+                = link_to student_name, student_path(student[:id]), class: 'teachers-page__name'
+                p.teachers-page__meta = Array(student[:subjects]).first(2).join(', ').presence || student_status_label(student[:status])
+            .teachers-page__assigned-actions
+              = status_badge student_status_label(student[:status]), tone: student_status_tone(student[:status])
+              button.teachers-page__danger-btn type="button" aria-label=t('app.teachers.remove_for', name: student_name) data-action="teachers#openRemove" data-id=student[:id] data-name=student_name
+                = icon_tag 'user-x', size: 14
+                span = t('app.teachers.remove')
+
+    .teachers-page__dialog[hidden] data-teachers-target="assignDialog"
+      .teachers-page__dialog-backdrop data-action="click->teachers#closeAssign"
+      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-students-title"
+        h2#assign-students-title = t('app.teachers.assign_dialog_title')
+        p = t('app.teachers.assign_dialog_text')
+        - if @unassigned_students.blank?
+          p.teachers-page__meta = t('app.teachers.no_unassigned')
+        - else
+          ul.teachers-page__assign-list
+            - @unassigned_students.each do |student|
+              - student = student.with_indifferent_access
+              - student_name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+              - initials = student_name.split.map { |part| part[0] }.first(2).join.upcase
+              li
+                label.teachers-page__assign-option
+                  input type="checkbox" data-teachers-target="assignBox" data-id=student[:id] data-name=student_name data-subjects=Array(student[:subjects]).join(', ') data-status=student[:status] data-path=student_path(student[:id]) data-initials=initials
+                  span = student_name
+        .teachers-page__dialog-actions
+          button.teachers-page__secondary-btn type="button" data-action="teachers#closeAssign" = t('app.common.cancel')
+          button.teachers-page__primary-btn type="button" data-action="teachers#confirmAssign" = t('app.common.confirm')
+
+    .teachers-page__dialog[hidden] data-teachers-target="removeDialog"
+      .teachers-page__dialog-backdrop data-action="click->teachers#closeRemove"
+      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="remove-from-teacher"
+        h2#remove-from-teacher = t('app.teachers.remove_confirm_title')
+        p = t('app.teachers.remove_confirm_text')
+        .teachers-page__dialog-actions
+          button.teachers-page__secondary-btn type="button" data-action="teachers#closeRemove" = t('app.common.cancel')
+          button.teachers-page__danger-btn type="button" data-action="teachers#confirmRemove" data-teachers-target="removeConfirm" = t('app.teachers.remove')

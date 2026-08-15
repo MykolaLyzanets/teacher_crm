@@ -21,4 +21,15 @@ Rails.application.config.assets.precompile += [
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-# Rails.application.config.assets.precompile += %w( admin.js admin.css )
+Rails.application.config.assets.precompile += %w[
+  home.js
+  auth.js
+  css/home.min.css
+  css/auth.min.css
+  css/app.min.css
+  css/students.min.css
+  css/teachers.min.css
+  css/calendar.min.css
+  css/dashboard.min.css
+  css/placeholder.min.css
+]

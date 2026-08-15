@@ -1,0 +1,13 @@
+- content_for :title, "#{@page[:title]} | danlio"
+
+.placeholder-page
+  .placeholder-page__header
+    div
+      h1.placeholder-page__title = @page[:title]
+      p.placeholder-page__subtitle = @page[:description]
+  section.placeholder-page__card
+    .placeholder-page__icon
+      = icon_tag @page[:icon], size: 28
+    h2 = t('app.common.coming_soon')
+    p = t('app.pages.coming_soon_text')
+    = link_to t('app.pages.back_dashboard'), dashboard_path, class: 'placeholder-page__secondary-btn'

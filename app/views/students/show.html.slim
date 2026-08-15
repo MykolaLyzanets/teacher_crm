@@ -1,0 +1,139 @@
+- if @student.blank?
+  - content_for :title, "#{t('app.students.not_found_title')} | danlio"
+  .students-page
+    .students-page__missing
+      .students-page__empty-icon
+        = icon_tag 'students', size: 24
+      h1 = t('app.students.not_found_title')
+      p = t('app.students.not_found_text')
+      = link_to t('app.students.back'), students_path, class: 'students-page__primary-btn'
+- else
+  - student = @student
+  - name = student_display_name(student)
+  - content_for :title, "#{name} | danlio"
+
+  .students-page.students-page--profile data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
+    nav.students-page__breadcrumb aria-label="Breadcrumb"
+      = link_to t('app.students.title'), students_path
+      = icon_tag 'chevron-right', size: 16
+      span = name
+
+    section.students-page__hero
+      .students-page__hero-main
+        .students-page__hero-identity
+          span.students-page__avatar.students-page__avatar--lg = student_initials(student)
+          div
+            .students-page__hero-title
+              h1 = name
+              span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
+            p.students-page__hero-sub
+              = [student[:grade], student[:level], student[:academicYear]].compact_blank.join(' · ').presence || t('app.students.profile_fallback')
+            .students-page__hero-contacts
+              - if student[:email].present?
+                span
+                  = icon_tag 'mail', size: 18
+                  = student[:email]
+              - if student[:phone].present?
+                span
+                  = icon_tag 'message', size: 18
+                  = student[:phone]
+        = link_to calendar_path(studentId: student[:id]), class: 'students-page__primary-btn' do
+          = icon_tag 'calendar', size: 20
+          span = t('app.students.schedule_lesson')
+
+      .students-page__info-grid
+        .students-page__info-card
+          h2 = t('app.students.learning')
+          .students-page__info-row
+            span = t('app.students.grade')
+            strong = student[:grade].presence || '—'
+          .students-page__info-row
+            span = t('app.students.student_id')
+            strong = student[:studentCode].presence || '—'
+          .students-page__info-row
+            span = t('app.students.enrollment')
+            strong = student[:enrollmentDate].presence || '—'
+          .students-page__info-row
+            span = t('app.students.subjects')
+            strong = Array(student[:subjects]).presence&.join(', ') || '—'
+        .students-page__info-card
+          h2 = t('app.students.guardian')
+          .students-page__info-row
+            span = t('app.students.name')
+            strong = student[:parentName].presence || '—'
+          .students-page__info-row
+            span = t('app.students.email')
+            strong = student[:parentEmail].presence || '—'
+          .students-page__info-row
+            span = t('app.students.phone')
+            strong = student[:parentPhone].presence || '—'
+          .students-page__info-row
+            span = t('app.students.preferred_days')
+            strong = Array(student[:preferredDays]).presence&.join(', ') || '—'
+
+      - if student[:notes].present?
+        .students-page__notes
+          p.students-page__notes-label = t('app.students.notes')
+          p = student[:notes]
+
+    section.students-page__teacher-card
+      .students-page__teacher-card-head
+        h2 = t('app.students.assigned_teacher')
+        span.status-badge.status-badge--olive data-students-target="assignBadge" hidden=(@teacher.blank? ? true : nil) = t('app.students.assignment_assigned')
+        span.status-badge.status-badge--neutral data-students-target="unassignBadge" hidden=(@teacher.present? ? true : nil) = t('app.students.assignment_unassigned')
+      p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
+
+      .students-page__teacher-card-body data-students-target="assignedBlock" hidden=(@teacher.blank? ? true : nil)
+        span.students-page__avatar data-students-target="teacherAvatar"
+          - if @teacher
+            = [@teacher[:firstName].to_s[0], @teacher[:lastName].to_s[0]].join
+        .students-page__teacher-copy
+          a.students-page__name href=(@teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherName"
+            - if @teacher
+              = @teacher[:displayName].presence || "#{@teacher[:firstName]} #{@teacher[:lastName]}"
+          p.students-page__meta data-students-target="teacherMeta"
+            - if @teacher
+              = @teacher[:jobTitle].presence || t('app.common.teacher')
+        .students-page__teacher-actions
+          a.students-page__view-btn href=(@teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherLink" = t('app.students.view_profile')
+          button.students-page__olive-btn type="button" data-action="students#openAssign" data-id=student[:id]
+            = icon_tag 'user-check', size: 16
+            span = t('app.students.change_teacher')
+          button.students-page__danger-btn type="button" data-action="students#openRemove"
+            = icon_tag 'user-x', size: 16
+            span = t('app.students.remove_assignment')
+
+      .students-page__teacher-card-body data-students-target="unassignedBlock" hidden=(@teacher.present? ? true : nil)
+        .students-page__empty-icon
+          = icon_tag 'user-plus', size: 22
+        div
+          p.students-page__name = t('app.students.no_teacher')
+          p.students-page__meta = t('app.students.no_teacher_hint')
+        button.students-page__primary-btn type="button" data-action="students#openAssign" data-id=student[:id]
+          = icon_tag 'user-check', size: 18
+          span = t('app.students.assign_teacher_cta')
+
+    .students-page__dialog[hidden] data-students-target="dialog"
+      .students-page__dialog-backdrop data-action="click->students#closeAssign"
+      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
+        h2#assign-teacher-title = t('app.students.assign_dialog_title')
+        p = t('app.students.assign_dialog_text')
+        select data-students-target="assignSelect"
+          option value="" = t('app.students.select_teacher')
+          - @teachers.each do |item|
+            - teacher_name = item[:displayName].presence || [item[:firstName], item[:lastName]].compact_blank.join(' ')
+            - initials = [item[:firstName].to_s[0], item[:lastName].to_s[0]].join
+            - job = item[:jobTitle].presence || t('app.common.teacher')
+            option value=item[:id] data-job=job data-initials=initials data-path=teacher_path(item[:id]) = teacher_name
+        .students-page__dialog-actions
+          button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
+          button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')
+
+    .students-page__dialog[hidden] data-students-target="removeDialog"
+      .students-page__dialog-backdrop data-action="click->students#closeRemove"
+      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="remove-assignment-title"
+        h2#remove-assignment-title = t('app.students.remove_confirm_title')
+        p = t('app.students.remove_confirm_text')
+        .students-page__dialog-actions
+          button.students-page__secondary-btn type="button" data-action="students#closeRemove" = t('app.common.cancel')
+          button.students-page__danger-btn type="button" data-action="students#confirmRemove" = t('app.students.remove_assignment')

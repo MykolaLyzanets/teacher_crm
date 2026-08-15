@@ -6,3 +6,15 @@ import { application } from "./application"
 
 import RemovalsController from "./removals_controller"
 application.register("removals", RemovalsController)
+
+import AppShellController from "./app_shell_controller"
+application.register("app-shell", AppShellController)
+
+import StudentsController from "./students_controller"
+application.register("students", StudentsController)
+
+import TeachersController from "./teachers_controller"
+application.register("teachers", TeachersController)
+
+import CalendarController from "./calendar_controller"
+application.register("calendar", CalendarController)

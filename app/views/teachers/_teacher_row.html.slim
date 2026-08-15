@@ -1,0 +1,21 @@
+- teacher = teacher.with_indifferent_access
+- name = teacher_display_name(teacher)
+- has_students = teacher_has_students?(teacher, students)
+- created_this_month = teacher_created_this_month?(teacher)
+
+li.teachers-page__row data-teachers-target="row" data-search=teacher_search_haystack(teacher) data-status=teacher[:status] data-assigned=(has_students ? '1' : '0') data-new-month=(created_this_month ? '1' : '0')
+  .teachers-page__teacher
+    span.teachers-page__avatar
+      = teacher_initials(teacher)
+      span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}"
+    .teachers-page__teacher-meta
+      = link_to name, teacher_path(teacher[:id]), class: 'teachers-page__name'
+      p.teachers-page__meta = teacher[:jobTitle].presence || Array(teacher[:subjects]).first(2).join(', ').presence || t('app.common.teacher')
+  .teachers-page__contact
+    p = teacher[:email].presence || t('app.common.no_email')
+    p = teacher[:phone].presence || t('app.common.no_phone')
+  .teachers-page__role = teacher_role_label(teacher[:workspaceRole])
+  .teachers-page__status
+    = status_badge teacher_status_label(teacher[:status]), tone: teacher_status_tone(teacher[:status])
+  .teachers-page__row-actions
+    = link_to t('app.common.view'), teacher_path(teacher[:id]), class: 'teachers-page__ghost-btn'

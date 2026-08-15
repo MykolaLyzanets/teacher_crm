@@ -1,28 +1,33 @@
-doctype html
-html
-  head
-    title teacher_crm · Login
-    meta name="viewport" content="width=device-width,initial-scale=1"
-    = csrf_meta_tags
-    = stylesheet_link_tag "css/application.min", "data-turbo-track": "reload"
-  body
-    main style="max-width:420px;margin:4rem auto;padding:0 1rem;"
-      h1 Вхід
-      - if notice
-        p.notice = notice
-      - if alert
-        p.alert = alert
+- content_for :title, "#{t('sessions.title')} | danlio"
 
-      = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
-        div
-          = f.label :email
-          = f.email_field :email, autofocus: true, autocomplete: 'email', required: true
-        div
-          = f.label :password
-          = f.password_field :password, autocomplete: 'current-password', required: true
-        - if devise_mapping.rememberable?
-          div
-            = f.check_box :remember_me
-            = f.label :remember_me, 'Запамʼятати'
-        div
-          = f.submit 'Увійти'
+.auth-intro
+  h1 = t('sessions.heading')
+  p = t('sessions.description')
+
+= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'auth-fields', novalidate: true, data: { auth_form: 'login', auth_i18n: auth_form_i18n(:login) } }) do |f|
+  = render 'users/shared/error_messages'
+  .auth-field
+    = f.label :email, t('sessions.email')
+    .auth-input
+      = icon_tag 'mail', size: 20
+      = f.email_field :email, autofocus: true, autocomplete: 'email', required: true, placeholder: t('sessions.email_placeholder')
+    p.auth-error hidden=true role="alert" data-auth-error="email"
+  = render 'users/shared/password_field', f: f, name: :password, label: t('sessions.password'), placeholder: t('sessions.password_placeholder'), autocomplete: 'current-password', error_key: 'password'
+  .auth-row
+    - if devise_mapping.rememberable?
+      = render 'users/shared/checkbox', f: f, name: :remember_me, label: t('sessions.remember_me'), input_html: { checked: true }
+    = link_to t('sessions.forgot'), new_password_path(resource_name), class: 'auth-forgot'
+  button.auth-submit type="submit"
+    span = t('sessions.submit')
+  .auth-divider
+    span
+    p = t('sessions.or')
+    span
+  = render 'users/shared/social_buttons'
+
+p.auth-switch
+  = t('sessions.no_account')
+  =< link_to t('sessions.create_account'), new_user_registration_path
+.auth-note
+  = icon_tag 'shield', size: 20
+  = t('auth.security')
