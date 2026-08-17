@@ -18,3 +18,15 @@ application.register("teachers", TeachersController)
 
 import CalendarController from "./calendar_controller"
 application.register("calendar", CalendarController)
+
+import StudentPortalController from "./student_portal_controller"
+application.register("student-portal", StudentPortalController)
+
+import StudentCalendarController from "./student_calendar_controller"
+application.register("student-calendar", StudentCalendarController)
+
+import StudentHomeworkController from "./student_homework_controller"
+application.register("student-homework", StudentHomeworkController)
+
+import StudentMaterialsController from "./student_materials_controller"
+application.register("student-materials", StudentMaterialsController)

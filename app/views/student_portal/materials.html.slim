@@ -1,0 +1,61 @@
+- content_for :title, "#{t('app.student_portal.pages.materials.title')} | danlio"
+
+.sp-materials data-controller="student-materials"
+  .sp-toolbar
+    .sp-toolbar__row.sp-toolbar__row--materials
+      label.sp-search
+        span.sr-only = t('app.student_portal.materials.search')
+        span.sp-search__icon
+          = portal_icon 'search', size: 18
+        input type="search" placeholder="#{t('app.student_portal.materials.search_placeholder')}" autocomplete="off"
+
+      .sp-toolbar__actions
+        button.sp-filter-btn.sp-filter-btn--lg type="button" aria-expanded="false" data-student-materials-target="filtersToggle" data-action="student-materials#toggleFilters"
+          = portal_icon 'filter', size: 18
+          span = t('app.student_portal.materials.filters')
+
+        label.sp-sort
+          span = t('app.student_portal.materials.sort')
+          select
+            option value="newest" = t('app.student_portal.materials.newest')
+            option value="oldest" = t('app.student_portal.materials.oldest')
+            option value="name" = t('app.student_portal.materials.name')
+
+        .sp-view-toggle role="group" aria-label="#{t('app.student_portal.materials.view_label')}"
+          button.sp-view-btn.is-active type="button" aria-pressed="true" data-view="grid" data-student-materials-target="viewBtn" data-action="student-materials#setView"
+            = portal_icon 'layout-grid', size: 18
+            span.sr-only = t('app.student_portal.materials.grid')
+          button.sp-view-btn type="button" aria-pressed="false" data-view="list" data-student-materials-target="viewBtn" data-action="student-materials#setView"
+            = portal_icon 'list', size: 18
+            span.sr-only = t('app.student_portal.materials.list')
+
+    .sp-filters.sp-filters--materials data-student-materials-target="filters"
+      label.sp-field
+        span = t('app.student_portal.materials.type')
+        select
+          option value="" = t('app.student_portal.materials.all_types')
+          option value="video" = t('app.student_portal.materials.videos')
+          option value="document" = t('app.student_portal.materials.documents')
+          option value="image" = t('app.student_portal.materials.images')
+          option value="audio" = t('app.student_portal.materials.audio')
+          option value="link" = t('app.student_portal.materials.links')
+      label.sp-field
+        span = t('app.student_portal.materials.subject')
+        select
+          option value="" = t('app.student_portal.homework.all_subjects')
+      label.sp-sort.sp-sort--mobile
+        span = t('app.student_portal.materials.sort')
+        select
+          option value="newest" = t('app.student_portal.materials.newest')
+          option value="oldest" = t('app.student_portal.materials.oldest')
+          option value="name" = t('app.student_portal.materials.name')
+
+  .sp-mat-empty data-student-materials-target="empty"
+    .sp-mat-empty__icon
+      = portal_icon 'folder', size: 24
+    h2 = t('app.student_portal.pages.materials.empty_title')
+    p = t('app.student_portal.pages.materials.empty_text')
+
+  .sp-mat-library hidden="hidden" data-student-materials-target="library" data-view="grid"
+    .sp-mat-grid
+    .sp-mat-list

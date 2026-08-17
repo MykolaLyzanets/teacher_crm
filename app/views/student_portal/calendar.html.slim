@@ -1,0 +1,69 @@
+- content_for :title, "#{t('app.student_portal.pages.calendar.title')} | danlio"
+- labels = student_calendar_labels
+
+.sp-calendar data-controller="student-calendar" data-student-calendar-labels-value=labels.to_json
+  section.sp-upcoming hidden="hidden" aria-label="#{t('app.student_portal.calendar.next_lesson')}" data-student-calendar-target="upcoming"
+    p.sp-upcoming__label = t('app.student_portal.calendar.next_lesson')
+    h2.sp-upcoming__title data-student-calendar-target="upcomingTitle"
+    .sp-upcoming__meta
+      span.sp-upcoming__item
+        = portal_icon 'calendar', size: 16
+        span data-student-calendar-target="upcomingWhen"
+      span.sp-upcoming__item
+        = portal_icon 'user', size: 16
+        span data-student-calendar-target="upcomingWho"
+    .sp-upcoming__actions
+      button.sp-btn.sp-btn--ghost type="button" = t('app.student_portal.calendar.view_details')
+      = link_to t('app.student_portal.calendar.view_homework'), student_homework_path, class: 'sp-upcoming__link'
+
+  section.sp-cal
+    .sp-cal__toolbar
+      .sp-cal__nav
+        button.sp-cal__icon-btn type="button" aria-label="#{t('app.student_portal.calendar.previous')}" data-action="student-calendar#previous"
+          = portal_icon 'chevron-left', size: 20
+        button.sp-cal__today type="button" data-action="student-calendar#today" = t('app.student_portal.calendar.today')
+        button.sp-cal__icon-btn type="button" aria-label="#{t('app.student_portal.calendar.next')}" data-action="student-calendar#next"
+          = portal_icon 'chevron-right', size: 20
+        h2.sp-cal__title data-student-calendar-target="title"
+
+      .sp-cal__views
+        .sp-cal__tabs role="tablist" aria-label="#{t('app.student_portal.calendar.view_label')}"
+          button.sp-cal__tab.is-active type="button" role="tab" aria-selected="true" data-view="month" data-student-calendar-target="viewTab" data-action="student-calendar#setView" = t('app.student_portal.calendar.month')
+          button.sp-cal__tab type="button" role="tab" aria-selected="false" data-view="week" data-student-calendar-target="viewTab" data-action="student-calendar#setView" = t('app.student_portal.calendar.week')
+          button.sp-cal__tab type="button" role="tab" aria-selected="false" data-view="agenda" data-student-calendar-target="viewTab" data-action="student-calendar#setView" = t('app.student_portal.calendar.agenda')
+
+        label.sr-only for="student-calendar-view" = t('app.student_portal.calendar.view_label')
+        select#student-calendar-view.sp-cal__select data-student-calendar-target="viewSelect" data-action="student-calendar#setView"
+          option value="month" selected="selected" = t('app.student_portal.calendar.month')
+          option value="week" = t('app.student_portal.calendar.week')
+          option value="agenda" = t('app.student_portal.calendar.agenda')
+
+    .sp-cal__month data-student-calendar-target="month"
+      .sp-cal__weekdays
+        - labels[:weekdays].each do |label|
+          div = label
+      .sp-cal__grid data-student-calendar-target="monthGrid"
+
+    .sp-cal__week hidden="hidden" data-student-calendar-target="week"
+      .sp-cal__week-scroll
+        .sp-cal__week-grid data-student-calendar-target="weekGrid"
+
+    .sp-cal__agenda hidden="hidden" data-student-calendar-target="agenda"
+      .sp-cal__agenda-empty
+        .sp-cal__agenda-icon
+          = portal_icon 'calendar', size: 24
+        h3 = t('app.student_portal.calendar.empty_title')
+        p = t('app.student_portal.calendar.empty_text')
+
+    .sp-cal__day-agenda hidden="hidden" data-student-calendar-target="dayAgenda"
+      .sp-cal__day-agenda-head
+        p = t('app.student_portal.calendar.selected_day')
+        h3 data-student-calendar-target="dayAgendaTitle"
+      p.sp-cal__day-empty data-student-calendar-target="dayAgendaEmpty"
+
+    .sp-cal__chip data-student-calendar-target="emptyChip"
+      .sp-cal__chip-card
+        = portal_icon 'calendar', size: 20
+        div
+          p.sp-cal__chip-title = t('app.student_portal.calendar.empty_title')
+          p.sp-cal__chip-text = t('app.student_portal.calendar.empty_text')

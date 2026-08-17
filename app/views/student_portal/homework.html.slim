@@ -1,0 +1,60 @@
+- content_for :title, "#{t('app.student_portal.pages.homework.title')} | danlio"
+
+.sp-homework data-controller="student-homework"
+  section.sp-hw-summary aria-label="#{t('app.student_portal.homework.summary')}"
+    .sp-hw-stat
+      p.sp-hw-stat__label = t('app.student_portal.homework.todo')
+      p.sp-hw-stat__value 0
+    .sp-hw-stat
+      p.sp-hw-stat__label = t('app.student_portal.homework.submitted')
+      p.sp-hw-stat__value 0
+    .sp-hw-stat
+      p.sp-hw-stat__label = t('app.student_portal.homework.needs_attention')
+      p.sp-hw-stat__value 0
+
+  .sp-toolbar
+    .sp-toolbar__row
+      label.sp-search
+        span.sr-only = t('app.student_portal.homework.search')
+        span.sp-search__icon
+          = portal_icon 'search', size: 18
+        input type="search" placeholder="#{t('app.student_portal.homework.search')}" autocomplete="off" data-student-homework-target="search" data-action="input->student-homework#syncEmpty"
+      button.sp-filter-btn type="button" aria-expanded="false" data-student-homework-target="filtersToggle" data-action="student-homework#toggleFilters"
+        = portal_icon 'filter', size: 18
+        span = t('app.student_portal.homework.filters')
+
+    .sp-filters data-student-homework-target="filters"
+      label.sp-field
+        span = t('app.student_portal.homework.subject')
+        select
+          option value="" = t('app.student_portal.homework.all_subjects')
+      label.sp-field
+        span = t('app.student_portal.homework.teacher')
+        select
+          option value="" = t('app.student_portal.homework.all_teachers')
+      label.sp-field
+        span = t('app.student_portal.homework.due')
+        select data-student-homework-target="due" data-action="student-homework#syncEmpty"
+          option value="" = t('app.student_portal.homework.any_due')
+          option value="overdue" = t('app.student_portal.homework.overdue')
+          option value="due_soon" = t('app.student_portal.homework.due_soon')
+          option value="later" = t('app.student_portal.homework.later')
+
+  .sp-hw-tabs role="tablist" aria-label="#{t('app.student_portal.homework.status')}"
+    button.sp-hw-tab.is-active type="button" role="tab" id="homework-tab-todo" aria-selected="true" aria-controls="homework-panel-todo" data-tab="todo" data-student-homework-target="tab" data-action="student-homework#setTab"
+      span = t('app.student_portal.homework.todo')
+      span.sp-hw-count 0
+    button.sp-hw-tab type="button" role="tab" id="homework-tab-submitted" aria-selected="false" aria-controls="homework-panel-submitted" data-tab="submitted" data-student-homework-target="tab" data-action="student-homework#setTab"
+      span = t('app.student_portal.homework.submitted')
+      span.sp-hw-count 0
+    button.sp-hw-tab type="button" role="tab" id="homework-tab-reviewed" aria-selected="false" aria-controls="homework-panel-reviewed" data-tab="reviewed" data-student-homework-target="tab" data-action="student-homework#setTab"
+      span = t('app.student_portal.homework.reviewed')
+      span.sp-hw-count 0
+
+  .sp-hw-empty role="tabpanel" id="homework-panel-todo" aria-labelledby="homework-tab-todo" data-student-homework-target="empty"
+    .sp-hw-empty__icon data-student-homework-target="emptyIcon"
+      = portal_icon 'homework', size: 22
+    .sp-hw-empty__icon.is-search hidden="hidden" data-student-homework-target="searchIcon"
+      = portal_icon 'search', size: 22
+    h3 data-student-homework-target="emptyTitle" data-todo="#{t('app.student_portal.homework.empty_todo')}" data-submitted="#{t('app.student_portal.homework.empty_submitted')}" data-reviewed="#{t('app.student_portal.homework.empty_reviewed')}" data-search="#{t('app.student_portal.homework.empty_search')}" = t('app.student_portal.homework.empty_todo')
+    p data-student-homework-target="emptyText" = t('app.student_portal.homework.empty_todo_text')

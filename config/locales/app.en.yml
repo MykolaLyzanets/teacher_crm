@@ -501,3 +501,104 @@ en:
         description: Configure your workspace preferences.
     workspace:
       required: Join or create a workspace before adding teachers or students.
+    student_portal:
+      title: Student
+      home: danlio student home
+      menu_label: Student profile menu
+      log_out: Log out
+      staff_denied: This area is only available to students.
+      nav:
+        main: Student
+        calendar: Calendar
+        homework: Homework
+        materials: Materials
+        profile: Profile
+        notifications: Notifications
+      pages:
+        calendar:
+          title: Calendar
+          description: View your upcoming and past lessons.
+        homework:
+          title: Homework
+          description: Complete assignments and review teacher feedback.
+        materials:
+          title: Materials
+          description: Access files, videos and learning resources shared by your teacher.
+          empty_title: No materials yet
+          empty_text: Files, videos and learning resources shared by your teacher will appear here.
+        profile:
+          title: Profile
+          description: ""
+        notifications:
+          title: Notifications
+          description: ""
+      calendar:
+        today: Today
+        previous: Previous period
+        next: Next period
+        month: Month
+        week: Week
+        agenda: Agenda
+        view_label: Calendar view
+        next_lesson: Next lesson
+        view_details: View details
+        view_homework: View homework
+        selected_day: Selected day
+        empty_title: No lessons scheduled
+        empty_text: Your upcoming lessons will appear here when they are scheduled.
+        no_lessons_on: "No lessons on %{date}."
+        months_short:
+          jan: Jan
+          feb: Feb
+          mar: Mar
+          apr: Apr
+          may: May
+          jun: Jun
+          jul: Jul
+          aug: Aug
+          sep: Sep
+          oct: Oct
+          nov: Nov
+          dec: Dec
+      homework:
+        summary: Homework summary
+        status: Homework status
+        todo: To do
+        submitted: Submitted
+        reviewed: Reviewed
+        needs_attention: Needs attention
+        search: Search Homework
+        filters: Filters
+        subject: Subject
+        teacher: Teacher
+        due: Due date
+        all_subjects: All subjects
+        all_teachers: All teachers
+        any_due: Any due date
+        overdue: Overdue
+        due_soon: Due soon
+        later: Later
+        empty_todo: You’re all caught up.
+        empty_todo_text: No Homework needs your attention.
+        empty_submitted: No submitted Homework yet.
+        empty_reviewed: No reviewed Homework yet.
+        empty_search: No Homework matches your search.
+      materials:
+        search: Search materials
+        search_placeholder: Search materials…
+        filters: Filters
+        sort: Sort
+        newest: Newest first
+        oldest: Oldest first
+        name: Name A–Z
+        view_label: Materials view
+        grid: Grid view
+        list: List view
+        type: Type
+        subject: Subject
+        all_types: All materials
+        videos: Videos
+        documents: Documents
+        images: Images
+        audio: Audio
+        links: Links

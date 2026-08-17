@@ -30,6 +30,15 @@ Rails.application.routes.draw do
     resources :teachers, only: %i[index show new create]
     get 'calendar', to: 'calendar#index'
 
+    scope :student, as: :student do
+      get '/', to: 'student_portal#home', as: :root
+      get 'calendar', to: 'student_portal#calendar'
+      get 'homework', to: 'student_portal#homework'
+      get 'materials', to: 'student_portal#materials'
+      get 'profile', to: 'student_portal#profile'
+      get 'notifications', to: 'student_portal#notifications'
+    end
+
     %w[lessons homework payments reports messages settings].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page
     end

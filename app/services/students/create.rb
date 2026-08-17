@@ -2,6 +2,9 @@
 
 module Students
   class Create
+    extend ActiveModel::Naming
+    extend ActiveModel::Translation
+
     def initialize(workspace:, actor:, params:)
       @workspace = workspace
       @actor = actor

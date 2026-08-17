@@ -1,0 +1,20 @@
+- variant = local_assigns.fetch(:variant, :sidebar)
+
+.student-portal__menu data-controller="student-portal" class="student-portal__menu--#{variant}"
+  button.student-portal__menu-trigger type="button" aria-haspopup="menu" aria-expanded="false" data-student-portal-target="trigger" data-action="student-portal#toggle"
+    span.student-portal__avatar = current_user_initials
+    - if variant == :sidebar
+      span.student-portal__menu-meta
+        span.student-portal__menu-name = current_user_display_name
+        span.student-portal__menu-role = t('app.header.student_role')
+
+  .student-portal__menu-panel hidden="hidden" role="menu" aria-label="#{t('app.student_portal.menu_label')}" data-student-portal-target="panel"
+    = link_to student_profile_path, role: 'menuitem', data: { action: 'student-portal#close' } do
+      = portal_icon 'user', size: 20
+      span = t('app.student_portal.nav.profile')
+    = link_to student_notifications_path, role: 'menuitem', data: { action: 'student-portal#close' } do
+      = portal_icon 'bell', size: 20
+      span = t('app.student_portal.nav.notifications')
+    = button_to destroy_user_session_path, method: :delete, role: 'menuitem', form: { data: { turbo: false } }, class: 'student-portal__logout' do
+      = portal_icon 'logout', size: 20
+      span = t('app.student_portal.log_out')

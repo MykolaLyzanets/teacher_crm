@@ -501,3 +501,104 @@ ua:
         description: Налаштуйте параметри робочого простору.
     workspace:
       required: Спочатку створіть або приєднайтесь до робочого простору, щоб додавати викладачів і учнів.
+    student_portal:
+      title: Учень
+      home: Головна danlio для учня
+      menu_label: Меню профілю
+      log_out: Вийти
+      staff_denied: Цей розділ доступний лише для учнів.
+      nav:
+        main: Навігація учня
+        calendar: Календар
+        homework: Домашні
+        materials: Матеріали
+        profile: Профіль
+        notifications: Сповіщення
+      pages:
+        calendar:
+          title: Календар
+          description: Переглядайте найближчі та минулі уроки.
+        homework:
+          title: Домашні
+          description: Виконуйте завдання та переглядайте відгуки викладача.
+        materials:
+          title: Матеріали
+          description: Файли, відео та матеріали, якими поділився викладач.
+          empty_title: Немає матеріалів
+          empty_text: Файли, відео та навчальні матеріали від викладача зʼявляться тут.
+        profile:
+          title: Профіль
+          description: ""
+        notifications:
+          title: Сповіщення
+          description: ""
+      calendar:
+        today: Сьогодні
+        previous: Попередній період
+        next: Наступний період
+        month: Місяць
+        week: Тиждень
+        agenda: Порядок
+        view_label: Вигляд календаря
+        next_lesson: Наступний урок
+        view_details: Деталі
+        view_homework: Домашні
+        selected_day: Обраний день
+        empty_title: Уроків не заплановано
+        empty_text: Найближчі уроки зʼявляться тут, коли їх запланують.
+        no_lessons_on: "Немає уроків %{date}."
+        months_short:
+          jan: Січ
+          feb: Лют
+          mar: Бер
+          apr: Кві
+          may: Тра
+          jun: Чер
+          jul: Лип
+          aug: Сер
+          sep: Вер
+          oct: Жов
+          nov: Лис
+          dec: Гру
+      homework:
+        summary: Підсумок домашніх
+        status: Статус домашніх
+        todo: До виконання
+        submitted: Здано
+        reviewed: Перевірено
+        needs_attention: Потребує уваги
+        search: Пошук домашніх
+        filters: Фільтри
+        subject: Предмет
+        teacher: Викладач
+        due: Термін
+        all_subjects: Усі предмети
+        all_teachers: Усі викладачі
+        any_due: Будь-який термін
+        overdue: Прострочені
+        due_soon: Незабаром
+        later: Пізніше
+        empty_todo: Усе виконано.
+        empty_todo_text: Немає домашніх, які потребують уваги.
+        empty_submitted: Зданих домашніх поки немає.
+        empty_reviewed: Перевірених домашніх поки немає.
+        empty_search: За пошуком домашніх не знайдено.
+      materials:
+        search: Пошук матеріалів
+        search_placeholder: Пошук матеріалів…
+        filters: Фільтри
+        sort: Сортування
+        newest: Спочатку нові
+        oldest: Спочатку старі
+        name: Назва А–Я
+        view_label: Вигляд матеріалів
+        grid: Сітка
+        list: Список
+        type: Тип
+        subject: Предмет
+        all_types: Усі матеріали
+        videos: Відео
+        documents: Документи
+        images: Зображення
+        audio: Аудіо
+        links: Посилання

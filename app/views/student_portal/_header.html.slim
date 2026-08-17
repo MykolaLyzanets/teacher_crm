@@ -1,0 +1,17 @@
+- meta = student_page_meta
+
+header.student-portal__header
+  .student-portal__header-inner
+    .student-portal__header-copy
+      .student-portal__header-mark
+        = link_to student_calendar_path, aria: { label: t('app.student_portal.home') } do
+          = image_tag 'brand/danlio-mark.svg', alt: 'danlio', height: 28
+      h1.student-portal__title = meta[:title]
+      - if meta[:description].present?
+        p.student-portal__subtitle = meta[:description]
+
+    .student-portal__header-actions
+      = link_to student_notifications_path, class: 'student-portal__icon-btn', aria: { label: t('app.student_portal.nav.notifications') } do
+        = portal_icon 'bell', size: 20
+      .student-portal__header-menu
+        = render 'student_portal/profile_menu', variant: :header

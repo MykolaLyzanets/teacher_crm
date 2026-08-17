@@ -4,6 +4,7 @@ class AppController < ApplicationController
   include WorkspaceScoping
 
   prepend_before_action :authenticate_user!
+  before_action :redirect_students_to_portal
 
   layout 'app'
 
@@ -19,5 +20,11 @@ class AppController < ApplicationController
       'dashboard' => 'dashboard',
       'pages' => 'placeholder'
     }[controller_name]
+  end
+
+  def redirect_students_to_portal
+    return unless current_user.student?
+
+    redirect_to student_calendar_path
   end
 end

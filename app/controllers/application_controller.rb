@@ -6,8 +6,8 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   layout :layout_by_resource
 
-  def after_sign_in_path_for(_resource)
-    dashboard_path
+  def after_sign_in_path_for(resource)
+    resource.try(:student?) ? student_calendar_path : dashboard_path
   end
 
   private
