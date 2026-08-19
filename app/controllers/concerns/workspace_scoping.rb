@@ -26,7 +26,17 @@ module WorkspaceScoping
     return scoped if current_user.admin?
     return StudentProfile.none if current_workspace.blank?
 
-    scoped.where(workspace: current_workspace)
+    scoped = scoped.where(workspace: current_workspace)
+    return scoped if current_user.owner?
+
+    if current_user.teacher?
+      teacher_id = current_user.teacher_profile&.id
+      return scoped.none if teacher_id.blank?
+
+      return scoped.where(teacher_id:)
+    end
+
+    StudentProfile.none
   end
 
   def require_workspace!

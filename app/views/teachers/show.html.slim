@@ -38,9 +38,8 @@
               span
                 = icon_tag 'message', size: 18
                 = teacher[:phone]
-      = link_to calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn' do
-        = icon_tag 'calendar', size: 18
-        span = t('app.teachers.schedule_lesson')
+      = link_to t('app.teachers.schedule_lesson'), calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn'
+      = link_to t('app.common.edit'), edit_teacher_path(teacher[:id]), class: 'teachers-page__primary-btn'
 
     .teachers-page__grid
       section.teachers-page__card

@@ -17,7 +17,7 @@ class TeacherProfile < ApplicationRecord
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
-  validates :default_lesson_duration_minutes, inclusion: { in: LESSON_DURATIONS }, allow_nil: true
+  validates :default_lesson_duration_minutes, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :user_matches_workspace
   validate :lesson_formats_are_known
 

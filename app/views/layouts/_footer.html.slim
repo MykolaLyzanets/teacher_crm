@@ -1,32 +1,20 @@
-footer.footer#pricing
+footer.footer
   .container
-    .footer-grid
+    .footer-grid.footer-grid--v5
       .footer-brand
         = render 'layouts/logo'
         p.type-small = t('footer.tagline')
-      .footer-links
-        .footer-col
-          h5 = t('footer.product')
-          a href="#features" = t('footer.features')
-          a href="#pricing" = t('footer.pricing')
-          a href="#" = t('footer.updates')
-        .footer-col
-          h5 = t('footer.resources')
-          a href="#" = t('footer.help_center')
-          a href="#" = t('footer.guides')
-          a href="#" = t('footer.blog')
-        .footer-col
-          h5 = t('footer.company')
-          a href="#" = t('footer.about')
-          a href="#" = t('footer.contact')
-          a href="#" = t('footer.privacy')
-      .footer-col.footer-social
-        h5 = t('footer.follow_us')
-        .socials
-          a.social href="#" aria-label="Email"
-            = icon_tag 'at', size: 16
-          a.social href="#" aria-label="Messages"
-            = icon_tag 'message', size: 16
-          a.social href="#" aria-label="LinkedIn"
-            = icon_tag 'briefcase', size: 16
+      .footer-col
+        h5 = t('footer.product')
+        a href="#tutors" = t('footer.features')
+        a href="#pricing" = t('footer.pricing')
+        a href="#product" = t('footer.updates')
+      .footer-col
+        h5 = t('footer.resources')
+        = mail_to 'hello@danlio.com', t('footer.help_center')
+        = mail_to 'hello@danlio.com', t('footer.contact')
+      .footer-col
+        h5 = t('footer.legal')
+        a href="#privacy" = t('footer.privacy')
+        a href="#terms" = t('footer.terms')
     p.copy = t('footer.copyright', year: Time.current.year)

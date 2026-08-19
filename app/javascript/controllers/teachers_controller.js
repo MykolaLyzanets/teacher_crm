@@ -32,8 +32,18 @@ export default class extends Controller {
     "photoError",
     "workingDay",
     "hoursRow",
+    "hoursWrap",
     "copyMonday",
     "hoursError",
+    "customDuration",
+    "customMinutes",
+    "durationPreset",
+    "durationValue",
+    "subjectList",
+    "subjectDraft",
+    "subjectPopover",
+    "subjectError",
+    "calendarColor",
     "assignedSearch",
     "assignedRow",
     "assignedList",
@@ -61,7 +71,14 @@ export default class extends Controller {
     if (this.hasNotesTarget) this.updateNotesCount()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
     this.syncHoursUi()
+    this.syncCustomDuration()
+    this.boundPointer = this.closeSubjectOnOutside.bind(this)
+    document.addEventListener("mousedown", this.boundPointer)
     if (this.hasAssignedRowTarget) this.filterAssigned()
+  }
+
+  disconnect() {
+    document.removeEventListener("mousedown", this.boundPointer)
   }
 
   t(group, key, vars = {}) {
@@ -274,8 +291,13 @@ export default class extends Controller {
     if (!this.hasHoursRowTarget) return
     const selected = this.selectedDays()
     this.hoursRowTargets.forEach((row) => {
-      row.hidden = !selected.includes(row.dataset.day)
+      const on = selected.includes(row.dataset.day)
+      row.hidden = !on
+      row.querySelectorAll("input").forEach((input) => {
+        input.disabled = !on
+      })
     })
+    if (this.hasHoursWrapTarget) this.hoursWrapTarget.hidden = selected.length === 0
     if (this.hasCopyMondayTarget) {
       this.copyMondayTarget.hidden = !(selected.includes("Monday") && selected.length > 1)
     }
@@ -301,13 +323,13 @@ export default class extends Controller {
   }
 
   validateHours(event) {
-    if (!this.hasHoursRowTarget) return
-    const error = this.hoursErrorMessage()
+    this.syncCustomDuration()
+    const hoursError = this.hasHoursRowTarget ? this.hoursErrorMessage() : null
     if (this.hasHoursErrorTarget) {
-      this.hoursErrorTarget.textContent = error || ""
-      this.hoursErrorTarget.hidden = !error
+      this.hoursErrorTarget.textContent = hoursError || ""
+      this.hoursErrorTarget.hidden = !hoursError
     }
-    if (error) event.preventDefault()
+    if (hoursError) event.preventDefault()
   }
 
   hoursErrorMessage() {
@@ -433,5 +455,82 @@ export default class extends Controller {
     this.toastTimer = window.setTimeout(() => {
       this.toastTarget.hidden = true
     }, 3200)
+  }
+
+  toggleCustomDuration() {
+    this.syncCustomDuration()
+  }
+
+  syncCustomDuration() {
+    if (!this.hasDurationPresetTarget) return
+    const preset = this.durationPresetTarget.value
+    if (this.hasCustomDurationTarget) this.customDurationTarget.hidden = preset !== "custom"
+    if (this.hasDurationValueTarget && preset !== "custom") this.durationValueTarget.value = preset
+    if (preset === "custom") this.syncCustomMinutes()
+  }
+
+  syncCustomMinutes() {
+    if (!this.hasDurationValueTarget || !this.hasCustomMinutesTarget) return
+    this.durationValueTarget.value = this.customMinutesTarget.value
+  }
+
+  openSubjectPopover() {
+    if (this.hasSubjectPopoverTarget) this.subjectPopoverTarget.hidden = false
+    if (this.hasSubjectDraftTarget) this.subjectDraftTarget.focus()
+  }
+
+  closeSubjectPopover() {
+    if (this.hasSubjectPopoverTarget) this.subjectPopoverTarget.hidden = true
+    if (this.hasSubjectDraftTarget) this.subjectDraftTarget.value = ""
+    if (this.hasSubjectErrorTarget) this.subjectErrorTarget.hidden = true
+  }
+
+  closeSubjectOnOutside(event) {
+    if (!this.hasSubjectPopoverTarget || this.subjectPopoverTarget.hidden) return
+    if (event.target.closest("[data-subject-root]")) return
+    this.closeSubjectPopover()
+  }
+
+  addSubject(event) {
+    event?.preventDefault?.()
+    if (!this.hasSubjectDraftTarget || !this.hasSubjectListTarget) return
+    const name = this.subjectDraftTarget.value.trim().replace(/\s+/g, " ")
+    if (!name) return
+    const existing = [...this.subjectListTarget.querySelectorAll("input")].map((input) => input.value.toLowerCase())
+    if (existing.includes(name.toLowerCase())) {
+      if (this.hasSubjectErrorTarget) {
+        this.subjectErrorTarget.textContent = this.t("teachers", "subject_duplicate")
+        this.subjectErrorTarget.hidden = false
+      }
+      return
+    }
+    const chip = document.createElement("span")
+    chip.className = "teachers-page__subject-chip"
+    const input = document.createElement("input")
+    input.type = "hidden"
+    input.name = "subjects[]"
+    input.value = name
+    const label = document.createElement("span")
+    label.textContent = name
+    const button = document.createElement("button")
+    button.type = "button"
+    button.dataset.action = "teachers#removeSubject"
+    button.setAttribute("aria-label", this.t("teachers", "remove_subject"))
+    button.textContent = "×"
+    chip.append(input, label, button)
+    this.subjectListTarget.append(chip)
+    this.closeSubjectPopover()
+  }
+
+  removeSubject(event) {
+    event.currentTarget.closest(".teachers-page__subject-chip")?.remove()
+  }
+
+  setCalendarColor(event) {
+    const value = event.currentTarget.dataset.color
+    if (this.hasCalendarColorTarget) this.calendarColorTarget.value = value
+    this.element.querySelectorAll("[data-color]").forEach((button) => {
+      button.setAttribute("aria-pressed", button.dataset.color === value ? "true" : "false")
+    })
   }
 }

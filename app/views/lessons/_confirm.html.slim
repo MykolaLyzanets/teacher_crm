@@ -1,0 +1,7 @@
+.lessons-page__confirm.lessons-page__confirm--hidden data-lessons-target="confirm"
+  .lessons-page__confirm-card
+    h2.lessons-page__confirm-title data-lessons-target="confirmTitle"
+    p.lessons-page__muted data-lessons-target="confirmText"
+    .lessons-page__confirm-actions
+      button.lessons-page__secondary-btn type="button" data-action="lessons#closeConfirm" = t('app.common.cancel')
+      button.lessons-page__confirm-btn type="button" data-lessons-target="confirmBtn" data-action="lessons#runConfirm"

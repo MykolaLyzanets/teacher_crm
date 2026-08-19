@@ -2,180 +2,175 @@
   = stylesheet_link_tag "css/home.min", "data-turbo-track": "reload"
   = javascript_include_tag "home", "data-turbo-track": "reload", defer: true
 
-.home
-  section.hero#top
-    .hero-blob.hero-blob-a
-    .hero-blob.hero-blob-b
-    .container.hero-grid
-      .hero-copy
-        .hero-title
-          h1.type-hero
-            = t('home.hero.title_lead')
-            br
-            span.green = t('home.hero.title_accent')
-          = icon_tag 'hero-leaf', class: 'hero-leaf'
-        p.subhead.type-body-lg = t('home.hero.subhead')
-        .hero-cta
+.home.home-v5
+  section.home-hero#top
+    .home-hero__blob.home-hero__blob--a
+    .home-hero__blob.home-hero__blob--b
+    = icon_tag 'hero-leaf', class: 'home-hero__leaf'
+    .container.home-hero__inner
+      h1.home-hero__title
+        = t('home.hero.title_line1')
+        span.home-hero__next
+          = t('home.hero.title_rest')
+          '
+          span.green = t('home.hero.brand')
+          = t('home.hero.title_end')
+      p.home-hero__sub = t('home.hero.subhead')
+      .home-hero__cta
+        = link_to t('home.hero.get_started'), new_user_registration_path, class: 'btn'
+        a.btn.btn-secondary href="#product"
+          = icon_tag 'play', size: 16
+          = t('home.hero.see_how')
+      .home-hero__trust
+        span
+          = icon_tag 'check-circle', size: 16
+          = t('home.hero.no_card')
+        span
+          = icon_tag 'check-circle', size: 16
+          = t('home.hero.setup')
+      .home-hero__preview#product
+        = render 'home/dashboard_preview'
+
+  section.home-features#tutors
+    .container
+      .home-section-copy
+        h2.type-h2
+          = t('home.features.title_line1')
+          span = t('home.features.title_line2')
+        p = t('home.features.subhead')
+      .home-features__grid
+        article.home-feature
+          h3 = t('home.features.students_title')
+          p = t('home.features.students_text')
+          .home-mini
+            - [['EJ', 'Emma Johnson', 'English'], ['DW', 'Daniel Wilson', 'Mathematics'], ['SB', 'Sophia Brown', 'IELTS']].each do |initials, name, subject|
+              .home-mini__row
+                span.home-mini__avatar = initials
+                span
+                  strong = name
+                  small = subject
+        article.home-feature
+          h3 = t('home.features.lessons_title')
+          p = t('home.features.lessons_text')
+          .home-mini
+            p.home-mini__label Friday
+            .home-mini__slot
+              span English
+              span 10:00
+            .home-mini__slot
+              span Mathematics
+              span 12:30
+        article.home-feature
+          h3 = t('home.features.homework_title')
+          p = t('home.features.homework_text')
+          .home-mini
+            .home-mini__card
+              strong Past Simple Practice
+              small Emma · Due today
+              .home-mini__bar
+                span
+        article.home-feature
+          h3 = t('home.features.payments_title')
+          p = t('home.features.payments_text')
+          .home-mini.home-mini--split
+            div
+              small Paid
+              strong €180
+            div
+              small Due
+              strong €60
+
+  section.home-simple
+    .container
+      .home-section-copy
+        h2.type-h2
+          = t('home.simple.title_line1')
+          span = t('home.simple.title_line2')
+        p = t('home.simple.subhead')
+      ol.home-simple__steps
+        - [[t('home.simple.step1'), 'students'], [t('home.simple.step2'), 'calendar'], [t('home.simple.step3'), 'homework'], [t('home.simple.step4'), 'payments']].each_with_index do |(label, icon), index|
+          li
+            .home-simple__card
+              span.home-simple__icon
+                = icon_tag icon, size: 22
+              span
+                = label
+                - if index == 3
+                  span.home-simple__ok  ✓
+      p.home-simple__done = t('home.simple.done')
+
+  section.home-showcase
+    .container.home-showcase__grid
+      .home-showcase__preview
+        = render 'home/calendar_preview'
+      .home-showcase__copy
+        h2.type-h2 = t('home.showcase.title')
+        p = t('home.showcase.text')
+        ul
+          - t('home.showcase.points').each do |point|
+            li
+              = icon_tag 'check-circle', size: 20
+              = point
+
+  section.home-proof
+    .container
+      article.home-proof__quote
+        p = t('home.proof.quote')
+        .home-proof__person
+          span.home-mini__avatar ОК
+          p
+            strong = t('home.proof.name')
+            small = t('home.proof.subject')
+
+  section.home-pricing#pricing
+    .container
+      .home-section-copy
+        h2.type-h2
+          = t('home.pricing.title_line1')
+          span = t('home.pricing.title_line2')
+      .home-pricing__grid
+        article.home-plan
+          h3 = t('home.pricing.free_name')
+          p.home-plan__desc = t('home.pricing.free_desc')
+          p.home-plan__price $0
+          ul
+            li
+              = icon_tag 'check', size: 16
+              = t('home.pricing.free_feature')
+          = link_to t('home.hero.get_started'), new_user_registration_path, class: 'btn btn-secondary'
+        article.home-plan.home-plan--featured
+          .home-plan__head
+            h3 = t('home.pricing.teacher_name')
+            span = t('home.pricing.popular')
+          p.home-plan__desc = t('home.pricing.teacher_desc')
+          p.home-plan__price
+            | $19
+            span = t('home.pricing.month')
+          ul
+            - t('home.pricing.teacher_features').each do |feature|
+              li
+                = icon_tag 'check', size: 16
+                = feature
           = link_to t('home.hero.get_started'), new_user_registration_path, class: 'btn'
-          a.btn.btn-secondary href="#workflow"
-            = icon_tag 'play', size: 16
-            = t('home.hero.see_how')
-        .trust-row.type-small
-          span.trust-item
-            = icon_tag 'check-circle', size: 16
-            = t('home.hero.no_card')
-          span.trust-item
-            = icon_tag 'check-circle', size: 16
-            = t('home.hero.setup')
-      .calendar-stage
-        .calendar-scale
-          = render 'home/calendar_preview'
-        = icon_tag 'hero-botanical', class: 'hero-botanical'
+        article.home-plan#schools
+          h3 = t('home.pricing.school_name')
+          p.home-plan__desc = t('home.pricing.school_desc')
+          p.home-plan__price = t('home.pricing.school_price')
+          ul
+            - t('home.pricing.school_features').each do |feature|
+              li
+                = icon_tag 'check', size: 16
+                = feature
+          = mail_to 'hello@danlio.com', t('home.pricing.contact'), class: 'btn btn-secondary'
 
-  section.logos#schools
+  section.home-cta#get-started
     .container
-      h2.type-h2-sm = t('home.logos.trusted')
-      .logo-row
-        .brand-logo
-          = icon_tag 'book', size: 36
-          strong EDU TUTORS
-        .brand-logo
-          = icon_tag 'sun', size: 36
-          span
-            | Bright Minds
-            small Academy
-        .brand-logo
-          = icon_tag 'leaf-mark', size: 36
-          strong Learn & Grow
-        .brand-logo
-          = icon_tag 'school', size: 36
-          strong STUDY HUB
-        .brand-logo
-          = icon_tag 'star', size: 36
-          span
-            | NextGen Tutors
-            small Education
-
-  section.features#features
-    .container
-      h2.type-h2 = t('home.features.title')
-      .grid-6
-        article.feature
-          .icon-box
-            = icon_tag 'students', size: 26
-          h3.type-h3 = t('home.features.students_title')
-          p.type-small = t('home.features.students_text')
-        article.feature
-          .icon-box
-            = icon_tag 'calendar-check', size: 26
-          h3.type-h3 = t('home.features.lessons_title')
-          p.type-small = t('home.features.lessons_text')
-        article.feature
-          .icon-box
-            = icon_tag 'homework', size: 26
-          h3.type-h3 = t('home.features.homework_title')
-          p.type-small = t('home.features.homework_text')
-        article.feature
-          .icon-box
-            = icon_tag 'reports', size: 26
-          h3.type-h3 = t('home.features.progress_title')
-          p.type-small = t('home.features.progress_text')
-        article.feature
-          .icon-box
-            = icon_tag 'payments', size: 26
-          h3.type-h3 = t('home.features.payments_title')
-          p.type-small = t('home.features.payments_text')
-        article.feature
-          .icon-box
-            = icon_tag 'chart-bars', size: 26
-          h3.type-h3 = t('home.features.reports_title')
-          p.type-small = t('home.features.reports_text')
-
-  section.workflow#workflow
-    .container
-      .workflow-panel
-        = icon_tag 'showcase-botanical-1', class: 'showcase-botanical b1'
-        = icon_tag 'showcase-botanical-2', class: 'showcase-botanical b2'
-        .workflow-copy
-          h2.type-h2
-            = t('home.workflow.title_lead')
-            span.green = t('home.workflow.title_accent')
-          .steps
-            .step
-              .icon-box
-                = icon_tag 'students', size: 24
-              div
-                h4.type-h3 = t('home.workflow.step1_title')
-                p.type-small = t('home.workflow.step1_text')
-            .step
-              .icon-box
-                = icon_tag 'calendar', size: 24
-              div
-                h4.type-h3 = t('home.workflow.step2_title')
-                p.type-small = t('home.workflow.step2_text')
-            .step
-              .icon-box
-                = icon_tag 'file', size: 24
-              div
-                h4.type-h3 = t('home.workflow.step3_title')
-                p.type-small = t('home.workflow.step3_text')
-            .step
-              .icon-box
-                = icon_tag 'reports', size: 24
-              div
-                h4.type-h3 = t('home.workflow.step4_title')
-                p.type-small = t('home.workflow.step4_text')
-        .ui-stage
-          .showcase-composition
-            article.ui-card.cal-card
-              h3 = t('home.calendar.month')
-              .week
-                - t('home.dash.days').first(5).each_with_index do |day, index|
-                  div
-                    p = day
-                    b = 6 + index
-              .slots
-                .slot 09:00 AM
-                .slot.on 10:00 AM
-                .slot 11:00 AM
-                .slot 01:00 PM
-                .slot 02:00 PM
-            article.ui-card.profile-card
-              .profile-head
-                .photo
-                  .hair
-                  .face
-                  .shirt
-                .who
-                  strong Emma Johnson
-                  span emma@example.com
-                span.badge = t('home.dash.active')
-              .profile-body
-                p.label = t('home.workflow.next_lesson')
-                p.next-lesson
-                  = icon_tag 'calendar-check', size: 16
-                  = t('home.workflow.next_lesson_date')
-                .progress
-                  .progress-row
-                    span = t('home.workflow.progress')
-                    span 85%
-                  .bar-track
-                    .bar-fill
-            article.ui-card.chart-card
-              h4 = t('home.workflow.progress_overview')
-              .chart-wrap
-                = icon_tag 'progress-line', class: 'line'
-                span.chart-badge 85%
-
-  section.cta#get-started
-    .container
-      .cta-banner
-        = icon_tag 'cta-botanical', class: 'cta-leaf'
-        .cta-copy
-          h2.type-h2 = t('home.cta.title')
-          p.type-body = t('home.cta.text')
-        .cta-actions
-          = link_to t('home.cta.get_started'), new_user_registration_path, class: 'btn btn-light'
-          a.btn.btn-ghost-light href="#workflow"
-            = icon_tag 'play', size: 16
-            = t('home.cta.see_how')
+      .home-cta__banner
+        = icon_tag 'cta-botanical', class: 'home-cta__leaf home-cta__leaf--l'
+        = icon_tag 'cta-botanical', class: 'home-cta__leaf home-cta__leaf--r'
+        h2
+          = t('home.cta.title_line1')
+          span = t('home.cta.title_line2')
+        p = t('home.cta.text')
+        = link_to t('home.cta.get_started'), new_user_registration_path, class: 'btn btn-light'
+        p.home-cta__note = t('home.hero.no_card')

@@ -1,0 +1,63 @@
+- content_for :title, "#{t('app.lessons.title')} | danlio"
+
+.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common') data-lessons-calendar-url-value=calendar_path(create: 1)
+  p.lessons-page__toast hidden="hidden" role="status" data-lessons-target="toast"
+
+  .lessons-page__header
+    div
+      h1.lessons-page__title = t('app.lessons.title')
+      p.lessons-page__subtitle = t('app.lessons.subtitle')
+    = link_to calendar_path(create: 1), class: 'lessons-page__primary-btn' do
+      = lesson_icon 'plus', size: 20
+      span = t('app.lessons.create')
+
+  section.lessons-page__panel
+    .lessons-page__toolbar
+      div.lessons-page__tabs role="tablist" aria-label=t('app.lessons.tabs_aria')
+        - %w[all upcoming completed cancelled].each do |tab|
+          button.lessons-page__tab type="button" role="tab" aria-selected=(tab == 'all' ? 'true' : 'false') data-lessons-target="tab" data-tab=tab data-action="lessons#selectTab"
+            = t("app.lessons.tab_#{tab}")
+
+      .lessons-page__filters
+        .lessons-page__search
+          = lesson_icon 'search', size: 18
+          input type="search" placeholder=t('app.lessons.search_placeholder') aria-label=t('app.lessons.search_aria') data-lessons-target="search" data-action="input->lessons#filter"
+        select.lessons-page__select aria-label=t('app.lessons.filter_teacher') data-lessons-target="teacher" data-action="change->lessons#filter"
+          option value="all" = t('app.lessons.all_teachers')
+          - @teacher_names.each do |name|
+            option value=name = name
+        .lessons-page__dates
+          input.lessons-page__select type="date" aria-label=t('app.lessons.from_date') data-lessons-target="from" data-action="change->lessons#filter"
+          input.lessons-page__select type="date" aria-label=t('app.lessons.to_date') data-lessons-target="to" data-action="change->lessons#filter"
+
+    .lessons-page__empty data-lessons-target="catalogEmpty" hidden=(true if @lessons.any?)
+      .lessons-page__empty-icon
+        = lesson_icon 'clipboard', size: 24
+      h2 = t('app.lessons.empty_title')
+      p = t('app.lessons.empty_text')
+      = link_to calendar_path(create: 1), class: 'lessons-page__primary-btn' do
+        = lesson_icon 'plus', size: 20
+        span = t('app.lessons.create')
+
+    .lessons-page__empty hidden="hidden" data-lessons-target="filterEmpty"
+      .lessons-page__empty-icon
+        = lesson_icon 'search', size: 24
+      h2 = t('app.lessons.none_title')
+      p = t('app.lessons.none_text')
+      button.lessons-page__clear type="button" data-action="lessons#clearFilters" = t('app.common.clear_filters')
+
+    .lessons-page__table data-lessons-target="table" hidden=(true if @lessons.empty?)
+      .lessons-page__head
+        span = t('app.lessons.col_when')
+        span = t('app.lessons.col_party')
+        span = t('app.lessons.col_teacher')
+        span = t('app.lessons.col_subject')
+        span = t('app.lessons.col_price')
+        span = t('app.lessons.col_status')
+        span.lessons-page__head-actions = t('app.lessons.col_actions')
+      ul.lessons-page__list
+        - @lessons.each do |lesson|
+          = render 'row', lesson: lesson
+
+  = render 'drawer'
+  = render 'confirm'

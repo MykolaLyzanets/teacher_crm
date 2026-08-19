@@ -4,79 +4,121 @@ ua:
   ru: Російська
 
   header:
-    features: Можливості
-    how_it_works: Як це працює
-    schools: Для шкіл
-    pricing: Ціни
-    log_in: Увійти
+    product: Product
+    pricing: Pricing
+    tutors: For Tutors
+    schools: For Schools
+    log_in: Log in
     log_out: Вийти
-    get_started: Почати
+    get_started: Start free
+    cabinet: Особистий кабінет
     menu: Меню
     language: Мова
 
   footer:
-    tagline: Єдина CRM для репетиторів і викладачів. Більше викладайте. Менше адмініструйте.
-    product: Продукт
-    features: Можливості
-    pricing: Ціни
-    updates: Оновлення
-    resources: Ресурси
-    help_center: Допомога
-    guides: Гайди
-    blog: Блог
-    company: Компанія
-    about: Про нас
-    contact: Контакти
-    privacy: Політика конфіденційності
-    follow_us: Стежте за нами
-    copyright: "© %{year} danlio. Усі права захищено."
+    tagline: Простий простір для сучасного викладача.
+    product: Product
+    features: Features
+    pricing: Pricing
+    updates: Updates
+    resources: Resources
+    help_center: Help
+    contact: Contact
+    legal: Legal
+    privacy: Privacy
+    terms: Terms
+    copyright: "© %{year} Danlio"
 
   home:
     hero:
-      title_lead: Більше викладайте.
-      title_accent: Менше адмініструйте.
-      subhead: Єдина CRM для репетиторів і викладачів. Організовуйте учнів, плануйте уроки, відстежуйте прогрес і розвивайте викладацький бізнес.
+      title_line1: Викладайте.
+      title_rest: Решту залиште
+      brand: Danlio
+      title_end: "."
+      title_lead: Викладайте.
+      title_accent: Решту залиште Danlio.
+      subhead: Учні, розклад, домашні завдання та оплати — в одному простому просторі.
       get_started: Почати безкоштовно
-      see_how: Як це працює
+      see_how: Подивитися, як це працює
       no_card: Картка не потрібна
       setup: Налаштування за 2 хвилини
-    logos:
-      trusted: Нам довіряють викладачі та репетитори з усього світу
     features:
-      title: Усе, що потрібно, щоб викладати й керувати
+      title_line1: Все необхідне.
+      title_line2: Нічого зайвого.
+      subhead: Danlio збирає щоденну роботу викладача в одному простому просторі.
       students_title: Учні
-      students_text: Уся інформація про учнів в одному місці й завжди актуальна.
-      lessons_title: Розклад уроків
-      lessons_text: Плануйте, переносьте й відстежуйте уроки без зайвих зусиль.
+      students_text: Уся інформація про учнів, контакти, нотатки та прогрес в одному місці.
+      lessons_title: Розклад
+      lessons_text: Плануйте уроки та бачте весь свій день в одному календарі.
       homework_title: Домашні завдання
-      homework_text: Створюйте, призначайте й перевіряйте домашні в одному місці.
-      progress_title: Прогрес
-      progress_text: Стежте за успіхами учнів і їхніми досягненнями.
+      homework_text: Призначайте завдання, перевіряйте роботи та відстежуйте виконання.
       payments_title: Оплати
-      payments_text: Приймайте оплату онлайн і контролюйте дохід.
-      reports_title: Звіти
-      reports_text: Отримуйте аналітику й розвивайте викладацький бізнес.
-    workflow:
-      title_lead: Один простір.
-      title_accent: Увесь викладацький процес.
-      step1_title: Додайте учнів
-      step1_text: Імпортуйте або створіть профілі за кілька секунд.
-      step2_title: Заплануйте уроки
-      step2_text: Вкажіть доступність і бронюйте заняття.
-      step3_title: Викладайте й задавайте
-      step3_text: Проводьте уроки та призначайте домашні.
-      step4_title: Відстежуйте й покращуйте
-      step4_text: Стежте за прогресом і допомагайте учням рости.
-      next_lesson: Наступний урок
-      next_lesson_date: 14 травня 2024 • 10:00
-      progress: Прогрес
-      progress_overview: Огляд прогресу
+      payments_text: Бачте оплачені уроки, заборгованості та свій дохід.
+    simple:
+      title_line1: Не потрібно вчитися
+      title_line2: користуватися Danlio.
+      subhead: Ми прибрали все зайве, щоб основні дії займали секунди, а не хвилини.
+      step1: Додайте учня
+      step2: Заплануйте урок
+      step3: Дайте домашнє
+      step4: Отримайте оплату
+      done: Ось і все.
+    showcase:
+      title: Усе перед очима.
+      text: Сьогоднішні уроки, домашні завдання, оплати та прогрес учнів — без десятків вкладок і складних меню.
+      points:
+        - Менше кліків
+        - Менше ручної роботи
+        - Більше часу на викладання
+    proof:
+      quote: "Раніше я використовувала календар, месенджер і таблиці. Тепер усе знаходиться в Danlio."
+      name: Олена Коваль
+      subject: English
+    pricing:
+      title_line1: Простий продукт.
+      title_line2: Проста ціна.
+      free_name: Free
+      free_desc: Для тих, хто тільки починає.
+      free_feature: До 5 учнів
+      teacher_name: Teacher
+      teacher_desc: Для активних приватних викладачів.
+      popular: Найпопулярніший
+      month: /міс
+      teacher_features:
+        - Необмежена кількість учнів
+        - Календар уроків
+        - Домашні завдання
+        - Оплати
+        - Відстеження прогресу
+      school_name: School
+      school_desc: Для центрів і невеликих шкіл.
+      school_price: Команда
+      school_features:
+        - Кілька викладачів
+        - Обліковий запис адміністратора
+        - Спільне керування учнями
+        - Командний календар
+        - Аналітика
+      contact: Зв’язатися з нами
     cta:
-      title: Готові спростити викладання?
-      text: Приєднуйтесь до тисяч викладачів, які економлять час і розвивають бізнес з danlio.
-      get_started: Почати безкоштовно
-      see_how: Як це працює
+      title_line1: Менше рутини.
+      title_line2: Більше викладання.
+      text: Спробуйте Danlio та організуйте свою викладацьку роботу за кілька хвилин.
+      get_started: Почати безкоштовно →
     dash:
+      today: Today
+      greeting: Good afternoon, Ava
+      search: Search
+      lessons_today: Lessons today
+      remaining: 2 remaining
+      students: Students
+      trial: 1 trial
+      homework: Homework
+      to_review: To review
+      this_week: This week
+      paid: Paid
+      todays_lessons: Today’s lessons
+      progress: Progress
       active: Активна
       days: [Пн, Вт, Ср, Чт, Пт, Сб, Нд]
     calendar:

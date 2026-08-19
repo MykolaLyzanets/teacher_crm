@@ -1,0 +1,11 @@
+.lessons-page__actions data-lesson-menu=lesson[:id]
+  button.lessons-page__icon-btn type="button" title=t('app.lessons.view_title') aria-label=t('app.lessons.view_aria', subject: subject) data-action="lessons#openView"
+    = lesson_icon 'eye', size: 20
+  button.lessons-page__icon-btn type="button" title=t('app.lessons.edit_title') aria-label=t('app.lessons.edit_aria', subject: subject) data-action="lessons#openEdit"
+    = lesson_icon 'pencil', size: 20
+  button.lessons-page__icon-btn type="button" title=t('app.lessons.more_title') aria-label=t('app.lessons.more_aria', subject: subject) aria-expanded="false" data-lessons-target="menuBtn" data-action="lessons#toggleMenu"
+    = lesson_icon 'dots', size: 20
+  .lessons-page__menu.lessons-page__menu--hidden data-lessons-target="menu"
+    - if upcoming
+      button.lessons-page__menu-item type="button" data-action="lessons#askCancel" = t('app.lessons.cancel_lesson')
+    button.lessons-page__menu-item.lessons-page__menu-item--danger type="button" data-action="lessons#askDelete" = t('app.lessons.delete_lesson')

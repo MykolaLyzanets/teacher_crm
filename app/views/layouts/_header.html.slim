@@ -3,13 +3,14 @@ header.header
     = render 'layouts/logo'
     .header-panel data-home-nav=""
       nav.nav
-        a href="#features" = t('header.features')
-        a href="#workflow" = t('header.how_it_works')
-        a href="#schools" = t('header.schools')
+        a href="#product" = t('header.product')
         a href="#pricing" = t('header.pricing')
+        a href="#tutors" = t('header.tutors')
+        a href="#schools" = t('header.schools')
       .header-actions
         = render 'layouts/lang_switch'
         - if user_signed_in?
+          = link_to t('header.cabinet'), signed_in_home_path, class: 'link-login type-nav'
           = button_to t('header.log_out'), destroy_user_session_path, method: :delete, class: 'btn'
         - else
           = link_to t('header.log_in'), new_user_session_path, class: 'link-login type-nav'

@@ -66,7 +66,7 @@ module ApplicationHelper
   end
 
   def app_nav_items
-    [
+    items = [
       { path: dashboard_path, label: t('app.nav.dashboard'), icon: 'dashboard', match: 'dashboard' },
       { path: students_path, label: t('app.nav.students'), icon: 'students', match: 'students' },
       { path: teachers_path, label: t('app.nav.teachers'), icon: 'teachers', match: 'teachers' },
@@ -77,6 +77,24 @@ module ApplicationHelper
       { path: reports_path, label: t('app.nav.reports'), icon: 'reports', match: 'reports' },
       { path: messages_path, label: t('app.nav.messages'), icon: 'messages', match: 'messages' }
     ]
+    return items if !user_signed_in? || current_user.owner? || current_user.admin?
+
+    items.reject { |item| item[:match] == 'teachers' }
+  end
+
+  def signed_in_home_path
+    return new_user_session_path unless user_signed_in?
+    return student_calendar_path if current_user.student?
+
+    dashboard_path
+  end
+
+  def can_manage_teachers?
+    user_signed_in? && (current_user.owner? || current_user.admin?)
+  end
+
+  def can_assign_teacher?
+    can_manage_teachers?
   end
 
   def app_i18n_json(*roots)

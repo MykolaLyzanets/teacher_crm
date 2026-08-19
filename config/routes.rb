@@ -26,9 +26,10 @@ Rails.application.routes.draw do
 
     get 'dashboard', to: 'dashboard#index'
 
-    resources :students, only: %i[index show new create]
-    resources :teachers, only: %i[index show new create]
+    resources :students, only: %i[index show new create edit update]
+    resources :teachers, only: %i[index show new create edit update]
     get 'calendar', to: 'calendar#index'
+    get 'lessons', to: 'lessons#index'
 
     scope :student, as: :student do
       get '/', to: 'student_portal#home', as: :root
@@ -39,7 +40,7 @@ Rails.application.routes.draw do
       get 'notifications', to: 'student_portal#notifications'
     end
 
-    %w[lessons homework payments reports messages settings].each do |page|
+    %w[homework payments reports messages settings].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page
     end
 

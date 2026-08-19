@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 module Teachers
-  class Create
+  class Update
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
-    def initialize(workspace:, actor:, params:)
-      @workspace = workspace
+    def initialize(teacher_profile:, actor:, params:)
+      @teacher_profile = teacher_profile
+      @user = teacher_profile.user
       @actor = actor
       @params = params
     end
@@ -15,7 +16,7 @@ module Teachers
 
     def save
       @errors = ActiveModel::Errors.new(self)
-      build_records
+      assign_records
       validate
       return false if errors.any? || user.errors.any? || teacher_profile.errors.any?
 
@@ -36,21 +37,13 @@ module Teachers
 
     private
 
-    attr_reader :workspace, :actor, :params
+    attr_reader :actor, :params
 
-    def build_records
-      password = User.generate_password
-      @user = User.new(
-        email: params[:email].to_s.strip,
-        full_name: resolved_full_name,
-        role: :teacher,
-        workspace:,
-        password:,
-        password_confirmation: password
-      )
-      @teacher_profile = TeacherProfile.new(profile_attrs)
-      teacher_profile.user = user
-      teacher_profile.workspace = workspace
+    def assign_records
+      email = params[:email].to_s.strip
+      user.email = email if email.present?
+      user.full_name = resolved_full_name
+      teacher_profile.assign_attributes(profile_attrs)
     end
 
     def validate
@@ -64,17 +57,6 @@ module Teachers
         user.save!
         teacher_profile.save!
       end
-      invite_user if send_invitation?
-    end
-
-    def invite_user
-      user.send_reset_password_instructions
-    end
-
-    def send_invitation?
-      return false unless ActiveModel::Type::Boolean.new.cast(params[:invite_to_workspace])
-
-      params[:invitation_timing].to_s != 'create_pending'
     end
 
     def resolved_full_name
@@ -90,7 +72,7 @@ module Teachers
         last_name: params[:last_name].to_s.strip,
         display_name: params[:display_name].to_s.strip.presence,
         job_title: params[:job_title].to_s.strip.presence,
-        status: params[:status].presence || default_status,
+        status: params[:status].presence || teacher_profile.status,
         phone: params[:phone].to_s.strip.presence,
         preferred_contact_method: params[:preferred_contact_method].presence || 'email',
         timezone: params[:timezone].presence,
@@ -109,10 +91,6 @@ module Teachers
         calendar_color: params[:calendar_color].presence || 'olive',
         notes: params[:notes].to_s.strip.presence
       }
-    end
-
-    def default_status
-      ActiveModel::Type::Boolean.new.cast(params[:invite_to_workspace]) ? 'invited' : 'active'
     end
 
     def normalized_working_hours
@@ -134,7 +112,7 @@ module Teachers
 
     def lesson_duration_minutes
       if params[:duration_preset].to_s == 'custom'
-        integer_or_nil(params[:custom_duration]) || 60
+        integer_or_nil(params[:custom_duration]) || teacher_profile.default_lesson_duration_minutes || 60
       else
         integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes]) || 60
       end

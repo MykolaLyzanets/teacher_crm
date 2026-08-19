@@ -44,6 +44,7 @@ module TeachersHelper
     'teal' => '#5a7a72'
   }.freeze
 
+  LESSON_DURATION_PRESETS = [30, 45, 60, 90].freeze
   SUBJECTS = %w[English Mathematics Science Physics IELTS Spanish Music].freeze
   LANGUAGES = LANGUAGE_LABELS.to_a
   TAGS = ['IELTS', 'Online', 'Group lessons', 'Exam preparation', 'Beginners', 'Advanced'].freeze
@@ -156,6 +157,27 @@ module TeachersHelper
     pct = (((current - previous).to_f / previous) * 100).round
     sign = pct.positive? ? '+' : ''
     t('app.common.vs_last_month', value: "#{sign}#{pct}%")
+  end
+
+  def teacher_hour_value(teacher, day, field)
+    teacher = teacher.with_indifferent_access
+    row = Array(teacher[:workingHours]).find do |item|
+      item.with_indifferent_access[:day].to_s == day.to_s
+    end
+    fallback = field.to_s == 'start' ? '09:00' : '17:00'
+    return fallback if row.blank?
+
+    row = row.with_indifferent_access
+    if field.to_s == 'start'
+      row[:startTime].presence || row[:start].presence || fallback
+    else
+      row[:endTime].presence || row[:end].presence || fallback
+    end
+  end
+
+  def teacher_duration_preset(teacher)
+    minutes = teacher.with_indifferent_access[:defaultLessonDurationMinutes].to_i
+    TeachersHelper::LESSON_DURATION_PRESETS.include?(minutes) ? minutes.to_s : 'custom'
   end
 
   def lesson_format_label(format)

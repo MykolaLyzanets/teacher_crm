@@ -1,0 +1,61 @@
+- nav = [['dashboard', 'Dashboard', true], ['students', 'Students', false], ['teachers', 'Teachers', false], ['calendar', 'Calendar', false], ['homework', 'Homework', false], ['payments', 'Payments', false], ['reports', 'Reports', false], ['messages', 'Messages', false]]
+- lessons = [['10:00', 'English', 'Emma Johnson', 'olive'], ['12:30', 'Mathematics', 'Daniel Wilson', 'sage'], ['16:00', 'IELTS', 'Sophia Brown', 'warm']]
+- homework = [['Past Simple Practice', 'Emma', 'Due today'], ['Listening worksheet', 'Daniel', 'Submitted']]
+
+.dash-preview aria-hidden="true"
+  .dash-preview__chrome
+    span.dash-preview__dot
+    span.dash-preview__dot
+    span.dash-preview__dot
+    span.dash-preview__url app.danlio.com
+  .dash-preview__body
+    aside.dash-preview__nav
+      .dash-preview__logo
+        = render 'layouts/logo'
+      - nav.each do |icon, label, active|
+        .dash-preview__link class=("is-active" if active)
+          = icon_tag icon, size: 16
+          span = label
+    .dash-preview__main
+      .dash-preview__head
+        div
+          p = t('home.dash.today')
+          strong = t('home.dash.greeting')
+        .dash-preview__tools
+          span.dash-preview__search
+            = icon_tag 'search', size: 14
+            = t('home.dash.search')
+          span.dash-preview__icon
+            = icon_tag 'bell', size: 16
+          span.home-mini__avatar AT
+      .dash-preview__metrics
+        - [[t('home.dash.lessons_today'), '3', t('home.dash.remaining')], [t('home.dash.students'), '12', t('home.dash.trial')], [t('home.dash.homework'), '2', t('home.dash.to_review')], [t('home.dash.this_week'), '€240', t('home.dash.paid')]].each do |label, value, hint|
+          .dash-preview__metric
+            p = label
+            strong = value
+            span = hint
+      .dash-preview__cols
+        .dash-preview__card
+          p.dash-preview__card-title = t('home.dash.todays_lessons')
+          ul
+            - lessons.each do |time, title, student, tone|
+              li class="dash-preview__lesson dash-preview__lesson--#{tone}"
+                div
+                  strong = title
+                  small = student
+                span = time
+        .dash-preview__side
+          .dash-preview__card
+            p.dash-preview__card-title = t('home.dash.homework')
+            ul
+              - homework.each do |title, student, status|
+                li.dash-preview__hw
+                  div
+                    strong = title
+                    small = student
+                  span class=("is-done" if status == 'Submitted') = status
+          .dash-preview__card.dash-preview__card--progress
+            p.dash-preview__card-title = t('home.dash.progress')
+            small Emma Johnson · English
+            .home-mini__bar
+              span

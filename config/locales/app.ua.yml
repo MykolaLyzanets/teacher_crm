@@ -27,9 +27,11 @@ ua:
     common:
       coming_soon: Незабаром
       view: Переглянути
+      edit: Редагувати
       cancel: Скасувати
       confirm: Підтвердити
       create: Створити
+      add: Додати
       back: Назад
       clear_filters: Очистити фільтри
       unassigned: Без викладача
@@ -104,8 +106,11 @@ ua:
       no_teacher: Викладача ще не призначено.
       view_teacher: Переглянути викладача
       create_title: Створити учня
-      create_subtitle: Додайте профіль учня, контакти та вподобання щодо навчання.
+      edit_title: Редагувати учня
+      edit_subtitle: Оновіть профіль учня, контакти та навчальні дані.
       create_student: Створити учня
+      save_student: Зберегти учня
+      create_subtitle: Додайте профіль учня, контакти та вподобання щодо навчання.
       basic_info: Основна інформація
       basic_info_sub: Основні дані профілю учня.
       first_name: Імʼя
@@ -132,6 +137,7 @@ ua:
       stats_unassigned_aria: Фільтр учнів без викладача
       stats_new_aria: Фільтр учнів, створених цього місяця
       created: "%{name} успішно створено."
+      updated: "%{name} успішно оновлено."
       profile_fallback: Профіль учня
       photo: Фото профілю
       photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
@@ -202,6 +208,7 @@ ua:
       creating: Створення…
       fix_fields: Виправте підсвічені поля, перш ніж створити учня.
       assigned_teacher_hint: Необовʼязково. Можна призначити пізніше в профілі учня.
+      assigned_teacher_locked: Викладач призначається автоматично. Змінити призначення може лише власник.
       assigned_teacher_auto: Призначено автоматично — у просторі один доступний викладач.
       remove_confirm_title: Зняти призначення викладача?
       remove_confirm_text: Учень стане без викладача. Існуючі уроки не зміняться.
@@ -245,9 +252,14 @@ ua:
       back: До списку викладачів
       schedule_lesson: Запланувати урок
       create_title: Створити викладача
+      edit_title: Редагувати викладача
       create_subtitle: Додайте викладача, налаштуйте деталі викладання та доступ.
+      edit_subtitle: Оновіть профіль викладача та параметри уроків.
       create_teacher: Створити викладача
+      save_teacher: Зберегти викладача
       created: "%{name} успішно створено."
+      updated: "%{name} успішно оновлено."
+      forbidden: Лише власник простору може керувати викладачами.
       stats_total: Усього викладачів
       stats_total_support: Усі викладачі
       stats_active: Активні викладачі
@@ -280,7 +292,20 @@ ua:
       location: Локація
       teaching: Викладання
       teaching_sub: Що викладає і як працює з учнями.
-      subjects: Предмети або курси
+      subjects: Предмети та курси
+      subjects_hint: Додайте предмети або курси, які викладає цей викладач.
+      add_subject: Додати предмет або курс
+      subject_placeholder: Назва предмета або курсу…
+      subject_duplicate: Цей предмет уже додано.
+      remove_subject: Прибрати предмет
+      default_price: Ціна уроку за замовчуванням
+      default_price_hint: Використовується як ціна за замовчуванням під час створення уроку.
+      currency: Валюта
+      optional: · Необовʼязково
+      years: років
+      custom_duration: Власна
+      custom_duration_minutes: Власна тривалість (хв)
+      calendar_color_hint: Допомагає розрізняти викладачів у календарі. Колір — не єдина ознака.
       workspace_role: Роль у просторі
       select_role: Оберіть роль
       role_teacher: Викладач
@@ -412,6 +437,36 @@ ua:
       date: Дата
       start: Початок
       end: Кінець
+      start_time: Початок
+      end_time: Кінець
+      subject: Предмет / курс
+      select_subject: Оберіть предмет або курс
+      subject_need_teacher: Спочатку оберіть викладача, щоб вибрати предмет.
+      subject_empty: У цього викладача немає предметів чи курсів.
+      add_participant: Додати учня
+      remove_participant: Прибрати учня
+      lesson_price: Ціна уроку
+      currency: Валюта
+      price_hint: Підставляється з типової ціни викладача. Зміна стосується лише цього уроку.
+      lesson_format: Формат уроку
+      optional: необовʼязково
+      lesson_notes: Нотатки
+      workspace_timezone: Часовий пояс простору
+      repeat_custom: Власне
+      repeat_until: До
+      weekdays: Дні тижня
+      group_lesson: Груповий урок
+      individual_lesson: Індивідуальний урок
+      group_count: "%{count} учнів"
+      save_changes: Зберегти зміни
+      weekday_short:
+        monday: Пн
+        tuesday: Вт
+        wednesday: Ср
+        thursday: Чт
+        friday: Пт
+        saturday: Сб
+        sunday: Нд
       type: Тип
       notes: Нотатки
       notes_placeholder: Необовʼязкові нотатки до уроку…
@@ -478,12 +533,70 @@ ua:
       coming_soon_text: Тут зʼявляться інсайти, найближчі уроки та швидкі дії.
       open_calendar: Відкрити календар
       view_students: Переглянути учнів
+    lessons:
+      title: Уроки
+      subtitle: Керуйте всіма уроками та переглядайте їх.
+      create: Створити урок
+      search_placeholder: Шукати уроки...
+      search_aria: Пошук уроків
+      filter_teacher: Фільтр за викладачем
+      all_teachers: Усі викладачі
+      from_date: Дата від
+      to_date: Дата до
+      tabs_aria: Статус уроку
+      tab_all: Усі
+      tab_upcoming: Майбутні
+      tab_completed: Завершені
+      tab_cancelled: Скасовані
+      col_when: Дата і час
+      col_party: Учень / Група
+      col_teacher: Викладач
+      col_subject: Предмет
+      col_price: Ціна
+      col_status: Статус
+      col_actions: Дії
+      empty_title: Уроків ще немає
+      empty_text: Заплануйте перший урок — він зʼявиться тут.
+      none_title: Уроків не знайдено
+      none_text: Спробуйте змінити пошук або фільтри.
+      view_title: Переглянути урок
+      view_aria: "Переглянути %{subject}"
+      edit_title: Редагувати урок
+      edit_aria: "Редагувати %{subject}"
+      more_title: Інші дії
+      more_aria: "Інші дії для %{subject}"
+      cancel_lesson: Скасувати урок
+      delete_lesson: Видалити урок
+      cancel_title: Скасувати урок?
+      cancel_text: Урок буде позначено як скасований і збережено в історії.
+      delete_title: Видалити урок?
+      delete_text: Видалити цей урок назавжди? Цю дію не можна скасувати.
+      cancelled_toast: Урок скасовано.
+      deleted_toast: Урок видалено.
+      completed_toast: Урок позначено як завершений.
+      mark_completed: Позначити завершеним
+      close_details: Закрити деталі уроку
+      close: Закрити
+      not_found: Цей урок не знайдено.
+      group_subtitle: Груповий урок
+      date_time: Дата і час
+      participants: Учасники
+      format: Формат
+      notes: Нотатки
+      join_meeting: Приєднатися до зустрічі →
+      default_subject: Урок
+      group_fallback: Груповий урок
+      types:
+        individual: Індивідуальний
+        group: Група
+        trial: Пробний
+        consultation: Консультація
     pages:
       coming_soon_text: Цей розділ є частиною робочого простору Danlio і зʼявиться в наступному оновленні.
       back_dashboard: До огляду
       lessons:
         title: Уроки
-        description: Історія уроків, відвідуваність і результати.
+        description: Керуйте всіма уроками та переглядайте їх.
       homework:
         title: Домашні завдання
         description: Призначайте та перевіряйте домашні в одному місці.

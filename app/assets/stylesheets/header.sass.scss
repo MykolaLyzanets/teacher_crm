@@ -1,9 +1,12 @@
 .header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 30;
-  height: 86px;
+  height: 72px;
   display: flex;
   align-items: center;
+  background: rgba(250, 249, 245, 0.9);
+  backdrop-filter: blur(12px);
 }
 
 .header .container {

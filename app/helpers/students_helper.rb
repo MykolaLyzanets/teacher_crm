@@ -73,12 +73,17 @@ module StudentsHelper
 
   def student_stats_cards(stats)
     stats = stats.with_indifferent_access
-    [
+    cards = [
       { id: 'all', label: t('app.students.stats_total'), value: stats[:totalStudents], support: t('app.students.stats_total_support'), icon: 'students', aria: t('app.students.stats_total_aria') },
-      { id: 'active', label: t('app.students.stats_active'), value: stats[:activeStudents], support: percent_of_total(stats[:activeStudents], stats[:totalStudents]), icon: 'school', aria: t('app.students.stats_active_aria') },
-      { id: 'assigned', label: t('app.students.stats_assigned'), value: stats[:assignedStudents], support: percent_of_total(stats[:assignedStudents], stats[:totalStudents]), icon: 'user-check', aria: t('app.students.stats_assigned_aria') },
-      { id: 'unassigned', label: t('app.students.stats_unassigned'), value: stats[:unassignedStudents], support: percent_of_total(stats[:unassignedStudents], stats[:totalStudents]), icon: 'user-x', aria: t('app.students.stats_unassigned_aria') },
-      { id: 'newThisMonth', label: t('app.students.stats_new'), value: stats[:newThisMonth], support: student_monthly_change_text(stats[:monthlyChangePercent]), icon: 'chart-bars', aria: t('app.students.stats_new_aria') }
+      { id: 'active', label: t('app.students.stats_active'), value: stats[:activeStudents], support: percent_of_total(stats[:activeStudents], stats[:totalStudents]), icon: 'school', aria: t('app.students.stats_active_aria') }
     ]
+    if can_assign_teacher?
+      cards += [
+        { id: 'assigned', label: t('app.students.stats_assigned'), value: stats[:assignedStudents], support: percent_of_total(stats[:assignedStudents], stats[:totalStudents]), icon: 'user-check', aria: t('app.students.stats_assigned_aria') },
+        { id: 'unassigned', label: t('app.students.stats_unassigned'), value: stats[:unassignedStudents], support: percent_of_total(stats[:unassignedStudents], stats[:totalStudents]), icon: 'user-x', aria: t('app.students.stats_unassigned_aria') }
+      ]
+    end
+    cards << { id: 'newThisMonth', label: t('app.students.stats_new'), value: stats[:newThisMonth], support: student_monthly_change_text(stats[:monthlyChangePercent]), icon: 'chart-bars', aria: t('app.students.stats_new_aria') }
+    cards
   end
 end

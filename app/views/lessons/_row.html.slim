@@ -1,0 +1,56 @@
+- review = lesson_review_status(lesson)
+- upcoming = lesson_upcoming?(lesson)
+- subject = lesson_subject_label(lesson)
+- party = lesson_party_label(lesson)
+- when_label = "#{format_lesson_day_short(lesson[:date])} · #{format_lesson_time_range(lesson[:startTime], lesson[:endTime])}"
+- payload = {
+    id: lesson[:id],
+    subject: subject,
+    typeLabel: lesson[:type].to_s == 'group' ? t('app.lessons.group_subtitle') : lesson_type_label(lesson),
+    dateLong: format_lesson_day_long(lesson[:date]),
+    timeRange: format_lesson_time_range(lesson[:startTime], lesson[:endTime]),
+    teacher: lesson[:teacher],
+    party: party,
+    price: lesson_price_label(lesson),
+    review: review,
+    reviewLabel: t("app.lessons.tab_#{review}"),
+    upcoming: upcoming,
+    location: lesson[:location],
+    meetingLink: lesson[:meetingLink],
+    locationText: lesson[:locationText],
+    notes: lesson[:notes],
+    status: lesson[:status]
+  }
+
+li.lessons-page__row[
+  data-lessons-target="row"
+  data-tab=review
+  data-teacher=lesson[:teacher]
+  data-date=lesson[:date]
+  data-search=lesson_search_haystack(lesson)
+  data-upcoming=(upcoming ? 'true' : 'false')
+  data-lesson=payload.to_json
+]
+  article.lessons-page__card
+    .lessons-page__card-top
+      div
+        p.lessons-page__card-title = subject
+        p.lessons-page__muted = when_label
+      = render 'actions', lesson: lesson, subject: subject, upcoming: upcoming
+    p.lessons-page__muted.lessons-page__card-meta = "#{party} · #{lesson[:teacher]}"
+    .lessons-page__card-foot
+      span.status-badge class="status-badge--#{lesson_badge_tone(review)}" data-badge="" = t("app.lessons.tab_#{review}")
+      p.lessons-page__price = lesson_price_label(lesson)
+
+  .lessons-page__desktop
+    div
+      p.lessons-page__day = format_lesson_day_short(lesson[:date])
+      p.lessons-page__muted = format_lesson_time_range(lesson[:startTime], lesson[:endTime])
+    p.lessons-page__cell = party
+    p.lessons-page__cell = lesson[:teacher]
+    p.lessons-page__cell = subject
+    p.lessons-page__price = lesson_price_label(lesson)
+    div
+      span.status-badge class="status-badge--#{lesson_badge_tone(review)}" data-badge="" = t("app.lessons.tab_#{review}")
+    .lessons-page__desktop-actions
+      = render 'actions', lesson: lesson, subject: subject, upcoming: upcoming

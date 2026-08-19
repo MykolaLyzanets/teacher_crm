@@ -30,3 +30,6 @@ application.register("student-homework", StudentHomeworkController)
 
 import StudentMaterialsController from "./student_materials_controller"
 application.register("student-materials", StudentMaterialsController)
+
+import LessonsController from "./lessons_controller"
+application.register("lessons", LessonsController)

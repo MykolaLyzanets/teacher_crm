@@ -27,9 +27,11 @@ en:
     common:
       coming_soon: Coming soon
       view: View
+      edit: Edit
       cancel: Cancel
       confirm: Confirm
       create: Create
+      add: Add
       back: Back
       clear_filters: Clear filters
       unassigned: Unassigned
@@ -104,8 +106,11 @@ en:
       no_teacher: No teacher assigned yet.
       view_teacher: View teacher
       create_title: Create student
-      create_subtitle: Add a student profile, contacts and learning preferences.
+      edit_title: Edit student
+      edit_subtitle: Update the student profile, contacts and learning details.
       create_student: Create student
+      save_student: Save student
+      create_subtitle: Add a student profile, contacts and learning preferences.
       basic_info: Basic information
       basic_info_sub: Primary profile details for the student.
       first_name: First name
@@ -132,6 +137,7 @@ en:
       stats_unassigned_aria: Filter unassigned students
       stats_new_aria: Filter students created this month
       created: "%{name} created successfully."
+      updated: "%{name} updated successfully."
       profile_fallback: Student profile
       photo: Profile photo
       photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
@@ -202,6 +208,7 @@ en:
       creating: Creating…
       fix_fields: Please fix the highlighted fields before creating this student.
       assigned_teacher_hint: Optional. You can assign later from the student profile.
+      assigned_teacher_locked: The teacher is assigned automatically. Only the owner can change this.
       assigned_teacher_auto: Automatically assigned — this workspace has one available teacher.
       remove_confirm_title: Remove teacher assignment?
       remove_confirm_text: This student will become unassigned. Existing lessons will not be changed.
@@ -245,9 +252,14 @@ en:
       back: Back to teachers
       schedule_lesson: Schedule lesson
       create_title: Create teacher
+      edit_title: Edit teacher
       create_subtitle: Add a teacher, configure their teaching details and control workspace access.
+      edit_subtitle: Update the teacher profile and lesson settings.
       create_teacher: Create teacher
+      save_teacher: Save teacher
       created: "%{name} created successfully."
+      updated: "%{name} updated successfully."
+      forbidden: Only the workspace owner can manage teachers.
       stats_total: Total Teachers
       stats_total_support: All teachers
       stats_active: Active Teachers
@@ -280,7 +292,20 @@ en:
       location: Location
       teaching: Teaching details
       teaching_sub: Configure what the teacher teaches and how they work with students.
-      subjects: Subjects or courses
+      subjects: Subjects & Courses
+      subjects_hint: Add the subjects or courses this teacher teaches.
+      add_subject: Add subject or course
+      subject_placeholder: Subject or course name...
+      subject_duplicate: This subject is already added.
+      remove_subject: Remove subject
+      default_price: Default lesson price
+      default_price_hint: Used as the default price when creating a lesson.
+      currency: Currency
+      optional: · Optional
+      years: years
+      custom_duration: Custom
+      custom_duration_minutes: Custom duration (minutes)
+      calendar_color_hint: Helps distinguish teachers in Calendar. Color is not the only identity cue.
       workspace_role: Workspace role
       select_role: Select workspace role
       role_teacher: Teacher
@@ -410,8 +435,36 @@ en:
       select_student: Select a student
       lesson_title: Title
       date: Date
-      start: Start
-      end: End
+      start_time: Start time
+      end_time: End time
+      subject: Subject / course
+      select_subject: Select subject or course
+      subject_need_teacher: Select a teacher to choose a subject or course.
+      subject_empty: No subjects or courses added for this teacher.
+      add_participant: Add student
+      remove_participant: Remove student
+      lesson_price: Lesson price
+      currency: Currency
+      price_hint: Loaded from the teacher’s default. Changing it only affects this lesson.
+      lesson_format: Lesson format
+      optional: optional
+      lesson_notes: Lesson notes
+      workspace_timezone: Workspace timezone
+      repeat_custom: Custom
+      repeat_until: Until
+      weekdays: Weekdays
+      group_lesson: Group lesson
+      individual_lesson: Individual lesson
+      group_count: "%{count} students"
+      save_changes: Save changes
+      weekday_short:
+        monday: Mon
+        tuesday: Tue
+        wednesday: Wed
+        thursday: Thu
+        friday: Fri
+        saturday: Sat
+        sunday: Sun
       type: Type
       notes: Notes
       notes_placeholder: Optional lesson notes…
@@ -478,12 +531,70 @@ en:
       coming_soon_text: Insights, upcoming lessons and quick actions will appear here.
       open_calendar: Open calendar
       view_students: View students
+    lessons:
+      title: Lessons
+      subtitle: Manage and review all your lessons.
+      create: Create lesson
+      search_placeholder: Search lessons...
+      search_aria: Search lessons
+      filter_teacher: Filter by teacher
+      all_teachers: All teachers
+      from_date: From date
+      to_date: To date
+      tabs_aria: Lesson status
+      tab_all: All
+      tab_upcoming: Upcoming
+      tab_completed: Completed
+      tab_cancelled: Cancelled
+      col_when: Date & time
+      col_party: Student / Group
+      col_teacher: Teacher
+      col_subject: Subject
+      col_price: Price
+      col_status: Status
+      col_actions: Actions
+      empty_title: No lessons yet
+      empty_text: Schedule your first lesson and it will appear here.
+      none_title: No lessons found
+      none_text: Try changing your search or filters.
+      view_title: View lesson
+      view_aria: "View %{subject}"
+      edit_title: Edit lesson
+      edit_aria: "Edit %{subject}"
+      more_title: More actions
+      more_aria: "More actions for %{subject}"
+      cancel_lesson: Cancel lesson
+      delete_lesson: Delete lesson
+      cancel_title: Cancel lesson?
+      cancel_text: The lesson will be marked as cancelled and kept in history.
+      delete_title: Delete lesson?
+      delete_text: Are you sure you want to permanently delete this lesson? This action cannot be undone.
+      cancelled_toast: Lesson cancelled.
+      deleted_toast: Lesson deleted.
+      completed_toast: Lesson marked as completed.
+      mark_completed: Mark as completed
+      close_details: Close lesson details
+      close: Close
+      not_found: This lesson could not be found.
+      group_subtitle: Group lesson
+      date_time: Date & time
+      participants: Participants
+      format: Format
+      notes: Notes
+      join_meeting: Join meeting →
+      default_subject: Lesson
+      group_fallback: Group lesson
+      types:
+        individual: Individual
+        group: Group
+        trial: Trial
+        consultation: Consultation
     pages:
       coming_soon_text: This section is part of the Danlio workspace and will be available in a future update.
       back_dashboard: Back to dashboard
       lessons:
         title: Lessons
-        description: Track lesson history, attendance and outcomes.
+        description: Manage and review all your lessons.
       homework:
         title: Homework
         description: Assign and review student homework in one place.

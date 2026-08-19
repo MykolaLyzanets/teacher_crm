@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 class TeachersController < AppController
-  before_action :require_workspace!, only: %i[new create]
+  before_action :require_owner_staff!
+  before_action :require_workspace!, only: %i[new create edit update]
+  before_action :set_teacher_record, only: %i[show edit update]
 
   def index
     records = teacher_profiles_scope.order(:first_name, :last_name)
@@ -11,17 +13,25 @@ class TeachersController < AppController
   end
 
   def show
-    record = teacher_profiles_scope.find_by(id: params[:id])
-    @teacher = record&.as_catalog
-    return unless record
+    @teacher = @teacher_record&.as_catalog
+    return unless @teacher_record
 
-    assigned = record.student_profiles.kept.includes(:user, :teacher_profile)
+    assigned = @teacher_record.student_profiles.kept.includes(:user, :teacher_profile)
     @assigned_students = assigned.map(&:as_catalog)
     @unassigned_students = student_profiles_scope.where(teacher_id: nil).map(&:as_catalog)
   end
 
   def new
     @teacher = default_teacher_attrs
+    @editing = false
+  end
+
+  def edit
+    return if @teacher_record.blank?
+
+    @teacher = @teacher_record.as_catalog
+    @editing = true
+    render :new
   end
 
   def create
@@ -31,6 +41,22 @@ class TeachersController < AppController
       redirect_to teacher_path(service.teacher_profile), notice: I18n.t('app.teachers.created', name:)
     else
       @teacher = default_teacher_attrs
+      @editing = false
+      flash.now[:alert] = service.error_messages.to_sentence
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    return if @teacher_record.blank?
+
+    service = Teachers::Update.new(teacher_profile: @teacher_record, actor: current_user, params: teacher_params)
+    if service.save
+      name = service.teacher_profile.display_label
+      redirect_to teacher_path(service.teacher_profile), notice: I18n.t('app.teachers.updated', name:)
+    else
+      @teacher = @teacher_record.as_catalog
+      @editing = true
       flash.now[:alert] = service.error_messages.to_sentence
       render :new, status: :unprocessable_entity
     end
@@ -42,7 +68,8 @@ class TeachersController < AppController
     permitted = params.permit(
       :first_name, :last_name, :display_name, :job_title, :status, :email, :phone,
       :preferred_contact_method, :timezone, :location, :experience_years, :bio,
-      :default_lesson_duration_minutes, :max_lessons_per_day, :default_meeting_link,
+      :default_lesson_duration_minutes, :duration_preset, :custom_duration,
+      :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
       :notes, :workspace_role,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
@@ -57,6 +84,10 @@ class TeachersController < AppController
 
     day_keys = TeachersHelper::WEEK_DAYS.index_with { %i[start end] }
     hours.permit(day_keys)
+  end
+
+  def set_teacher_record
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:id])
   end
 
   def catalog_lessons

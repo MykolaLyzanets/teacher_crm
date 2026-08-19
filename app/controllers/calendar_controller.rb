@@ -3,8 +3,10 @@
 class CalendarController < AppController
   def index
     @lessons = Array(Demo::Catalog.lessons).map(&:with_indifferent_access)
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
-    @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    db_teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    db_students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = db_teachers.presence || Demo::Catalog.teachers
+    @students = db_students.presence || Demo::Catalog.active_students
 
     @teacher_names = @teachers.map { |teacher| teacher_display_name(teacher) }.uniq.sort
     @student_names = @lessons.map { |lesson| lesson[:student].to_s }.compact_blank.uniq.sort

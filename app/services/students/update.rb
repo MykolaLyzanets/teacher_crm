@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 module Students
-  class Create
+  class Update
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
-    def initialize(workspace:, actor:, params:)
-      @workspace = workspace
+    def initialize(student_profile:, actor:, params:)
+      @student_profile = student_profile
+      @user = student_profile.user
       @actor = actor
       @params = params
     end
@@ -15,7 +16,7 @@ module Students
 
     def save
       @errors = ActiveModel::Errors.new(self)
-      build_records
+      assign_records
       validate
       return false if errors.any? || user.errors.any? || student_profile.errors.any?
 
@@ -36,58 +37,43 @@ module Students
 
     private
 
-    attr_reader :workspace, :actor, :params
+    attr_reader :actor, :params
 
-    def build_records
-      password = User.generate_password
-      @user = User.new(
-        email: params[:email].to_s.strip,
-        full_name: resolved_full_name,
-        role: :student,
-        workspace:,
-        password:,
-        password_confirmation: password
-      )
-      @student_profile = StudentProfile.new(profile_attrs)
-      student_profile.user = user
-      student_profile.workspace = workspace
+    def assign_records
+      email = params[:email].to_s.strip
+      user.email = email if email.present?
+      user.full_name = resolved_full_name
+      student_profile.assign_attributes(profile_attrs)
+      assign_teacher
     end
 
     def validate
       user.errors.add(:email, :blank) if user.email.blank?
       student_profile.errors.add(:first_name, :blank) if student_profile.first_name.blank?
       student_profile.errors.add(:last_name, :blank) if student_profile.last_name.blank?
-      resolve_teacher
     end
 
     def persist
       User.transaction do
         user.save!
-        assign_teacher if @assigned_teacher
         student_profile.save!
       end
     end
 
     def assign_teacher
-      student_profile.teacher_profile = @assigned_teacher
-      student_profile.assigned_at = Time.current
-      student_profile.assigned_by = actor.id
-      student_profile.assignment_revision = 1
-    end
+      return unless @assigned_teacher || params.key?(:teacher_id)
 
-    def resolve_teacher
-      unless actor.owner? || actor.admin?
-        @assigned_teacher = actor.teacher_profile
-        return
+      if @assigned_teacher
+        student_profile.teacher_profile = @assigned_teacher
+        student_profile.assigned_at = Time.current
+        student_profile.assigned_by = actor.id
+        student_profile.assignment_revision = student_profile.assignment_revision.to_i + 1
+      else
+        student_profile.teacher_profile = nil
+        student_profile.assigned_at = nil
+        student_profile.assigned_by = nil
+        student_profile.assignment_revision = student_profile.assignment_revision.to_i + 1
       end
-
-      id = params[:teacher_id].presence
-      return if id.blank?
-
-      @assigned_teacher = workspace.teacher_profiles.find_by(id:)
-      return if @assigned_teacher.present?
-
-      student_profile.errors.add(:teacher_id, :invalid)
     end
 
     def resolved_full_name
@@ -98,6 +84,7 @@ module Students
     end
 
     def profile_attrs
+      resolve_teacher
       {
         first_name: params[:first_name].to_s.strip,
         last_name: params[:last_name].to_s.strip,
@@ -125,6 +112,19 @@ module Students
         emergency_phone: params[:emergency_phone].to_s.strip.presence,
         notes: params[:notes].to_s.strip.presence
       }
+    end
+
+    def resolve_teacher
+      return unless params.key?(:teacher_id)
+
+      id = params[:teacher_id].presence
+      if id.blank?
+        @assigned_teacher = nil
+        return
+      end
+
+      @assigned_teacher = student_profile.workspace.teacher_profiles.find_by(id:)
+      student_profile.errors.add(:teacher_id, :invalid) if @assigned_teacher.blank?
     end
   end
 end

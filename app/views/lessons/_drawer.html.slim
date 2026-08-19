@@ -1,0 +1,53 @@
+.lessons-page__drawer-wrap.lessons-page__drawer-wrap--hidden data-lessons-target="drawer"
+  button.lessons-page__drawer-backdrop type="button" aria-label=t('app.lessons.close_details') data-action="lessons#closeView"
+  aside.lessons-page__drawer role="dialog" aria-modal="true" aria-labelledby="lesson-record-title"
+    .lessons-page__drawer-head
+      div
+        h2#lesson-record-title.lessons-page__drawer-title data-lessons-target="drawerTitle"
+        p.lessons-page__muted data-lessons-target="drawerSubtitle"
+      .lessons-page__drawer-tools
+        .lessons-page__drawer-more
+          button.lessons-page__icon-btn type="button" aria-label=t('app.lessons.more_title') data-action="lessons#toggleDrawerMenu"
+            = lesson_icon 'dots', size: 20
+          .lessons-page__menu.lessons-page__menu--hidden data-lessons-target="drawerMenu"
+            button.lessons-page__menu-item type="button" data-lessons-target="drawerCancelItem" data-action="lessons#askCancelFromDrawer" = t('app.lessons.cancel_lesson')
+            button.lessons-page__menu-item.lessons-page__menu-item--danger type="button" data-action="lessons#askDeleteFromDrawer" = t('app.lessons.delete_lesson')
+        button.lessons-page__icon-btn type="button" aria-label=t('app.lessons.close') data-action="lessons#closeView"
+          = lesson_icon 'x', size: 20
+    .lessons-page__drawer-body
+      p.lessons-page__drawer-missing hidden="hidden" data-lessons-target="drawerMissing" = t('app.lessons.not_found')
+      .lessons-page__drawer-content data-lessons-target="drawerContent"
+        span.status-badge data-lessons-target="drawerBadge"
+        .lessons-page__detail
+          .lessons-page__detail-label
+            = lesson_icon 'calendar', size: 18
+            span = t('app.lessons.date_time')
+          p data-lessons-target="drawerDate"
+          p data-lessons-target="drawerTime"
+        .lessons-page__detail
+          p.lessons-page__detail-kicker = t('app.lessons.col_teacher')
+          p data-lessons-target="drawerTeacher"
+        .lessons-page__detail
+          p.lessons-page__detail-kicker = t('app.common.student')
+          p data-lessons-target="drawerParty"
+        .lessons-page__detail
+          p.lessons-page__detail-kicker = t('app.lessons.col_price')
+          p data-lessons-target="drawerPrice"
+        .lessons-page__detail
+          .lessons-page__detail-label
+            span data-lessons-target="drawerVideoIcon"
+              = lesson_icon 'video', size: 18
+            span hidden="hidden" data-lessons-target="drawerPinIcon"
+              = lesson_icon 'pin', size: 18
+            span = t('app.lessons.format')
+          p data-lessons-target="drawerFormat"
+          a.lessons-page__link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerMeeting" = t('app.lessons.join_meeting')
+          p.lessons-page__muted data-lessons-target="drawerPlace"
+        .lessons-page__detail data-lessons-target="drawerNotesRow"
+          p.lessons-page__detail-kicker = t('app.lessons.notes')
+          p.lessons-page__notes data-lessons-target="drawerNotes"
+    .lessons-page__drawer-foot data-lessons-target="drawerFoot"
+      button.lessons-page__secondary-btn type="button" data-action="lessons#openEdit"
+        = lesson_icon 'edit', size: 18
+        span = t('app.lessons.edit_title')
+      button.lessons-page__primary-btn type="button" data-action="lessons#markCompleted" = t('app.lessons.mark_completed')

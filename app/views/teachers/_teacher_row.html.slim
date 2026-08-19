@@ -19,3 +19,4 @@ li.teachers-page__row data-teachers-target="row" data-search=teacher_search_hays
     = status_badge teacher_status_label(teacher[:status]), tone: teacher_status_tone(teacher[:status])
   .teachers-page__row-actions
     = link_to t('app.common.view'), teacher_path(teacher[:id]), class: 'teachers-page__ghost-btn'
+    = link_to t('app.common.edit'), edit_teacher_path(teacher[:id]), class: 'teachers-page__ghost-btn'

@@ -12,7 +12,8 @@ li.students-page__row[
   data-created=(student[:createdAt].to_s)
 ]
   .students-page__cell
-    input type="checkbox" aria-label=t('app.students.select_one', name: name) data-students-target="checkbox" data-action="change->students#syncSelection" data-id=student[:id]
+    - if can_assign_teacher?
+      input type="checkbox" aria-label=t('app.students.select_one', name: name) data-students-target="checkbox" data-action="change->students#syncSelection" data-id=student[:id]
   .students-page__cell.students-page__student
     span.students-page__avatar = student_initials(student)
     div
@@ -28,21 +29,27 @@ li.students-page__row[
   .students-page__cell.students-page__grade = student[:grade].presence || '—'
   .students-page__cell.students-page__teacher
     - if teacher_name.present?
-      button.students-page__teacher-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
-        span.students-page__avatar.students-page__avatar--sm
-          - if teacher
-            = teacher[:firstName].to_s[0]
-            = teacher[:lastName].to_s[0]
-          - else
-            | T
-        span = teacher_name
-    - else
+      - if can_assign_teacher?
+        button.students-page__teacher-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
+          span.students-page__avatar.students-page__avatar--sm
+            - if teacher
+              = teacher[:firstName].to_s[0]
+              = teacher[:lastName].to_s[0]
+            - else
+              | T
+          span = teacher_name
+      - else
+        span.students-page__teacher-name = teacher_name
+    - elsif can_assign_teacher?
       .students-page__assign-wrap
         span.status-badge.status-badge--neutral = t('app.common.unassigned')
         button.students-page__assign-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
           = icon_tag 'user-plus', size: 14
           = t('app.common.assign')
+    - else
+      span.status-badge.status-badge--neutral = t('app.common.unassigned')
   .students-page__cell
     span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
   .students-page__cell.students-page__align-right
     = link_to t('app.common.view'), student_path(student[:id]), class: 'students-page__view-btn'
+    = link_to t('app.common.edit'), edit_student_path(student[:id]), class: 'students-page__view-btn'

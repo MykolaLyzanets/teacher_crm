@@ -25,17 +25,19 @@
             option value="trial" = t('app.statuses.trial')
             option value="paused" = t('app.statuses.paused')
             option value="archived" = t('app.statuses.archived')
-          select aria-label=t('app.students.filter_teacher') data-students-target="teacher" data-action="change->students#filter"
-            option value="all" = t('app.students.all_teachers')
-            option value="assigned" = t('app.students.assigned')
-            option value="unassigned" = t('app.students.unassigned')
-            - @teachers.each do |teacher|
-              - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
-              option value=teacher[:id] = name
+          - if can_assign_teacher?
+            select aria-label=t('app.students.filter_teacher') data-students-target="teacher" data-action="change->students#filter"
+              option value="all" = t('app.students.all_teachers')
+              option value="assigned" = t('app.students.assigned')
+              option value="unassigned" = t('app.students.unassigned')
+              - @teachers.each do |teacher|
+                - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
+                option value=teacher[:id] = name
 
-      .students-page__bulk.students-page__bulk--hidden data-students-target="bulk"
-        p data-students-target="bulkCount" = t('app.common.selected', count: 0)
-        button.students-page__secondary-btn type="button" data-action="students#openAssign" = t('app.students.assign_teacher')
+      - if can_assign_teacher?
+        .students-page__bulk.students-page__bulk--hidden data-students-target="bulk"
+          p data-students-target="bulkCount" = t('app.common.selected', count: 0)
+          button.students-page__secondary-btn type="button" data-action="students#openAssign" = t('app.students.assign_teacher')
 
     .students-page__empty.students-page__empty--hidden data-students-target="empty"
       .students-page__empty-icon
@@ -49,7 +51,8 @@
     .students-page__table-wrap data-students-target="table"
       .students-page__table-head
         span
-          input type="checkbox" aria-label=t('app.students.select_all') data-students-target="selectAll" data-action="change->students#toggleAll"
+          - if can_assign_teacher?
+            input type="checkbox" aria-label=t('app.students.select_all') data-students-target="selectAll" data-action="change->students#toggleAll"
         span = t('app.students.col_student')
         span = t('app.students.col_contact')
         span = t('app.students.col_grade')
@@ -60,16 +63,17 @@
         - @students.each do |student|
           = render 'student_row', student: student, teachers: @teachers
 
-  .students-page__dialog[hidden] data-students-target="dialog"
-    .students-page__dialog-backdrop data-action="click->students#closeAssign"
-    .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
-      h2#assign-teacher-title = t('app.students.assign_dialog_title')
-      p = t('app.students.assign_dialog_text')
-      select data-students-target="assignSelect"
-        option value="" = t('app.students.select_teacher')
-        - @teachers.each do |teacher|
-          - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
-          option value=teacher[:id] = name
-      .students-page__dialog-actions
-        button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
-        button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')
+  - if can_assign_teacher?
+    .students-page__dialog[hidden] data-students-target="dialog"
+      .students-page__dialog-backdrop data-action="click->students#closeAssign"
+      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
+        h2#assign-teacher-title = t('app.students.assign_dialog_title')
+        p = t('app.students.assign_dialog_text')
+        select data-students-target="assignSelect"
+          option value="" = t('app.students.select_teacher')
+          - @teachers.each do |teacher|
+            - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
+            option value=teacher[:id] = name
+        .students-page__dialog-actions
+          button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
+          button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')

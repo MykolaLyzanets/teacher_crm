@@ -3,9 +3,15 @@
   padding: 56px 0 32px;
 }
 
-.footer-grid {
+.footer-grid--v5 {
   display: grid;
   gap: 40px;
+}
+
+@media (min-width: 640px) {
+  .footer-grid--v5 {
+    grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  }
 }
 
 .footer-brand p {

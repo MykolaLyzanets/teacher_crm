@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.calendar.title')} | danlio"
 
-.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s)
+.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teachers-value=@teachers.to_json data-calendar-students-value=@students.to_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s)
   p.calendar-page__toast hidden=true role="status" data-calendar-target="toast"
   .calendar-page__header
     div
@@ -113,90 +113,136 @@
     .calendar-page__drawer-head
       div
         h2#create-lesson-title data-calendar-target="drawerTitle" = t('app.calendar.drawer_title')
-        p = t('app.calendar.drawer_sub')
       button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.close') data-action="calendar#closeCreate"
         = icon_tag 'x', size: 20
     .calendar-page__drawer-body
-      .calendar-page__section
-        h3 = t('app.calendar.participants')
+      input type="hidden" value="individual" data-calendar-target="draftType"
+      input type="hidden" value="online" data-calendar-target="draftLocation"
+
+      .calendar-page__stack
+        p.calendar-page__label = t('app.calendar.lesson_type')
+        div.calendar-page__segment role="radiogroup" aria-label=t('app.calendar.lesson_type')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="true" data-type="individual" data-calendar-target="typeBtn" data-action="calendar#setLessonType" = t('app.calendar.individual')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="false" data-type="group" data-calendar-target="typeBtn" data-action="calendar#setLessonType" = t('app.calendar.group')
+
+      label.calendar-page__field
+        span
+          = t('app.calendar.teacher')
+          abbr.calendar-page__req title="required" *
+        select data-calendar-target="draftTeacher" data-action="change->calendar#onTeacherChange"
+          option value="" = t('app.calendar.select_teacher')
+          - @teachers.each do |teacher|
+            - teacher = teacher.with_indifferent_access
+            option value=teacher[:id] = teacher_display_name(teacher)
+
+      .calendar-page__stack data-calendar-target="studentWrap"
         label.calendar-page__field
-          span = t('app.calendar.teacher')
-          select data-calendar-target="draftTeacher"
-            option value="" = t('app.calendar.select_teacher')
-            - @teachers.each do |teacher|
-              - teacher = teacher.with_indifferent_access
-              option value=teacher[:id] = teacher_display_name(teacher)
-        label.calendar-page__field
-          span = t('app.calendar.student')
-          select data-calendar-target="draftStudent"
+          span
+            = t('app.calendar.student')
+            abbr.calendar-page__req title="required" *
+          select data-calendar-target="draftStudent" data-action="change->calendar#onStudentChange"
             option value="" = t('app.calendar.select_student')
             - @students.each do |student|
               - student = student.with_indifferent_access
               - name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
               option value=student[:id] = name
-          p.calendar-page__hint
-            = t('app.calendar.add_student_hint')
-            =< link_to t('app.students.add'), new_student_path
-      .calendar-page__section
-        h3 = t('app.calendar.date_time')
-        .calendar-page__fields-row
-          label.calendar-page__field
-            span = t('app.calendar.date')
-            input type="date" data-calendar-target="draftDate"
-          label.calendar-page__field
-            span = t('app.calendar.start')
-            input type="time" value="10:00" data-calendar-target="draftStart"
-          label.calendar-page__field
-            span = t('app.calendar.end')
-            input type="time" value="11:00" data-calendar-target="draftEnd"
-      .calendar-page__section
-        h3 = t('app.calendar.details')
-        label.calendar-page__field
-          span = t('app.calendar.lesson_title')
-          input type="text" placeholder=t('app.calendar.title_placeholder') data-calendar-target="draftTitle"
-        label.calendar-page__field
-          span = t('app.calendar.type')
-          select data-calendar-target="draftType"
-            option value="individual" = t('app.calendar.individual')
-            option value="group" = t('app.calendar.group')
-            option value="trial" = t('app.calendar.trial')
-            option value="consultation" = t('app.calendar.consultation')
-        label.calendar-page__field
-          span = t('app.calendar.status')
-          select data-calendar-target="draftStatus"
-            option value="confirmed" = t('app.statuses.confirmed')
-            option value="pending" = t('app.statuses.pending')
-      .calendar-page__section
-        h3 = t('app.calendar.location')
-        label.calendar-page__field
-          span = t('app.calendar.location')
-          select data-calendar-target="draftLocation" data-action="change->calendar#syncDrawerFields"
-            option value="online" = t('app.common.online')
-            option value="in_person" = t('app.common.in_person')
-        label.calendar-page__field data-calendar-target="onlineField"
-          span = t('app.calendar.meeting_link')
-          input type="url" placeholder="https://meet.danlio.app/..." data-calendar-target="draftMeeting"
-        label.calendar-page__field data-calendar-target="placeField" hidden="hidden"
-          span = t('app.calendar.place')
-          input type="text" placeholder=t('app.calendar.place_placeholder') data-calendar-target="draftPlace"
-      .calendar-page__section
-        h3 = t('app.calendar.repeat_settings')
-        label.calendar-page__field
-          span = t('app.calendar.repeat')
-          select data-calendar-target="draftRepeat" data-action="change->calendar#syncDrawerFields"
-            option value="none" = t('app.calendar.repeat_none')
-            option value="weekly" = t('app.calendar.repeat_weekly')
-            option value="biweekly" = t('app.calendar.repeat_biweekly')
-        .calendar-page__fields-row data-calendar-target="repeatExtra" hidden="hidden"
-          label.calendar-page__field
-            span = t('app.calendar.repeat_end')
-            input type="date" data-calendar-target="draftRepeatEnd"
+        p.calendar-page__hint
+          = t('app.calendar.add_student_hint')
+          =< link_to t('app.students.add'), new_student_path
+
+      .calendar-page__stack hidden="hidden" data-calendar-target="groupWrap"
+        p.calendar-page__label
+          = t('app.calendar.participants')
+          span.calendar-page__count data-calendar-target="groupCount"
+          abbr.calendar-page__req title="required" *
+        .calendar-page__chips data-calendar-target="groupChips" data-action="click->calendar#removeParticipant"
+        select data-calendar-target="groupAdd" data-action="change->calendar#addParticipant"
+          option value="" = t('app.calendar.add_participant')
+          - @students.each do |student|
+            - student = student.with_indifferent_access
+            - name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
+            option value=student[:id] = name
+        p.calendar-page__hint
+          = t('app.calendar.add_student_hint')
+          =< link_to t('app.students.add'), new_student_path
+
       label.calendar-page__field
-        span = t('app.calendar.notes')
+        span = t('app.calendar.subject')
+        p.calendar-page__muted data-calendar-target="subjectHint" = t('app.calendar.subject_need_teacher')
+        select hidden="hidden" data-calendar-target="draftSubject" data-action="change->calendar#syncDrawerFields"
+          option value="" = t('app.calendar.select_subject')
+
+      label.calendar-page__field
+        span
+          = t('app.calendar.date')
+          abbr.calendar-page__req title="required" *
+        input type="date" data-calendar-target="draftDate" data-action="change->calendar#syncDrawerFields"
+      .calendar-page__times
+        label.calendar-page__field
+          span
+            = t('app.calendar.start_time')
+            abbr.calendar-page__req title="required" *
+          input type="time" value="10:00" data-calendar-target="draftStart" data-action="change->calendar#onStartChange"
+        label.calendar-page__field
+          span
+            = t('app.calendar.end_time')
+            abbr.calendar-page__req title="required" *
+          input type="time" value="11:00" data-calendar-target="draftEnd" data-action="change->calendar#syncDrawerFields"
+      p.calendar-page__timezone = t('app.calendar.workspace_timezone')
+
+      label.calendar-page__field
+        span = t('app.calendar.lesson_price')
+        .calendar-page__price
+          input type="text" inputmode="decimal" placeholder="25" data-calendar-target="draftPrice" data-action="input->calendar#onPriceChange"
+          select aria-label=t('app.calendar.currency') data-calendar-target="draftCurrency" data-action="change->calendar#onPriceChange"
+            option value="EUR" = "EUR"
+            option value="USD" = "USD"
+            option value="UAH" = "UAH"
+        p.calendar-page__hint = t('app.calendar.price_hint')
+
+      .calendar-page__stack
+        p.calendar-page__label = t('app.calendar.lesson_format')
+        div.calendar-page__segment role="radiogroup" aria-label=t('app.calendar.lesson_format')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="true" data-location="online" data-calendar-target="formatBtn" data-action="calendar#setFormat" = t('app.common.online')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="false" data-location="in_person" data-calendar-target="formatBtn" data-action="calendar#setFormat" = t('app.common.in_person')
+        label.calendar-page__field.calendar-page__icon-field data-calendar-target="onlineField"
+          span
+            = t('app.calendar.meeting_link')
+            span.calendar-page__optional = t('app.calendar.optional')
+          input type="url" placeholder="https://meet..." data-calendar-target="draftMeeting" data-action="change->calendar#syncDrawerFields"
+        label.calendar-page__field.calendar-page__icon-field data-calendar-target="placeField" hidden="hidden"
+          span
+            = t('app.calendar.place')
+            span.calendar-page__optional = t('app.calendar.optional')
+          input type="text" placeholder=t('app.calendar.place_placeholder') data-calendar-target="draftPlace" data-action="change->calendar#syncDrawerFields"
+
+      label.calendar-page__field
+        span = t('app.calendar.repeat')
+        select data-calendar-target="draftRepeat" data-action="change->calendar#syncDrawerFields"
+          option value="none" = t('app.calendar.repeat_none')
+          option value="weekly" = t('app.calendar.repeat_weekly')
+          option value="biweekly" = t('app.calendar.repeat_biweekly')
+          option value="custom" = t('app.calendar.repeat_custom')
+      .calendar-page__stack data-calendar-target="repeatExtra" hidden="hidden"
+        label.calendar-page__field
+          span = t('app.calendar.repeat_until')
+          input type="date" data-calendar-target="draftRepeatEnd" data-action="change->calendar#syncDrawerFields"
+        .calendar-page__stack data-calendar-target="customDays" hidden="hidden"
+          p.calendar-page__label = t('app.calendar.weekdays')
+          .calendar-page__weekdays
+            - %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].each do |day|
+              button.calendar-page__day-btn type="button" data-day=day data-calendar-target="weekdayBtn" data-action="calendar#toggleWeekday" = t("app.calendar.weekday_short.#{day.downcase}")
+
+      label.calendar-page__field
+        span
+          = t('app.calendar.lesson_notes')
+          span.calendar-page__optional = t('app.calendar.optional')
         textarea rows="3" placeholder=t('app.calendar.notes_placeholder') data-calendar-target="draftNotes"
+
+      .calendar-page__summary hidden="hidden" data-calendar-target="summary"
     .calendar-page__drawer-foot
       button.calendar-page__secondary-btn type="button" data-action="calendar#closeCreate" = t('app.common.cancel')
-      button.calendar-page__primary-btn type="button" data-action="calendar#submitCreate" data-calendar-target="drawerSubmit" = t('app.calendar.create_lesson')
+      button.calendar-page__primary-btn type="button" data-action="calendar#submitCreate" data-calendar-target="drawerSubmit" disabled="disabled" = t('app.calendar.create_lesson')
 
   .calendar-page__modal hidden="hidden" data-calendar-target="details"
     button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeLesson"

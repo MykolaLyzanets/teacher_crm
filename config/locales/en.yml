@@ -4,81 +4,121 @@ en:
   ru: Russian
 
   header:
-    features: Features
-    how_it_works: How it works
-    schools: For schools
+    product: Product
     pricing: Pricing
-    log_in: Sign in
+    tutors: For Tutors
+    schools: For Schools
+    log_in: Log in
     log_out: Sign out
-    get_started: Get started
+    get_started: Start free
+    cabinet: Workspace
     menu: Menu
     language: Language
 
   footer:
-    tagline: The all-in-one CRM for tutors and teachers. Teach more. Manage less.
+    tagline: A simple workspace for the modern teacher.
     product: Product
     features: Features
     pricing: Pricing
     updates: Updates
     resources: Resources
-    help_center: Help Center
-    guides: Guides
-    blog: Blog
-    company: Company
-    about: About
+    help_center: Help
     contact: Contact
-    privacy: Privacy Policy
-    follow_us: Follow us
-    copyright: "© %{year} danlio. All rights reserved."
+    legal: Legal
+    privacy: Privacy
+    terms: Terms
+    copyright: "© %{year} Danlio"
 
   home:
     hero:
-      title_lead: Teach more.
-      title_accent: Manage less.
-      subhead: The all-in-one CRM for tutors and teachers. Organize students, schedule lessons, track progress and grow your teaching business.
-      get_started: Get started free
+      title_line1: Teach.
+      title_rest: Leave the rest to
+      brand: Danlio
+      title_end: "."
+      title_lead: Teach.
+      title_accent: Leave the rest to Danlio.
+      subhead: Students, schedule, homework and payments — in one simple workspace.
+      get_started: Start for free
       see_how: See how it works
       no_card: No credit card required
       setup: Setup in 2 minutes
-    logos:
-      trusted: Trusted by teachers and tutors worldwide
     features:
-      title: Everything you need to teach and manage
-      students_title: Manage Students
-      students_text: Keep all student information organized and up to date.
-      lessons_title: Schedule Lessons
-      lessons_text: Plan, reschedule and track lessons with ease.
-      homework_title: Assign Homework
-      homework_text: Create, assign and review homework in one place.
-      progress_title: Track Progress
-      progress_text: Monitor student progress and achievements.
-      payments_title: Accept Payments
-      payments_text: Get paid online and track your income easily.
-      reports_title: Generate Reports
-      reports_text: Get insights and grow your teaching business.
-    workflow:
-      title_lead: One workspace.
-      title_accent: Your entire teaching workflow.
-      step1_title: Add your students
-      step1_text: Import or add student profiles in seconds.
-      step2_title: Schedule your lessons
-      step2_text: Set your availability and book lessons.
-      step3_title: Teach & assign
-      step3_text: Run lessons and assign homework.
-      step4_title: Track & improve
-      step4_text: Monitor progress and help students grow.
-      next_lesson: Next lesson
-      next_lesson_date: May 14, 2024 • 10:00 AM
-      progress: Progress
-      progress_overview: Progress Overview
+      title_line1: Everything you need.
+      title_line2: Nothing extra.
+      subhead: Danlio gathers a teacher’s daily work in one simple space.
+      students_title: Students
+      students_text: Student details, contacts, notes and progress in one place.
+      lessons_title: Schedule
+      lessons_text: Plan lessons and see your whole day in one calendar.
+      homework_title: Homework
+      homework_text: Assign work, review submissions and track completion.
+      payments_title: Payments
+      payments_text: See paid lessons, outstanding balances and your income.
+    simple:
+      title_line1: You don’t need to learn
+      title_line2: how to use Danlio.
+      subhead: We removed the extra steps so the core actions take seconds, not minutes.
+      step1: Add a student
+      step2: Schedule a lesson
+      step3: Assign homework
+      step4: Get paid
+      done: That’s it.
+    showcase:
+      title: Everything in view.
+      text: Today’s lessons, homework, payments and student progress — without dozens of tabs and complex menus.
+      points:
+        - Fewer clicks
+        - Less manual work
+        - More time to teach
+    proof:
+      quote: "I used to juggle a calendar, messenger and spreadsheets. Now everything lives in Danlio."
+      name: Olena Koval
+      subject: English
+    pricing:
+      title_line1: A simple product.
+      title_line2: A simple price.
+      free_name: Free
+      free_desc: For those just getting started.
+      free_feature: Up to 5 students
+      teacher_name: Teacher
+      teacher_desc: For active private teachers.
+      popular: Most popular
+      month: /mo
+      teacher_features:
+        - Unlimited students
+        - Lesson calendar
+        - Homework
+        - Payments
+        - Progress tracking
+      school_name: School
+      school_desc: For centers and small schools.
+      school_price: Team
+      school_features:
+        - Multiple teachers
+        - Admin account
+        - Shared student management
+        - Team calendar
+        - Analytics
+      contact: Contact us
     cta:
-      title: Ready to simplify your teaching?
-      text: Join thousands of teachers who save time and grow their business with danlio.
-      get_started: Get started free
-      see_how: See how it works
+      title_line1: Less admin.
+      title_line2: More teaching.
+      text: Try Danlio and organize your teaching work in a few minutes.
+      get_started: Start for free →
     dash:
-      active: Active
-      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      today: Today
+      greeting: Good afternoon, Ava
+      search: Search
+      lessons_today: Lessons today
+      remaining: 2 remaining
+      students: Students
+      trial: 1 trial
+      homework: Homework
+      to_review: To review
+      this_week: This week
+      paid: Paid
+      todays_lessons: Today’s lessons
+      progress: Progress
     calendar:
       title: Calendar
       subtitle: Manage your classes, meetings and events
