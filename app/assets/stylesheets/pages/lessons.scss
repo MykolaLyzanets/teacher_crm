@@ -465,8 +465,7 @@
 }
 
 .lessons-page__drawer-wrap--hidden,
-.lessons-page__menu--hidden,
-.lessons-page__confirm--hidden {
+.lessons-page__menu--hidden {
   display: none;
 }
 
@@ -587,6 +586,10 @@
   @media (min-width: 640px) {
     align-items: center;
   }
+}
+
+.lessons-page__confirm--hidden {
+  display: none;
 }
 
 .lessons-page__confirm-card {
