@@ -97,4 +97,26 @@ module LessonsHelper
     amount = (cents.to_i.abs / 100.0).round
     currency == 'EUR' ? "€#{amount}" : "#{currency} #{amount}"
   end
+
+  def lesson_row_payload(lesson)
+    review = lesson_review_status(lesson)
+    {
+      id: lesson[:id],
+      subject: lesson_subject_label(lesson),
+      typeLabel: lesson[:type].to_s == 'group' ? t('app.lessons.group_subtitle') : lesson_type_label(lesson),
+      dateLong: format_lesson_day_long(lesson[:date]),
+      timeRange: format_lesson_time_range(lesson[:startTime], lesson[:endTime]),
+      teacher: lesson[:teacher],
+      party: lesson_party_label(lesson),
+      price: lesson_price_label(lesson),
+      review: review,
+      reviewLabel: t("app.lessons.tab_#{review}"),
+      upcoming: lesson_upcoming?(lesson),
+      location: lesson[:location],
+      meetingLink: lesson[:meetingLink],
+      locationText: lesson[:locationText],
+      notes: lesson[:notes],
+      status: lesson[:status]
+    }
+  end
 end

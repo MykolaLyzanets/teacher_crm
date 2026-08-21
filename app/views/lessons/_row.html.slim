@@ -3,24 +3,7 @@
 - subject = lesson_subject_label(lesson)
 - party = lesson_party_label(lesson)
 - when_label = "#{format_lesson_day_short(lesson[:date])} · #{format_lesson_time_range(lesson[:startTime], lesson[:endTime])}"
-- payload = {
-    id: lesson[:id],
-    subject: subject,
-    typeLabel: lesson[:type].to_s == 'group' ? t('app.lessons.group_subtitle') : lesson_type_label(lesson),
-    dateLong: format_lesson_day_long(lesson[:date]),
-    timeRange: format_lesson_time_range(lesson[:startTime], lesson[:endTime]),
-    teacher: lesson[:teacher],
-    party: party,
-    price: lesson_price_label(lesson),
-    review: review,
-    reviewLabel: t("app.lessons.tab_#{review}"),
-    upcoming: upcoming,
-    location: lesson[:location],
-    meetingLink: lesson[:meetingLink],
-    locationText: lesson[:locationText],
-    notes: lesson[:notes],
-    status: lesson[:status]
-  }
+- payload = lesson_row_payload(lesson)
 
 li.lessons-page__row[
   data-lessons-target="row"
