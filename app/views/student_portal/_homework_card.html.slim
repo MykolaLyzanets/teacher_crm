@@ -1,0 +1,41 @@
+- facing = Demo::Portal.facing_status(item)
+- due = Demo::Portal.due_context(item)
+- action = Demo::Portal.action_for(item)
+- materials_count = Array(item[:materialIds]).size.nonzero? || item[:attachmentCount].to_i
+
+article.sp-hw-card data-student-homework-target="card" data-tab=Demo::Portal.tab_for(item) data-subject=item[:subject] data-teacher=item[:teacher] data-due=due[:bucket] data-search="#{item[:title]} #{item[:subject]} #{item[:teacher]} #{item[:instructions]}" data-id=item[:id] data-title=item[:title] data-status=facing data-instructions=item[:instructions] data-feedback=item[:feedback] data-score=item[:score] data-response=item.dig(:submission, :writtenResponse)
+  .sp-hw-card__main
+    .sp-hw-card__meta
+      span.status-badge class="status-badge--#{homework_status_tone(facing)}" = t("app.student_portal.homework.statuses.#{facing}")
+      span.sp-hw-card__due class=("is-urgent" if due[:urgent])
+        = portal_icon(due[:urgent] ? 'alert' : 'clock', size: 14)
+        span = homework_due_label(item)
+    h3 = item[:title]
+    .sp-hw-card__facts
+      - if item[:subject].present?
+        span = item[:subject]
+      span
+        = portal_icon 'user', size: 16
+        = item[:teacher]
+    .sp-hw-card__sub
+      span = t('app.student_portal.homework.assigned_on', date: format_lesson_day_short(item[:assignedDate]))
+      span = t('app.student_portal.homework.due_on', date: format_lesson_day_short(item[:dueDate]))
+      - if materials_count.positive?
+        span
+          = portal_icon 'paperclip', size: 14
+          = t('app.student_portal.homework.materials_count', count: materials_count)
+      - if item[:score].present?
+        span = t('app.student_portal.homework.score', score: item[:score])
+    - if facing == 'reviewed' && item[:feedback].present?
+      p.sp-hw-card__feedback = item[:feedback]
+  .sp-hw-card__actions
+    - if local_assigns[:embedded]
+      = link_to t("app.student_portal.homework.actions.#{action}"), student_homework_path, class: 'sp-btn sp-btn--primary'
+      = link_to student_homework_path, class: 'sp-btn sp-btn--ghost' do
+        = portal_icon 'homework', size: 16
+        span = t('app.student_portal.homework.details')
+    - else
+      button.sp-btn.sp-btn--primary type="button" data-action="student-homework#openDetails" = t("app.student_portal.homework.actions.#{action}")
+      button.sp-btn.sp-btn--ghost type="button" data-action="student-homework#openDetails"
+        = portal_icon 'homework', size: 16
+        span = t('app.student_portal.homework.details')

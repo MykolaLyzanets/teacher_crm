@@ -1,0 +1,86 @@
+- content_for :title, "#{t('app.student_portal.pages.payments.title')} | danlio"
+
+.sp-pay
+  .sp-pay__intro
+    h1 = t('app.student_portal.pages.payments.title')
+    p = t('app.student_portal.payments.disclaimer')
+
+  - if @finance.blank?
+    .sp-pay__missing = t('app.student_portal.payments.load_error')
+  - else
+    - finance = @finance
+    - has_debt = finance[:debtCents].to_i.positive?
+    .sp-pay__summary
+      .sp-pay__stat
+        span.sp-pay__icon
+          = portal_icon 'wallet', size: 22
+        span
+          span.sp-pay__label = t('app.student_portal.payments.available')
+          span.sp-pay__value = money_label(finance[:availableBalanceCents], finance[:currency])
+      .sp-pay__stat class=("sp-pay__stat--warn" if has_debt)
+        span.sp-pay__icon class=("is-warn" if has_debt)
+          = portal_icon 'alert', size: 22
+        span
+          span.sp-pay__label = t('app.student_portal.payments.debt')
+          span.sp-pay__value = money_label(finance[:debtCents], finance[:currency])
+
+    - if has_debt
+      .sp-pay__banner = t('app.student_portal.payments.debt_banner')
+    - elsif finance[:nextLessonCovered] == false
+      .sp-pay__banner = t('app.student_portal.payments.low_next')
+
+    - if finance[:pendingPayments].present?
+      section.sp-pay__pending
+        h2
+          = portal_icon 'clock', size: 18
+          span = t('app.student_portal.payments.pending_title')
+        ul
+          - finance[:pendingPayments].each do |item|
+            li
+              = "#{format_lesson_day_short(item[:date])} · #{money_label(item[:amountCents], item[:currency])} — #{t('app.student_portal.payments.pending_item')}"
+
+    section.sp-pay__card
+      .sp-pay__price
+        div
+          h2 = t('app.student_portal.payments.lesson_price')
+          p
+            - if finance[:lessonPriceCents]
+              = money_label(finance[:lessonPriceCents], finance[:currency])
+            - else
+              = t('app.student_portal.payments.price_unset')
+            - if finance[:lastConfirmedPayment]
+              =< "· #{t('app.student_portal.payments.last_payment', date: format_lesson_day_short(finance[:lastConfirmedPayment][:date]), amount: money_label(finance[:lastConfirmedPayment][:amountCents], finance[:currency]))}"
+        - teacher = finance[:teacher]
+        - if teacher && (teacher[:email].present? || teacher[:phone].present?)
+          .sp-pay__contacts
+            - if teacher[:email].present?
+              = mail_to teacher[:email], class: 'sp-pay__ghost' do
+                = portal_icon 'mail', size: 18
+                span = t('app.student_portal.payments.email_teacher', name: Demo::Catalog.teacher_name(teacher))
+            - if teacher[:phone].present?
+              = link_to "tel:#{teacher[:phone]}", class: 'sp-pay__ghost' do
+                = portal_icon 'phone', size: 18
+                span = t('app.student_portal.payments.call')
+
+    section.sp-pay__table-card
+      .sp-pay__table-head
+        h2 = t('app.student_portal.payments.history')
+      - if finance[:transactions].blank?
+        .sp-pay__empty
+          p.sp-pay__empty-title = t('app.student_portal.payments.empty_title')
+          p = t('app.student_portal.payments.empty_text')
+      - else
+        .sp-pay__table-wrap
+          table.sp-pay__table
+            thead
+              tr
+                th = t('app.student_portal.payments.col_date')
+                th = t('app.student_portal.payments.col_description')
+                th = t('app.student_portal.payments.col_amount')
+            tbody
+              - finance[:transactions].each do |item|
+                tr
+                  td = format_lesson_day_short(item[:date])
+                  td = item[:description]
+                  td class=(item[:amountCents].to_i.negative? ? 'is-neg' : 'is-pos')
+                    = signed_money_label(item[:amountCents], item[:currency])

@@ -307,6 +307,88 @@
   color: var(--olive-dark);
 }
 
+.app-header__bell {
+  position: relative;
+}
+
+.app-header__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #a3453f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+
+.app-header__menu-panel {
+  position: absolute;
+  right: 0;
+  z-index: 30;
+  width: 320px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(65, 75, 50, 0.12);
+}
+
+.app-header__menu-title {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-header__menu-empty {
+  margin: 0;
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.app-header__menu-panel ul {
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.app-header__menu-panel li {
+  padding: 10px 14px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12.5px;
+}
+
+.app-header__menu-panel li:first-child {
+  border-top: 0;
+}
+
+.app-header__menu-panel li.is-unread {
+  background: #f7f8f3;
+}
+
+.app-header__menu-panel p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.app-header__menu-panel span {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+}
+
 .app-header__user {
   display: flex;
   align-items: center;

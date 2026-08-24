@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class StudentsController < AppController
+  helper LessonsHelper
   before_action :require_workspace!, only: %i[new create edit update]
   before_action :set_student_record, only: %i[show edit update]
 
@@ -14,6 +15,16 @@ class StudentsController < AppController
     @student = @student_record&.as_catalog
     @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @teacher = @student_record&.teacher_profile&.as_catalog
+    @catalog_student = Demo::Catalog.match_student(@student) if @student
+    @finance = Demo::Finance.portal_finance(@catalog_student[:id]) if @catalog_student
+    student_name = @student ? [@student[:preferredName].presence || @student[:firstName], @student[:lastName]].compact_blank.join(' ') : nil
+    @student_lessons = Demo::Timeline.lessons.select { |lesson| lesson[:student].to_s == student_name }
+    return unless @catalog_student
+
+    @student_homework = Demo::Portal.homework_for(@catalog_student[:id])
+    @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
+    @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
+    @next_lesson = Demo::Finance.next_lesson_for_student(@catalog_student)
   end
 
   def new

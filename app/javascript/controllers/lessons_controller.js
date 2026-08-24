@@ -40,7 +40,8 @@ export default class extends Controller {
     "confirm",
     "confirmTitle",
     "confirmText",
-    "confirmBtn"
+    "confirmBtn",
+    "outcome"
   ]
 
   static values = {
@@ -146,6 +147,7 @@ export default class extends Controller {
     if (event.key === "Escape") {
       this.closeMenus()
       this.closeConfirm()
+      this.closeOutcome()
       this.closeView()
     }
   }
@@ -183,6 +185,7 @@ export default class extends Controller {
   closeView() {
     if (this.hasDrawerTarget) this.drawerTarget.classList.add("lessons-page__drawer-wrap--hidden")
     this.closeMenus()
+    this.closeOutcome()
   }
 
   openEdit() {
@@ -287,16 +290,54 @@ export default class extends Controller {
   }
 
   markCompleted() {
+    this.applyOutcome("completed")
+  }
+
+  openOutcome() {
+    if (this.hasOutcomeTarget) this.outcomeTarget.classList.remove("lessons-page__confirm--hidden")
+  }
+
+  closeOutcome() {
+    if (this.hasOutcomeTarget) this.outcomeTarget.classList.add("lessons-page__confirm--hidden")
+  }
+
+  chooseOutcome(event) {
+    this.applyOutcome(event.currentTarget.dataset.outcome)
+    this.closeOutcome()
+  }
+
+  applyOutcome(outcome) {
     const row = this.activeRow
     if (!row) return
     const lesson = this.parseLesson(row)
-    lesson.status = "completed"
-    lesson.review = "completed"
-    lesson.reviewLabel = this.t("tab_completed")
+    if (outcome === "not_happened") {
+      lesson.status = "cancelled"
+      lesson.review = "cancelled"
+      lesson.reviewLabel = this.t("tab_cancelled")
+      this.showToast(this.t("cancelled_toast"))
+    } else {
+      lesson.status = "completed"
+      lesson.review = "completed"
+      lesson.reviewLabel = this.t("tab_completed")
+      this.showToast(this.t("completed_toast"))
+    }
     lesson.upcoming = false
     this.writeLesson(row, lesson)
     this.fillDrawer(lesson)
-    this.showToast(this.t("completed_toast"))
+    this.filter()
+  }
+
+  correctOutcome() {
+    const row = this.activeRow
+    if (!row) return
+    const lesson = this.parseLesson(row)
+    lesson.status = "confirmed"
+    lesson.review = "upcoming"
+    lesson.reviewLabel = this.t("tab_upcoming")
+    lesson.upcoming = true
+    this.writeLesson(row, lesson)
+    this.fillDrawer(lesson)
+    this.showToast(this.t("corrected_toast"))
     this.filter()
   }
 

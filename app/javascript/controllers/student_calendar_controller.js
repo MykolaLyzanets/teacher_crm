@@ -67,6 +67,20 @@ function shiftPeriod(date, view, direction) {
   return addDays(date, direction);
 }
 
+function timeToMinutes(value) {
+  const [hour, minute] = String(value || "0:0").split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function formatTime(value, locale) {
+  const [hour, minute] = String(value || "00:00").split(":").map(Number);
+  if (locale === "en") {
+    const period = hour >= 12 ? "PM" : "AM";
+    return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${period}`;
+  }
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 export default class extends Controller {
   static targets = [
     "title",
@@ -82,10 +96,22 @@ export default class extends Controller {
     "viewTab",
     "viewSelect",
     "upcoming",
+    "upcomingTitle",
+    "upcomingWhen",
+    "upcomingWho",
+    "upcomingJoin",
+    "drawer",
+    "drawerTitle",
+    "drawerWhen",
+    "drawerWho",
+    "drawerPlace",
+    "drawerNotes",
+    "drawerJoin",
   ];
 
   static values = {
     labels: Object,
+    lessons: Array,
     view: { type: String, default: "month" },
   };
 
@@ -100,8 +126,17 @@ export default class extends Controller {
       weekdaysFull: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       locale: "en",
       noLessonsOn: "No lessons on %{date}.",
+      emptyTitle: "No lessons scheduled",
+      emptyText: "Your upcoming lessons will appear here when they are scheduled.",
+      join: "Join lesson",
+      viewDetails: "View details",
+      withTeacher: "With %{name}",
       ...this.labelsValue,
     };
+  }
+
+  get lessons() {
+    return Array.isArray(this.lessonsValue) ? this.lessonsValue : [];
   }
 
   connect() {
@@ -153,8 +188,22 @@ export default class extends Controller {
     this.render();
   }
 
+  lessonsOn(key) {
+    return this.lessons
+      .filter((lesson) => lesson.date === key && lesson.status !== "cancelled")
+      .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  }
+
+  nextLesson() {
+    const todayKey = toDateKey(this.today);
+    return this.lessons
+      .filter((lesson) => lesson.date >= todayKey && ["confirmed", "pending"].includes(lesson.status))
+      .sort((a, b) => `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`))[0] || null;
+  }
+
   render() {
     this.titleTarget.textContent = this.periodTitle(this.cursor, this.viewValue);
+    this.renderUpcoming();
 
     this.viewTabTargets.forEach((tab) => {
       const active = tab.dataset.view === this.viewValue;
@@ -169,11 +218,53 @@ export default class extends Controller {
 
     const showDayAgenda = this.viewValue === "month" && this.compact.matches;
     this.dayAgendaTarget.hidden = !showDayAgenda;
-    this.emptyChipTarget.hidden = this.viewValue === "agenda";
+    this.emptyChipTarget.hidden = this.viewValue === "agenda" || this.lessons.length > 0;
 
     if (this.viewValue === "month") this.renderMonth();
     if (this.viewValue === "week") this.renderWeek();
+    if (this.viewValue === "agenda") this.renderAgenda();
     if (showDayAgenda) this.renderDayAgenda();
+  }
+
+  renderUpcoming() {
+    if (!this.hasUpcomingTarget) return;
+    const lesson = this.nextLesson();
+    this.upcomingTarget.hidden = !lesson;
+    if (!lesson) return;
+    if (this.hasUpcomingTitleTarget) this.upcomingTitleTarget.textContent = lesson.title;
+    if (this.hasUpcomingWhenTarget) {
+      this.upcomingWhenTarget.textContent = `${lesson.date} · ${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}`;
+    }
+    if (this.hasUpcomingWhoTarget) this.upcomingWhoTarget.textContent = lesson.teacher;
+    if (this.hasUpcomingJoinTarget) {
+      const joinable = lesson.location === "online" && lesson.meetingLink;
+      this.upcomingJoinTarget.hidden = !joinable;
+      if (joinable) this.upcomingJoinTarget.href = lesson.meetingLink;
+    }
+    this.upcomingLesson = lesson;
+  }
+
+  openUpcoming() {
+    if (this.upcomingLesson) this.openLesson(this.upcomingLesson);
+  }
+
+  openLesson(lesson) {
+    if (!this.hasDrawerTarget) return;
+    this.drawerTitleTarget.textContent = lesson.title;
+    this.drawerWhenTarget.textContent = `${lesson.date} · ${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}`;
+    this.drawerWhoTarget.textContent = (this.labels.withTeacher || "With %{name}").replace("%{name}", lesson.teacher);
+    this.drawerPlaceTarget.textContent = lesson.location === "online" ? "Online" : (lesson.locationText || "In person");
+    this.drawerNotesTarget.textContent = lesson.notes || "";
+    if (this.hasDrawerJoinTarget) {
+      const joinable = lesson.location === "online" && lesson.meetingLink;
+      this.drawerJoinTarget.hidden = !joinable;
+      if (joinable) this.drawerJoinTarget.href = lesson.meetingLink;
+    }
+    this.drawerTarget.classList.remove("sp-drawer--hidden");
+  }
+
+  closeDetails() {
+    if (this.hasDrawerTarget) this.drawerTarget.classList.add("sp-drawer--hidden");
   }
 
   periodTitle(date, view) {
@@ -201,6 +292,7 @@ export default class extends Controller {
         const isSelected = isSameDay(day, this.selected);
         const weekend = day.getDay() === 0 || day.getDay() === 6;
         const weekday = weekdaysFull[(day.getDay() + 6) % 7];
+        const list = this.lessonsOn(key);
 
         const button = document.createElement("button");
         button.type = "button";
@@ -225,6 +317,29 @@ export default class extends Controller {
         number.className = `sp-cal__num${isToday ? " is-today" : ""}`;
         number.textContent = String(day.getDate());
         button.append(number);
+
+        if (list.length) {
+          const events = document.createElement("div");
+          events.className = "sp-cal__events";
+          list.slice(0, 2).forEach((lesson) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "sp-cal__chip-event";
+            chip.textContent = lesson.title;
+            chip.addEventListener("click", (event) => {
+              event.stopPropagation();
+              this.openLesson(lesson);
+            });
+            events.append(chip);
+          });
+          if (list.length > 2) {
+            const more = document.createElement("span");
+            more.className = "sp-cal__more";
+            more.textContent = `+${list.length - 2}`;
+            events.append(more);
+          }
+          button.append(events);
+        }
         return button;
       })
     );
@@ -287,20 +402,67 @@ export default class extends Controller {
         now.style.top = `${nowTop}px`;
         column.append(now);
       }
+      this.lessonsOn(toDateKey(day)).forEach((lesson) => {
+        const start = timeToMinutes(lesson.startTime);
+        const end = timeToMinutes(lesson.endTime);
+        const event = document.createElement("button");
+        event.type = "button";
+        event.className = "sp-cal__week-event";
+        event.style.top = `${((start - DAY_START_HOUR * 60) / 60) * HOUR_HEIGHT}px`;
+        event.style.height = `${Math.max(((end - start) / 60) * HOUR_HEIGHT, 28)}px`;
+        event.textContent = lesson.title;
+        event.addEventListener("click", () => this.openLesson(lesson));
+        column.append(event);
+      });
       grid.append(column);
     });
 
     this.weekGridTarget.replaceChildren(grid);
   }
 
+  renderAgenda() {
+    const monthKey = `${this.cursor.getFullYear()}-${this.cursor.getMonth()}`;
+    const monthLessons = this.lessons
+      .filter((lesson) => {
+        const [year, month] = lesson.date.split("-").map(Number);
+        return `${year}-${month - 1}` === monthKey && lesson.status !== "cancelled";
+      })
+      .sort((a, b) => `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`));
+
+    if (!monthLessons.length) {
+      this.agendaTarget.innerHTML = `<div class="sp-cal__agenda-empty"><div class="sp-cal__agenda-icon"></div><h3>${this.labels.emptyTitle}</h3><p>${this.labels.emptyText}</p></div>`;
+      return;
+    }
+
+    const list = document.createElement("div");
+    list.className = "sp-cal__agenda-list";
+    monthLessons.forEach((lesson) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "sp-cal__agenda-row";
+      row.innerHTML = `<strong>${lesson.title}</strong><span>${lesson.date} · ${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}</span><span>${lesson.teacher}</span>`;
+      row.addEventListener("click", () => this.openLesson(lesson));
+      list.append(row);
+    });
+    this.agendaTarget.replaceChildren(list);
+  }
+
   renderDayAgenda() {
     const { weekdaysFull, months, noLessonsOn } = this.labels;
     const weekday = weekdaysFull[(this.selected.getDay() + 6) % 7];
     this.dayAgendaTitleTarget.textContent = `${weekday}, ${months[this.selected.getMonth()]} ${this.selected.getDate()}`;
-    this.dayAgendaEmptyTarget.textContent = noLessonsOn.replace(
-      "%{date}",
-      toDateKey(this.selected)
-    );
+    const list = this.lessonsOn(toDateKey(this.selected));
+    this.dayAgendaEmptyTarget.hidden = list.length > 0;
+    this.dayAgendaEmptyTarget.textContent = noLessonsOn.replace("%{date}", toDateKey(this.selected));
+    this.dayAgendaTarget.querySelectorAll(".sp-cal__agenda-row").forEach((node) => node.remove());
+    list.forEach((lesson) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "sp-cal__agenda-row";
+      row.textContent = `${formatTime(lesson.startTime, this.labels.locale)} · ${lesson.title}`;
+      row.addEventListener("click", () => this.openLesson(lesson));
+      this.dayAgendaTarget.append(row);
+    });
   }
 
   currentTimeTop() {

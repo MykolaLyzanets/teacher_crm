@@ -33,3 +33,15 @@ application.register("student-materials", StudentMaterialsController)
 
 import LessonsController from "./lessons_controller"
 application.register("lessons", LessonsController)
+
+import DashboardController from "./dashboard_controller"
+application.register("dashboard", DashboardController)
+
+import PaymentsController from "./payments_controller"
+application.register("payments", PaymentsController)
+
+import ProfileTabsController from "./profile_tabs_controller"
+application.register("profile-tabs", ProfileTabsController)
+
+import NotificationsController from "./notifications_controller"
+application.register("notifications", NotificationsController)

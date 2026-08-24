@@ -20,6 +20,7 @@ en:
       search: Search
       search_placeholder: Search students, lessons…
       notifications: Notifications
+      notifications_empty: No notifications yet.
       teacher_role: Teacher
       owner_role: Owner
       student_role: Student
@@ -29,6 +30,7 @@ en:
       view: View
       edit: Edit
       cancel: Cancel
+      close: Close
       confirm: Confirm
       create: Create
       add: Add
@@ -167,6 +169,26 @@ en:
       assign_teacher_cta: Assign teacher
       no_teacher_hint: Assign a teacher to manage this student’s lessons and progress.
       view_profile: View profile
+      tabs_aria: Student profile sections
+      tab_overview: Overview
+      tab_lessons: Lessons
+      tab_homework: Homework
+      tab_progress: Progress
+      tab_notes: Notes
+      tab_payments: Payments
+      payments_admin_only: Visible to administrators only
+      no_lessons: No lessons found
+      homework_empty: Homework assigned to this student will appear here.
+      payments_empty: Payments will appear here.
+      current_balance: Current balance
+      total_paid: Total paid
+      outstanding: Outstanding debt
+      lesson_charges: Lesson charges
+      add_payment: Add payment
+      add_adjustment: Add adjustment
+      progress_empty: Progress notes will appear here.
+      notes_empty: Internal notes will appear here.
+      next_lesson: Next lesson
       assigned_toast: "Assigned %{name}."
       removed_toast: Teacher assignment removed.
       relationship_mother: Mother
@@ -251,6 +273,30 @@ en:
       not_found_text: This teacher may have been removed or is not available in the current session.
       back: Back to teachers
       schedule_lesson: Schedule lesson
+      add_absence: Add absence
+      absence_text: Record dates when this teacher is unavailable. Affected lessons can be reassigned after saving.
+      absence_type: Absence type
+      absence_start: Start date
+      absence_end: End date
+      absence_note: Note
+      absence_recorded: Absence recorded.
+      absence_history: Absence history
+      no_absences: No absences recorded yet.
+      compensation: Compensation
+      compensation_percentage: "%{percent}% of lesson price"
+      earnings: Earnings
+      earnings_hint: Derived from completed lessons and charged cancellations.
+      total_earnings: Total earnings
+      paid_out: Paid out
+      remaining: Remaining
+      completed_lessons: Completed lessons
+      charged_cancellations: Charged cancellations
+      absence_types:
+        sick_leave: Sick leave
+        vacation: Vacation
+        personal: Personal reason
+        emergency: Emergency
+        other: Other
       create_title: Create teacher
       edit_title: Edit teacher
       create_subtitle: Add a teacher, configure their teaching details and control workspace access.
@@ -531,6 +577,59 @@ en:
       coming_soon_text: Insights, upcoming lessons and quick actions will appear here.
       open_calendar: Open calendar
       view_students: View students
+      school_title: School dashboard
+      teacher_greeting: "Good day, %{name}"
+      lessons_today: Lessons today
+      completed_today: Completed today
+      upcoming_today: Upcoming today
+      teachers_active: Teachers active today
+      needs_attention: Needs attention
+      filter_all: All
+      filter_lessons: Lessons
+      filter_teachers: Teachers
+      filter_payments: Payments
+      filter_students: Students
+      attention_empty: Everything is under control. No items need attention.
+      confirm: Confirm
+      reject: Reject
+      payment_confirmed: Payment confirmed.
+      payment_rejected: Payment rejected.
+      payments_overview: Payments overview
+      open_payments: Open Payments
+      payments_received: Payments received this month
+      lesson_revenue: Lesson revenue this month
+      outstanding_debt: Outstanding student debt
+      payouts_remaining: Teacher payouts remaining
+      pending_confirmations: Pending confirmations
+      todays_lessons: Today's lessons
+      create_lesson: Create lesson
+      no_lessons: No lessons scheduled.
+      teacher_availability: Teacher availability
+      no_teachers: No teachers yet.
+      lessons_count:
+        one: "%{count} lesson today"
+        other: "%{count} lessons today"
+      hours_count:
+        one: "%{count} teaching hour"
+        other: "%{count} teaching hours"
+      next_at: "next %{time}"
+      availability:
+        teaching_now: Teaching now
+        finished: Finished for today
+        available: Available
+        absent: Absent
+        replacement_needed: Replacement needed
+      next_lesson: Next lesson
+      starts_soon: Starts soon
+      view_lesson: View lesson
+      no_more_today: No more lessons today
+      todays_schedule: Today's schedule
+      homework_review: Homework to review
+      homework_empty: You're all caught up — no homework to review.
+      review: Review
+      join_lesson: Join lesson
+      teaching_hours: Teaching hours
+      substitute_lessons: Substitute lessons
     lessons:
       title: Lessons
       subtitle: Manage and review all your lessons.
@@ -573,6 +672,22 @@ en:
       deleted_toast: Lesson deleted.
       completed_toast: Lesson marked as completed.
       mark_completed: Mark as completed
+      confirm_outcome: Confirm outcome
+      outcome_title: Confirm lesson outcome
+      outcome_text: This lesson has ended. Did it take place?
+      outcome_completed: Lesson completed
+      outcome_completed_text: Record attendance, charge the student, and optionally assign homework.
+      outcome_missed: Lesson did not take place
+      outcome_missed_text: Choose a cancellation reason and whether to charge the student.
+      attendance: Attendance
+      attendance_present: Present
+      attendance_late: Late
+      attendance_absent: Absent
+      duration: Duration (minutes)
+      teacher_note: Teacher note
+      progress_note: Progress note
+      correct_outcome: Correct outcome
+      corrected_toast: Lesson outcome corrected.
       close_details: Close lesson details
       close: Close
       not_found: This lesson could not be found.
@@ -610,6 +725,89 @@ en:
       settings:
         title: Settings
         description: Configure your workspace preferences.
+    payments:
+      title: Payments
+      subtitle: Student balances, lesson charges, teacher earnings and payouts.
+      forbidden_text: You do not have permission to view financial information.
+      tabs_aria: Payments sections
+      tab_overview: Overview
+      tab_balances: Student balances
+      tab_payouts: Teacher payouts
+      tab_transactions: Transactions
+      received: Payments received
+      received_hint: Confirmed student top-ups
+      lesson_revenue: Lesson revenue
+      lesson_revenue_hint: Recognized on completion, not on payment
+      outstanding_debt: Outstanding student debt
+      outstanding_hint: Across all students
+      teacher_earnings: Teacher earnings
+      teacher_earnings_hint: From completed and charged lessons
+      teacher_payouts: Teacher payouts
+      teacher_payouts_hint: Recorded as paid outside DANLIO
+      school_profit: School gross profit
+      school_profit_hint: Lesson revenue minus teacher earnings
+      your_revenue: Your revenue
+      your_revenue_hint: Independent account — lesson charges are your revenue
+      no_students: No students yet
+      no_teachers: No teachers yet
+      no_transactions: No transactions found
+      col_student: Student
+      col_teacher: Teacher
+      col_balance: Balance
+      col_debt: Debt
+      col_covered: Lessons covered
+      col_next: Next lesson
+      col_status: Status
+      col_actions: Actions
+      col_completed: Completed lessons
+      col_hours: Teaching hours
+      col_earnings: Earnings
+      col_paid: Paid
+      col_remaining: Remaining
+      col_date: Date
+      col_type: Type
+      col_party: Student / Teacher
+      col_description: Description
+      col_amount: Amount
+      add_payment: Add payment
+      adjust: Adjust
+      record_payout: Record payout
+      confirm: Confirm
+      reject: Reject
+      payment_added: Payment recorded.
+      adjusted: Adjustment recorded.
+      payout_recorded: Payout recorded.
+      payment_confirmed: Payment confirmed.
+      payment_rejected: Payment rejected.
+      from_date: From
+      to_date: To
+      all_types: All types
+      all_statuses: All statuses
+      all_students: All students
+      all_currencies: All currencies
+      col_currency: Currency
+      amount: Amount
+      date: Date
+      method: Method
+      reference: Reference
+      note: Note
+      methods:
+        bank_transfer: Bank transfer
+        cash: Cash
+        card: Card
+      rejected: Rejected
+      status_healthy: Healthy
+      status_low_balance: Low balance
+      status_debt: Debt
+      status_payment_pending: Payment pending
+      types:
+        payment: Payment
+        lesson_charge: Lesson charge
+        cancellation_charge: Cancellation charge
+        refund: Refund
+        adjustment: Adjustment
+        teacher_earning: Teacher earning
+        teacher_payout: Teacher payout
     workspace:
       required: Join or create a workspace before adding teachers or students.
     student_portal:
@@ -620,12 +818,17 @@ en:
       staff_denied: This area is only available to students.
       nav:
         main: Student
+        home: Home
         calendar: Calendar
         homework: Homework
         materials: Materials
+        payments: Payments
         profile: Profile
         notifications: Notifications
       pages:
+        home:
+          title: Home
+          description: Your next lesson, homework, materials and balance at a glance.
         calendar:
           title: Calendar
           description: View your upcoming and past lessons.
@@ -637,6 +840,9 @@ en:
           description: Access files, videos and learning resources shared by your teacher.
           empty_title: No materials yet
           empty_text: Files, videos and learning resources shared by your teacher will appear here.
+        payments:
+          title: Payments
+          description: Your balance, debt and payment history.
         profile:
           title: Profile
           description: ""
@@ -658,6 +864,8 @@ en:
         empty_title: No lessons scheduled
         empty_text: Your upcoming lessons will appear here when they are scheduled.
         no_lessons_on: "No lessons on %{date}."
+        join: Join lesson
+        with_teacher: "With %{name}"
         months_short:
           jan: Jan
           feb: Feb
@@ -694,6 +902,36 @@ en:
         empty_submitted: No submitted Homework yet.
         empty_reviewed: No reviewed Homework yet.
         empty_search: No Homework matches your search.
+        overdue_days:
+          one: Overdue by 1 day
+          other: Overdue by %{count} days
+        due_today: Due today
+        due_tomorrow: Due tomorrow
+        due_in_days: Due in %{count} days
+        due_on: "Due %{date}"
+        assigned_on: "Assigned %{date}"
+        materials_count:
+          one: "%{count} material"
+          other: "%{count} materials"
+        score: "Score %{score}"
+        details: Details
+        your_answer: Your answer
+        submitted_toast: Homework submitted.
+        statuses:
+          assigned: Assigned
+          in_progress: In progress
+          overdue: Overdue
+          submitted: Submitted
+          needs_review: Needs review
+          reviewed: Reviewed
+          resubmission_requested: Changes requested
+        actions:
+          start: Start homework
+          continue: Continue
+          submit: Submit homework
+          view_submission: View submission
+          view_feedback: View feedback
+          update: Update submission
       materials:
         search: Search materials
         search_placeholder: Search materials…
@@ -713,3 +951,63 @@ en:
         images: Images
         audio: Audio
         links: Links
+        empty_filter: No materials match your filters.
+        clear_filters: Clear filters
+        added: "Added %{date}"
+        preparing: Preparing…
+        unavailable: Unavailable
+        watch: Watch video
+        open_link: Open link
+        preview: Preview
+        view_details: View details
+        open: Open
+        from_homework: "From Homework: %{title}"
+        from_lesson: "From lesson: %{title}"
+        shared_directly: "Shared directly: %{title}"
+        types:
+          video: Video
+          document: Document
+          image: Image
+          audio: Audio
+          link: Link
+        groups:
+          today: Today
+          this_week: This week
+          earlier: Earlier
+      home_page:
+        greeting: "Welcome back, %{name}"
+        lede: Here's what's happening with your lessons.
+        next_lesson: Next lesson
+        view_calendar: View calendar
+        empty_lesson: No upcoming lessons scheduled yet.
+        view_homework: View homework
+        empty_homework: You're all caught up — no homework due right now.
+        recent_materials: Recent materials
+        view_materials: View all materials
+        empty_materials: Materials shared by your teacher will appear here.
+        balance: Balance
+        view_payments: View payments
+        empty_balance: Your balance will appear here.
+      payments:
+        disclaimer: Payments are recorded by your school or teacher — DANLIO does not charge you directly.
+        load_error: Your payments could not be loaded.
+        available: Available balance
+        debt: Outstanding debt
+        debt_banner: Your balance does not cover all completed lessons. Please contact your teacher or school to arrange payment.
+        low_next: Your balance may not cover your next lesson.
+        pending_title: Payment awaiting confirmation
+        pending_item: not yet added to your balance
+        lesson_price: Lesson price
+        price_unset: Not set yet
+        last_payment: "Last payment %{date} (%{amount})"
+        email_teacher: "Email %{name}"
+        call: Call
+        history: Transaction history
+        empty_title: No transactions yet
+        empty_text: Payments and lesson charges will appear here.
+        col_date: Date
+        col_description: Description
+        col_amount: Amount
+      notifications:
+        empty_title: No notifications yet
+        empty_text: Updates about your lessons and schedule will appear here.

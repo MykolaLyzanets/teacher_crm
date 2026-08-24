@@ -11,7 +11,9 @@ header.student-portal__header
         p.student-portal__subtitle = meta[:description]
 
     .student-portal__header-actions
-      = link_to student_notifications_path, class: 'student-portal__icon-btn', aria: { label: t('app.student_portal.nav.notifications') } do
+      = link_to student_notifications_path, class: "student-portal__icon-btn#{" has-unread" if student_unread_count.positive?}", aria: { label: t('app.student_portal.nav.notifications') } do
         = portal_icon 'bell', size: 20
+        - if student_unread_count.positive?
+          span.student-portal__unread aria-hidden="true"
       .student-portal__header-menu
         = render 'student_portal/profile_menu', variant: :header

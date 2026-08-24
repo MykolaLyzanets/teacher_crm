@@ -34,4 +34,5 @@ Rails.application.config.assets.precompile += %w[
   css/placeholder.min.css
   css/student_portal.min.css
   css/lessons.min.css
+  css/payments.min.css
 ]

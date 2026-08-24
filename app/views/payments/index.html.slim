@@ -1,0 +1,254 @@
+- content_for :title, "#{t('app.payments.title')} | danlio"
+
+- if @forbidden
+  .pay.pay--denied
+    .pay__denied-icon
+      = icon_tag 'payments', size: 24
+    h1 = t('app.payments.title')
+    p = t('app.payments.forbidden_text')
+- else
+  .pay data-controller="payments" data-payment-added=t('app.payments.payment_added') data-payout-recorded=t('app.payments.payout_recorded')
+    p.pay__toast hidden="hidden" role="status" data-payments-target="toast"
+
+    header.pay__header
+      h1 = t('app.payments.title')
+      p = t('app.payments.subtitle')
+
+    .pay__tabs role="tablist" aria-label=t('app.payments.tabs_aria')
+      - %w[overview balances payouts transactions].each do |tab|
+        button.pay__tab type="button" role="tab" aria-selected=(tab == 'overview' ? 'true' : 'false') data-payments-target="tab" data-tab=tab data-action="payments#selectTab"
+          = t("app.payments.tab_#{tab}")
+
+    .pay__panel data-payments-target="panel" data-tab="overview"
+      .pay__cards
+        .pay__card
+          span.pay__card-icon
+            = icon_tag 'payments', size: 22
+          span
+            span.pay__card-label = t('app.payments.received')
+            strong = grouped_money_label(@overview[:paymentsReceived])
+            span.pay__card-hint = t('app.payments.received_hint')
+        .pay__card
+          span.pay__card-icon
+            = icon_tag 'book', size: 22
+          span
+            span.pay__card-label = t('app.payments.lesson_revenue')
+            strong = grouped_money_label(@overview[:lessonRevenue])
+            span.pay__card-hint = t('app.payments.lesson_revenue_hint')
+        .pay__card class=("is-warn" if @overview[:outstandingDebt].values.sum.positive?)
+          span.pay__card-icon
+            = icon_tag 'bell', size: 22
+          span
+            span.pay__card-label = t('app.payments.outstanding_debt')
+            strong = grouped_money_label(@overview[:outstandingDebt])
+            span.pay__card-hint = t('app.payments.outstanding_hint')
+        - if @school
+          .pay__card
+            span.pay__card-icon
+              = icon_tag 'teachers', size: 22
+            span
+              span.pay__card-label = t('app.payments.teacher_earnings')
+              strong = grouped_money_label(@overview[:teacherEarnings])
+              span.pay__card-hint = t('app.payments.teacher_earnings_hint')
+          .pay__card
+            span.pay__card-icon
+              = icon_tag 'check', size: 22
+            span
+              span.pay__card-label = t('app.payments.teacher_payouts')
+              strong = grouped_money_label(@overview[:teacherPayouts])
+              span.pay__card-hint = t('app.payments.teacher_payouts_hint')
+          .pay__card
+            span.pay__card-icon
+              = icon_tag 'chart-bars', size: 22
+            span
+              span.pay__card-label = t('app.payments.school_profit')
+              strong = grouped_money_label(@overview[:schoolGrossProfit])
+              span.pay__card-hint = t('app.payments.school_profit_hint')
+        - else
+          .pay__card
+            span.pay__card-icon
+              = icon_tag 'chart-bars', size: 22
+            span
+              span.pay__card-label = t('app.payments.your_revenue')
+              strong = grouped_money_label(@overview[:lessonRevenue])
+              span.pay__card-hint = t('app.payments.your_revenue_hint')
+
+    .pay__panel hidden="hidden" data-payments-target="panel" data-tab="balances"
+      - if @balances.blank?
+        .pay__empty
+          h2 = t('app.payments.no_students')
+      - else
+        section.pay__table-card
+          .pay__table-wrap
+            table.pay__table
+              thead
+                tr
+                  th = t('app.payments.col_student')
+                  th = t('app.payments.col_teacher')
+                  th = t('app.payments.col_balance')
+                  th = t('app.payments.col_debt')
+                  th = t('app.payments.col_covered')
+                  th = t('app.payments.col_next')
+                  th = t('app.payments.col_status')
+                  th.pay__actions = t('app.payments.col_actions')
+              tbody
+                - @balances.each do |row|
+                  tr
+                    td
+                      strong = row[:name]
+                    td = row[:teacher]
+                    td = money_label(row[:availableCents], row[:currency])
+                    td = money_label(row[:debtCents], row[:currency])
+                    td = row[:lessonsCovered]
+                    td = row[:nextLessonDate].present? ? format_lesson_day_short(row[:nextLessonDate]) : '—'
+                    td
+                      span.pay-badge class="pay-badge--#{payment_status_tone(row[:status])}"
+                        = t("app.payments.status_#{row[:status]}")
+                    td.pay__actions
+                      button.pay__ghost type="button" data-action="payments#openPayment" = t('app.payments.add_payment')
+                      - if can_manage_payments?
+                        button.pay__ghost type="button" data-action="payments#toast" data-message=t('app.payments.adjusted') = t('app.payments.adjust')
+
+    .pay__panel hidden="hidden" data-payments-target="panel" data-tab="payouts"
+      - if @payouts.blank?
+        .pay__empty
+          h2 = t('app.payments.no_teachers')
+      - else
+        section.pay__table-card
+          .pay__table-wrap
+            table.pay__table
+              thead
+                tr
+                  th = t('app.payments.col_teacher')
+                  th = t('app.payments.col_completed')
+                  th = t('app.payments.col_hours')
+                  th = t('app.payments.col_earnings')
+                  th = t('app.payments.col_paid')
+                  th = t('app.payments.col_remaining')
+                  th.pay__actions = t('app.payments.col_actions')
+              tbody
+                - @payouts.each do |row|
+                  - summary = row[:summary]
+                  tr
+                    td
+                      strong = row[:name]
+                    td = summary[:completedLessons]
+                    td = summary[:teachingHours]
+                    td = money_label(summary[:totalEarningsCents], summary[:currency])
+                    td = money_label(summary[:paidCents], summary[:currency])
+                    td
+                      strong = money_label(summary[:remainingCents], summary[:currency])
+                    td.pay__actions
+                      button.pay__ghost type="button" data-action="payments#openPayout" data-remaining=summary[:remainingCents] data-currency=summary[:currency] = t('app.payments.record_payout')
+
+    .pay__panel hidden="hidden" data-payments-target="panel" data-tab="transactions"
+      .pay__filters
+        label
+          span = t('app.payments.from_date')
+          input.pay__input type="date" data-payments-target="from" data-action="change->payments#filter"
+        label
+          span = t('app.payments.to_date')
+          input.pay__input type="date" data-payments-target="to" data-action="change->payments#filter"
+        label
+          span = t('app.payments.col_type')
+          select.pay__input data-payments-target="type" data-action="change->payments#filter"
+            option value="all" = t('app.payments.all_types')
+            - %w[payment lesson_charge cancellation_charge refund adjustment teacher_earning teacher_payout].each do |kind|
+              option value=kind = t("app.payments.types.#{kind}")
+        label
+          span = t('app.payments.col_student')
+          select.pay__input data-payments-target="student" data-action="change->payments#filter"
+            option value="all" = t('app.payments.all_students')
+            - Array(@students).each do |student|
+              option value=Demo::Catalog.student_name(student) = Demo::Catalog.student_name(student)
+        label
+          span = t('app.payments.col_currency')
+          select.pay__input data-payments-target="currency" data-action="change->payments#filter"
+            option value="all" = t('app.payments.all_currencies')
+            - Array(@currencies).each do |currency|
+              option value=currency = currency
+        label
+          span = t('app.payments.col_status')
+          select.pay__input data-payments-target="status" data-action="change->payments#filter"
+            option value="all" = t('app.payments.all_statuses')
+            option value="pending" = t('app.payments.status_payment_pending')
+            option value="rejected" = t('app.payments.rejected')
+
+      section.pay__table-card
+        .pay__table-wrap
+          table.pay__table
+            thead
+              tr
+                th = t('app.payments.col_date')
+                th = t('app.payments.col_type')
+                th = t('app.payments.col_party')
+                th = t('app.payments.col_description')
+                th = t('app.payments.col_amount')
+                th.pay__actions = t('app.payments.col_actions')
+            tbody
+              - @transactions.each do |item|
+                tr data-payments-target="row" data-date=item[:date] data-type=item[:kind] data-status=item[:status] data-party=item[:party] data-currency=item[:currency]
+                  td = item[:date]
+                  td
+                    = t("app.payments.types.#{item[:kind]}", default: item[:kind].to_s.humanize)
+                    - if item[:status].present?
+                      span.pay-badge.pay-badge--neutral = item[:status]
+                  td = item[:party]
+                  td = item[:description]
+                  td class=(item[:amountCents].to_i.negative? ? 'is-neg' : 'is-pos')
+                    = signed_money_label(item[:amountCents], item[:currency])
+                  td.pay__actions
+                    - if item[:status].to_s == 'pending'
+                      button.pay__ghost type="button" data-action="payments#toast" data-message=t('app.payments.payment_confirmed') = t('app.payments.confirm')
+                      button.pay__ghost type="button" data-action="payments#toast" data-message=t('app.payments.payment_rejected') = t('app.payments.reject')
+          .pay__empty hidden="hidden" data-payments-target="empty"
+            h2 = t('app.payments.no_transactions')
+
+    .pay__dialog[hidden] data-payments-target="paymentDialog"
+      .pay__dialog-backdrop data-action="click->payments#closeDialogs"
+      .pay__dialog-card role="dialog" aria-modal="true"
+        h2 = t('app.payments.add_payment')
+        label
+          span = t('app.payments.amount')
+          input.pay__input type="number" min="1" step="1" data-payments-target="amount"
+        label
+          span = t('app.payments.date')
+          input.pay__input type="date" data-payments-target="payDate"
+        label
+          span = t('app.payments.method')
+          select.pay__input data-payments-target="method"
+            option value="bank_transfer" = t('app.payments.methods.bank_transfer')
+            option value="cash" = t('app.payments.methods.cash')
+            option value="card" = t('app.payments.methods.card')
+        label
+          span = t('app.payments.reference')
+          input.pay__input type="text" data-payments-target="reference"
+        label
+          span = t('app.payments.note')
+          textarea.pay__input data-payments-target="note" rows="3"
+        .pay__dialog-actions
+          button.pay__ghost type="button" data-action="payments#closeDialogs" = t('app.common.cancel')
+          button.pay__ghost type="button" data-action="payments#savePayment" = t('app.common.confirm')
+
+    .pay__dialog[hidden] data-payments-target="payoutDialog"
+      .pay__dialog-backdrop data-action="click->payments#closeDialogs"
+      .pay__dialog-card role="dialog" aria-modal="true"
+        h2 = t('app.payments.record_payout')
+        p.pay__hint data-payments-target="payoutRemaining"
+        label
+          span = t('app.payments.amount')
+          input.pay__input type="number" min="1" step="1" data-payments-target="payoutAmount"
+        label
+          span = t('app.payments.date')
+          input.pay__input type="date" data-payments-target="payoutDate"
+        label
+          span = t('app.payments.method')
+          select.pay__input data-payments-target="payoutMethod"
+            option value="bank_transfer" = t('app.payments.methods.bank_transfer')
+            option value="cash" = t('app.payments.methods.cash')
+        label
+          span = t('app.payments.note')
+          textarea.pay__input data-payments-target="payoutNote" rows="3"
+        .pay__dialog-actions
+          button.pay__ghost type="button" data-action="payments#closeDialogs" = t('app.common.cancel')
+          button.pay__ghost type="button" data-action="payments#savePayout" = t('app.common.confirm')

@@ -9,7 +9,10 @@ aside.student-portal__sidebar aria-label="#{t('app.student_portal.nav.main')}"
       = link_to item[:path], class: "student-portal__link#{" is-active" if active}", aria: ({ current: 'page' } if active) do
         span.student-portal__icon
           = portal_icon item[:icon], size: 20
-        span = item[:label]
+        span.student-portal__label = item[:label]
+        - badge = item[:action] == 'homework' ? @homework_badge.to_i : (item[:action] == 'materials' ? @materials_badge.to_i : 0)
+        - if badge.positive?
+          span.student-portal__badge = badge > 9 ? '9+' : badge
 
   .student-portal__sidebar-footer
     = render 'student_portal/profile_menu', variant: :sidebar

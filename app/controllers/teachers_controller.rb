@@ -19,6 +19,9 @@ class TeachersController < AppController
     assigned = @teacher_record.student_profiles.kept.includes(:user, :teacher_profile)
     @assigned_students = assigned.map(&:as_catalog)
     @unassigned_students = student_profiles_scope.where(teacher_id: nil).map(&:as_catalog)
+    @catalog_teacher = Demo::Catalog.match_teacher(@teacher)
+    @earnings = Demo::Finance.teacher_payout_summary(@catalog_teacher[:id]) if @catalog_teacher
+    @school_workspace = current_workspace.blank? || current_workspace.school? || current_user.admin?
   end
 
   def new

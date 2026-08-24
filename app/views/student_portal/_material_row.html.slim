@@ -1,0 +1,23 @@
+- embedded = local_assigns[:embedded]
+article.sp-mat-row data-student-materials-target="card" data-type=item[:type] data-subject=item[:subject] data-teacher=item[:sharedBy] data-name=item[:title] data-shared=item[:sharedAt] data-search="#{item[:title]} #{item[:subject]} #{item[:sharedBy]} #{item[:description]}" data-id=item[:id] data-url=item[:accessUrl] data-status=item[:status] data-source=material_source_label(item) data-description=item[:description]
+  - if embedded
+    = link_to student_materials_path, class: 'sp-mat-row__body'
+      span.sp-mat-row__icon
+        = portal_icon material_type_icon(item[:type]), size: 20
+      span.sp-mat-row__copy
+        span.sp-mat-row__title = item[:title]
+        span.sp-mat-row__meta = material_meta_line(item)
+    = link_to material_primary_action(item), student_materials_path, class: 'sp-btn sp-btn--primary'
+  - else
+    button.sp-mat-row__body type="button" data-action="student-materials#openDetails"
+      span.sp-mat-row__icon
+        = portal_icon material_type_icon(item[:type]), size: 20
+      span.sp-mat-row__copy
+        span.sp-mat-row__title = item[:title]
+        span.sp-mat-row__meta = material_meta_line(item)
+        span.sp-mat-row__extra
+          span = item[:sharedBy]
+          span = t('app.student_portal.materials.added', date: format_lesson_day_short(item[:sharedAt].to_s[0, 10]))
+          span = material_source_label(item)
+    button.sp-btn.sp-btn--primary type="button" data-action="student-materials#openDetails" disabled=(item[:status].to_s.in?(%w[processing failed]) ? 'disabled' : nil)
+      = material_primary_action(item)

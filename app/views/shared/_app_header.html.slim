@@ -12,8 +12,22 @@ header.app-header
 
     .app-header__end
       = render 'layouts/lang_switch'
-      button.app-header__icon-btn type="button" aria-label=t('app.header.notifications')
-        = icon_tag 'bell', size: 20
+      .app-header__bell data-controller="notifications" data-notifications-target="root"
+        button.app-header__icon-btn type="button" aria-label=t('app.header.notifications') aria-expanded="false" data-notifications-target="button" data-action="notifications#toggle"
+          = icon_tag 'bell', size: 20
+          - if unread_staff_count.positive?
+            span.app-header__badge = unread_staff_count > 9 ? '9+' : unread_staff_count
+        .app-header__menu-panel hidden="hidden" data-notifications-target="panel"
+          p.app-header__menu-title = t('app.header.notifications')
+          - items = staff_notifications
+          - if items.blank?
+            p.app-header__menu-empty = t('app.header.notifications_empty')
+          - else
+            ul
+              - items.first(20).each do |item|
+                li class=("is-unread" unless item[:read])
+                  p = item[:title]
+                  span = item[:body]
       button.app-header__user type="button"
         span.app-header__avatar = current_user_initials
         span.app-header__user-meta

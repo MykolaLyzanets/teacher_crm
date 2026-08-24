@@ -1,0 +1,14 @@
+[
+  {
+    "id": "payout-1",
+    "teacherId": "tch-ava",
+    "teacher": "Ava Thompson",
+    "amountCents": 1500,
+    "currency": "EUR",
+    "date": "2026-08-15",
+    "method": "bank_transfer",
+    "note": "August week 1",
+    "recordedBy": "Ava Thompson",
+    "createdAt": "2026-08-15T09:00:00.000Z"
+  }
+]

@@ -1,7 +1,7 @@
 - content_for :title, "#{t('app.student_portal.pages.calendar.title')} | danlio"
 - labels = student_calendar_labels
 
-.sp-calendar data-controller="student-calendar" data-student-calendar-labels-value=labels.to_json
+.sp-calendar data-controller="student-calendar" data-student-calendar-labels-value=labels.to_json data-student-calendar-lessons-value=student_calendar_lessons_json.to_json
   section.sp-upcoming hidden="hidden" aria-label="#{t('app.student_portal.calendar.next_lesson')}" data-student-calendar-target="upcoming"
     p.sp-upcoming__label = t('app.student_portal.calendar.next_lesson')
     h2.sp-upcoming__title data-student-calendar-target="upcomingTitle"
@@ -13,7 +13,8 @@
         = portal_icon 'user', size: 16
         span data-student-calendar-target="upcomingWho"
     .sp-upcoming__actions
-      button.sp-btn.sp-btn--ghost type="button" = t('app.student_portal.calendar.view_details')
+      a.sp-btn.sp-btn--primary href="#" target="_blank" rel="noreferrer" hidden="hidden" data-student-calendar-target="upcomingJoin" = t('app.student_portal.calendar.join')
+      button.sp-btn.sp-btn--ghost type="button" data-action="student-calendar#openUpcoming" = t('app.student_portal.calendar.view_details')
       = link_to t('app.student_portal.calendar.view_homework'), student_homework_path, class: 'sp-upcoming__link'
 
   section.sp-cal
@@ -67,3 +68,19 @@
         div
           p.sp-cal__chip-title = t('app.student_portal.calendar.empty_title')
           p.sp-cal__chip-text = t('app.student_portal.calendar.empty_text')
+
+  .sp-drawer.sp-drawer--hidden data-student-calendar-target="drawer"
+    button.sp-drawer__backdrop type="button" aria-label="#{t('app.common.close')}" data-action="student-calendar#closeDetails"
+    aside.sp-drawer__panel role="dialog" aria-modal="true" aria-labelledby="student-lesson-title"
+      .sp-drawer__head
+        h2#student-lesson-title data-student-calendar-target="drawerTitle"
+        button.sp-icon-btn type="button" aria-label="#{t('app.common.close')}" data-action="student-calendar#closeDetails"
+          = portal_icon 'x', size: 20
+      .sp-drawer__body
+        p.sp-drawer__copy data-student-calendar-target="drawerWhen"
+        p.sp-drawer__copy data-student-calendar-target="drawerWho"
+        p.sp-drawer__copy data-student-calendar-target="drawerPlace"
+        p.sp-drawer__copy data-student-calendar-target="drawerNotes"
+      .sp-drawer__foot
+        a.sp-btn.sp-btn--primary href="#" target="_blank" rel="noreferrer" hidden="hidden" data-student-calendar-target="drawerJoin" = t('app.student_portal.calendar.join')
+        button.sp-btn.sp-btn--ghost type="button" data-action="student-calendar#closeDetails" = t('app.common.close')

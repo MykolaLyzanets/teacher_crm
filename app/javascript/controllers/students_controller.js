@@ -458,6 +458,10 @@ export default class extends Controller {
     }, 3200)
   }
 
+  toastMessage(event) {
+    this.showToast(event.currentTarget.dataset.message || "")
+  }
+
   visibleCheckboxes() {
     if (!this.hasCheckboxTarget) return []
     return this.checkboxTargets.filter((box) => {

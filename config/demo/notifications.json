@@ -1,0 +1,36 @@
+[
+  {
+    "id": "notif-1",
+    "audience": "staff",
+    "title": "Payment awaiting confirmation",
+    "body": "Sophia Brown submitted a €56 bank transfer. Confirm it to add the amount to her balance.",
+    "createdAt": "2026-08-20T09:05:00.000Z",
+    "read": false
+  },
+  {
+    "id": "notif-2",
+    "audience": "staff",
+    "title": "Student balance is low",
+    "body": "Daniel Wilson has outstanding debt after the last Mathematics lesson.",
+    "createdAt": "2026-08-03T13:40:00.000Z",
+    "read": false
+  },
+  {
+    "id": "notif-stu-1",
+    "audience": "student",
+    "recipientId": "stu-emma",
+    "title": "Lesson confirmed",
+    "body": "Your English lesson on Thursday is confirmed.",
+    "createdAt": "2026-08-13T16:00:00.000Z",
+    "read": false
+  },
+  {
+    "id": "notif-stu-2",
+    "audience": "student",
+    "recipientId": "stu-emma",
+    "title": "Homework reviewed",
+    "body": "Your teacher left feedback on Speaking practice.",
+    "createdAt": "2026-08-10T11:20:00.000Z",
+    "read": true
+  }
+]

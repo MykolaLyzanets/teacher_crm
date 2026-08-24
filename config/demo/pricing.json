@@ -1,0 +1,20 @@
+[
+  {
+    "studentId": "stu-emma",
+    "defaultPriceCents": 2500,
+    "currency": "EUR",
+    "defaultDurationMinutes": 60
+  },
+  {
+    "studentId": "stu-daniel",
+    "defaultPriceCents": 3000,
+    "currency": "EUR",
+    "defaultDurationMinutes": 45
+  },
+  {
+    "studentId": "stu-sophia",
+    "defaultPriceCents": 2800,
+    "currency": "EUR",
+    "defaultDurationMinutes": 60
+  }
+]

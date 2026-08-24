@@ -84,12 +84,16 @@ module ApplicationHelper
 
   def signed_in_home_path
     return new_user_session_path unless user_signed_in?
-    return student_calendar_path if current_user.student?
+    return student_root_path if current_user.student?
 
     dashboard_path
   end
 
   def can_manage_teachers?
+    user_signed_in? && (current_user.owner? || current_user.admin?)
+  end
+
+  def can_view_finance?
     user_signed_in? && (current_user.owner? || current_user.admin?)
   end
 

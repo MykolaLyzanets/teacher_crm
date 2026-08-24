@@ -4,5 +4,9 @@ nav.student-portal__mobile-nav aria-label="#{t('app.student_portal.nav.main')}"
       - active = student_nav_active?(item[:action])
       li
         = link_to item[:path], class: "student-portal__tab#{" is-active" if active}", aria: ({ current: 'page' } if active) do
-          = portal_icon item[:icon], size: 20
+          span.student-portal__tab-icon
+            = portal_icon item[:icon], size: 20
+            - badge = item[:action] == 'homework' ? @homework_badge.to_i : (item[:action] == 'materials' ? @materials_badge.to_i : 0)
+            - if badge.positive?
+              span.student-portal__badge.student-portal__badge--dot
           span = item[:label]

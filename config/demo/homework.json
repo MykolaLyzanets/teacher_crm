@@ -1,0 +1,141 @@
+[
+  {
+    "id": "hw-1",
+    "studentId": "stu-emma",
+    "lessonId": "les-7",
+    "title": "Past Simple Practice",
+    "assignedDate": "2026-08-10",
+    "dueDate": "2026-08-14",
+    "teacher": "Ava Thompson",
+    "status": "reviewed",
+    "score": "9/10",
+    "feedback": "Strong accuracy. Focus on irregular verbs.",
+    "instructions": "Complete the worksheet and write five original sentences using irregular past simple verbs.",
+    "subject": "English",
+    "topic": "Past Simple",
+    "attachmentCount": 2,
+    "materialIds": ["upl-demo-past-simple-video", "upl-demo-grammar-worksheet"],
+    "reviewedAt": "2026-08-14T16:00:00.000Z",
+    "reviewedBy": "Ava Thompson",
+    "submittedAt": "2026-08-13T18:40:00.000Z",
+    "submission": {
+      "id": "sub-hw-1",
+      "studentId": "stu-emma",
+      "writtenResponse": "I went to the library yesterday. She wrote a short story about her weekend.",
+      "submittedAt": "2026-08-13T18:40:00.000Z",
+      "status": "reviewed"
+    }
+  },
+  {
+    "id": "hw-2",
+    "studentId": "stu-emma",
+    "lessonId": "les-7",
+    "title": "Listening worksheet",
+    "assignedDate": "2026-08-12",
+    "dueDate": "2026-08-16",
+    "teacher": "Ava Thompson",
+    "status": "needs_review",
+    "instructions": "Listen to the audio once without pausing, then answer the comprehension questions in full sentences.",
+    "subject": "English",
+    "attachmentCount": 1,
+    "materialIds": ["upl-demo-listening-audio"],
+    "submittedAt": "2026-08-15T09:20:00.000Z",
+    "submission": {
+      "id": "sub-hw-2",
+      "studentId": "stu-emma",
+      "writtenResponse": "The speaker described a weekend trip to the coast and mentioned two train delays.",
+      "submittedAt": "2026-08-15T09:20:00.000Z",
+      "status": "submitted"
+    }
+  },
+  {
+    "id": "hw-3",
+    "studentId": "stu-emma",
+    "title": "Vocabulary flashcards",
+    "assignedDate": "2026-08-14",
+    "dueDate": "2026-08-18",
+    "teacher": "Ava Thompson",
+    "status": "assigned",
+    "instructions": "Create ten flashcards for the new unit vocabulary. Include one example sentence for each word.",
+    "subject": "English",
+    "attachmentCount": 0,
+    "submission": {
+      "id": "sub-hw-3-draft",
+      "studentId": "stu-emma",
+      "writtenResponse": "1. resilient — She stayed resilient during exams.",
+      "status": "draft"
+    }
+  },
+  {
+    "id": "hw-4",
+    "studentId": "stu-emma",
+    "title": "Reading comprehension",
+    "assignedDate": "2026-08-01",
+    "dueDate": "2026-08-05",
+    "teacher": "Ava Thompson",
+    "status": "overdue",
+    "instructions": "Read the article and answer the three comprehension questions with evidence from the text.",
+    "subject": "English",
+    "allowLateSubmission": true
+  },
+  {
+    "id": "hw-5",
+    "studentId": "stu-daniel",
+    "title": "Algebra set B",
+    "assignedDate": "2026-08-08",
+    "dueDate": "2026-08-12",
+    "teacher": "Noah Patel",
+    "status": "reviewed",
+    "score": "18/20",
+    "subject": "Mathematics",
+    "reviewedAt": "2026-08-12T18:00:00.000Z",
+    "reviewedBy": "Noah Patel"
+  },
+  {
+    "id": "hw-6",
+    "studentId": "stu-emma",
+    "studentIds": ["stu-emma", "stu-sophia", "stu-liam"],
+    "lessonId": "les-4",
+    "title": "Group speaking reflection",
+    "assignedDate": "2026-08-05",
+    "dueDate": "2026-08-08",
+    "teacher": "Mia Chen",
+    "status": "submitted",
+    "instructions": "Record a short reflection on your group speaking practice. Focus on fluency and turn-taking.",
+    "subject": "English",
+    "attachmentCount": 1,
+    "materialIds": ["upl-demo-speaking-guide"],
+    "submittedAt": "2026-08-07T20:00:00.000Z",
+    "submission": {
+      "id": "sub-hw-6",
+      "studentId": "stu-emma",
+      "writtenResponse": "I practiced asking follow-up questions and tried not to interrupt my partners.",
+      "submittedAt": "2026-08-07T20:00:00.000Z",
+      "status": "submitted"
+    }
+  },
+  {
+    "id": "hw-7",
+    "studentId": "stu-emma",
+    "lessonId": "les-7",
+    "title": "Writing revision",
+    "assignedDate": "2026-08-11",
+    "dueDate": "2026-08-17",
+    "teacher": "Ava Thompson",
+    "status": "assigned",
+    "instructions": "Revise your paragraph using the feedback below. Strengthen topic sentences and add two irregular verbs.",
+    "subject": "English",
+    "attachmentCount": 2,
+    "materialIds": ["upl-demo-writing-rubric", "upl-demo-processing-video"],
+    "feedback": "Please revise the second paragraph and correct verb forms.",
+    "resubmissionDueDate": "2026-08-20",
+    "submittedAt": "2026-08-12T14:10:00.000Z",
+    "submission": {
+      "id": "sub-hw-7-v1",
+      "studentId": "stu-emma",
+      "writtenResponse": "Yesterday I go to school and write in my notebook.",
+      "submittedAt": "2026-08-12T14:10:00.000Z",
+      "status": "resubmission_requested"
+    }
+  }
+]

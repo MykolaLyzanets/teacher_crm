@@ -39,6 +39,9 @@
                 = icon_tag 'message', size: 18
                 = teacher[:phone]
       = link_to t('app.teachers.schedule_lesson'), calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn'
+      - if can_manage_teachers?
+        button.teachers-page__ghost-btn type="button" data-action="teachers#openAbsence"
+          = t('app.teachers.add_absence')
       = link_to t('app.common.edit'), edit_teacher_path(teacher[:id]), class: 'teachers-page__primary-btn'
 
     .teachers-page__grid
@@ -58,6 +61,10 @@
             div
               dt = t('app.teachers.bio')
               dd = teacher[:bio]
+          - if can_view_finance? && @school_workspace
+            div
+              dt = t('app.teachers.compensation')
+              dd = t('app.teachers.compensation_percentage', percent: @catalog_teacher&.dig(:compensationPercent) || 60)
 
       section.teachers-page__card
         h2 = t('app.teachers.availability_title')
@@ -80,6 +87,38 @@
                 = t('app.teachers.invited_status', status: teacher[:invitationStatus].presence || t('app.statuses.pending'))
               - else
                 = t('app.teachers.has_workspace_access')
+
+    - if can_view_finance? && @earnings
+      section.teachers-page__card
+        .teachers-page__section-head
+          div
+            h2 = t('app.teachers.earnings')
+            p.teachers-page__section-sub = t('app.teachers.earnings_hint')
+          - if can_manage_payments?
+            button.teachers-page__ghost-btn type="button" data-action="teachers#toast" data-message=t('app.payments.payout_recorded')
+              = t('app.payments.record_payout')
+        dl.teachers-page__dl.teachers-page__dl--stats
+          div
+            dt = t('app.teachers.total_earnings')
+            dd = money_label(@earnings[:totalEarningsCents], @earnings[:currency])
+          div
+            dt = t('app.teachers.paid_out')
+            dd = money_label(@earnings[:paidCents], @earnings[:currency])
+          div
+            dt = t('app.teachers.remaining')
+            dd = money_label(@earnings[:remainingCents], @earnings[:currency])
+          div
+            dt = t('app.teachers.completed_lessons')
+            dd = @earnings[:completedLessons]
+          div
+            dt = t('app.teachers.charged_cancellations')
+            dd = @earnings[:chargedCancellations]
+
+    - if can_manage_teachers?
+      section.teachers-page__card data-teachers-target="absenceSection"
+        h2 = t('app.teachers.absence_history')
+        ul.teachers-page__assigned data-teachers-target="absenceList"
+        p.teachers-page__meta data-teachers-target="absenceEmpty" = t('app.teachers.no_absences')
 
     - if teacher[:notes].present?
       section.teachers-page__card
@@ -158,3 +197,29 @@
         .teachers-page__dialog-actions
           button.teachers-page__secondary-btn type="button" data-action="teachers#closeRemove" = t('app.common.cancel')
           button.teachers-page__danger-btn type="button" data-action="teachers#confirmRemove" data-teachers-target="removeConfirm" = t('app.teachers.remove')
+
+    .teachers-page__dialog[hidden] data-teachers-target="absenceDialog"
+      .teachers-page__dialog-backdrop data-action="click->teachers#closeAbsence"
+      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="add-absence-title"
+        h2#add-absence-title = t('app.teachers.add_absence')
+        p = t('app.teachers.absence_text')
+        label.teachers-page__meta
+          span = t('app.teachers.absence_type')
+          select data-teachers-target="absenceType"
+            option value="sick_leave" = t('app.teachers.absence_types.sick_leave')
+            option value="vacation" = t('app.teachers.absence_types.vacation')
+            option value="personal" = t('app.teachers.absence_types.personal')
+            option value="emergency" = t('app.teachers.absence_types.emergency')
+            option value="other" = t('app.teachers.absence_types.other')
+        label.teachers-page__meta
+          span = t('app.teachers.absence_start')
+          input type="date" data-teachers-target="absenceStart"
+        label.teachers-page__meta
+          span = t('app.teachers.absence_end')
+          input type="date" data-teachers-target="absenceEnd"
+        label.teachers-page__meta
+          span = t('app.teachers.absence_note')
+          textarea data-teachers-target="absenceNote" rows="3"
+        .teachers-page__dialog-actions
+          button.teachers-page__secondary-btn type="button" data-action="teachers#closeAbsence" = t('app.common.cancel')
+          button.teachers-page__primary-btn type="button" data-action="teachers#confirmAbsence" = t('app.common.confirm')

@@ -1,0 +1,17 @@
+article.sp-mat-card data-student-materials-target="card" data-type=item[:type] data-subject=item[:subject] data-teacher=item[:sharedBy] data-name=item[:title] data-shared=item[:sharedAt] data-search="#{item[:title]} #{item[:subject]} #{item[:sharedBy]} #{item[:description]}" data-id=item[:id] data-url=item[:accessUrl] data-status=item[:status] data-source=material_source_label(item) data-description=item[:description]
+  button.sp-mat-card__body type="button" data-action="student-materials#openDetails"
+    .sp-mat-card__thumb class=("is-image" if item[:type].to_s == 'image' && item[:accessUrl].present?)
+      - if item[:type].to_s == 'image' && item[:accessUrl].present?
+        img src=item[:accessUrl] alt="" loading="lazy"
+      - else
+        = portal_icon material_type_icon(item[:type]), size: 22
+      - if item[:type].to_s == 'video' && item[:status].to_s == 'ready'
+        span.sp-mat-card__play
+          = portal_icon 'play', size: 16
+    h3 = item[:title]
+    p.sp-mat-card__meta = material_meta_line(item)
+    p.sp-mat-card__added = t('app.student_portal.materials.added', date: format_lesson_day_short(item[:sharedAt].to_s[0, 10]))
+    p.sp-mat-card__by = item[:sharedBy]
+    p.sp-mat-card__source = material_source_label(item)
+  button.sp-btn.sp-btn--primary type="button" data-action="student-materials#openDetails" disabled=(item[:status].to_s.in?(%w[processing failed]) ? 'disabled' : nil)
+    = material_primary_action(item)

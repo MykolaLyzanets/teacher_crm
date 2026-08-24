@@ -20,6 +20,7 @@ ua:
       search: Пошук
       search_placeholder: Шукати учнів, уроки…
       notifications: Сповіщення
+      notifications_empty: Сповіщень ще немає.
       teacher_role: Викладач
       owner_role: Власник
       student_role: Учень
@@ -29,6 +30,7 @@ ua:
       view: Переглянути
       edit: Редагувати
       cancel: Скасувати
+      close: Закрити
       confirm: Підтвердити
       create: Створити
       add: Додати
@@ -167,6 +169,26 @@ ua:
       assign_teacher_cta: Призначити викладача
       no_teacher_hint: Призначте викладача, щоб вести уроки та прогрес учня.
       view_profile: Переглянути профіль
+      tabs_aria: Розділи профілю учня
+      tab_overview: Огляд
+      tab_lessons: Уроки
+      tab_homework: Домашні
+      tab_progress: Прогрес
+      tab_notes: Нотатки
+      tab_payments: Оплати
+      payments_admin_only: Лише для адміністраторів
+      no_lessons: Уроків не знайдено
+      homework_empty: Домашні завдання цього учня зʼявляться тут.
+      payments_empty: Оплати зʼявляться тут.
+      current_balance: Поточний баланс
+      total_paid: Сплачено
+      outstanding: Заборгованість
+      lesson_charges: Списання за уроки
+      add_payment: Додати оплату
+      add_adjustment: Коригування
+      progress_empty: Прогрес учня зʼявиться тут.
+      notes_empty: Внутрішні нотатки зʼявляться тут.
+      next_lesson: Наступний урок
       assigned_toast: "Призначено: %{name}."
       removed_toast: Призначення викладача знято.
       relationship_mother: Мати
@@ -251,6 +273,30 @@ ua:
       not_found_text: Цього викладача могло бути видалено або він недоступний у поточній сесії.
       back: До списку викладачів
       schedule_lesson: Запланувати урок
+      add_absence: Додати відсутність
+      absence_text: Зазначте дати, коли викладач недоступний. Після збереження можна перепризначити уроки.
+      absence_type: Тип відсутності
+      absence_start: Дата початку
+      absence_end: Дата завершення
+      absence_note: Примітка
+      absence_recorded: Відсутність збережено.
+      absence_history: Історія відсутностей
+      no_absences: Відсутностей ще немає.
+      compensation: Компенсація
+      compensation_percentage: "%{percent}% від вартості уроку"
+      earnings: Нарахування
+      earnings_hint: З завершених уроків та платних скасувань.
+      total_earnings: Усього нараховано
+      paid_out: Виплачено
+      remaining: Залишок
+      completed_lessons: Завершені уроки
+      charged_cancellations: Платні скасування
+      absence_types:
+        sick_leave: Лікарняний
+        vacation: Відпустка
+        personal: Особиста причина
+        emergency: Надзвичайна ситуація
+        other: Інше
       create_title: Створити викладача
       edit_title: Редагувати викладача
       create_subtitle: Додайте викладача, налаштуйте деталі викладання та доступ.
@@ -533,6 +579,63 @@ ua:
       coming_soon_text: Тут зʼявляться інсайти, найближчі уроки та швидкі дії.
       open_calendar: Відкрити календар
       view_students: Переглянути учнів
+      school_title: Огляд школи
+      teacher_greeting: "Доброго дня, %{name}"
+      lessons_today: Уроки сьогодні
+      completed_today: Завершено сьогодні
+      upcoming_today: Заплановано сьогодні
+      teachers_active: Викладачі сьогодні
+      needs_attention: Потребує уваги
+      filter_all: Усі
+      filter_lessons: Уроки
+      filter_teachers: Викладачі
+      filter_payments: Оплати
+      filter_students: Учні
+      attention_empty: Усе під контролем. Немає пунктів, що потребують уваги.
+      confirm: Підтвердити
+      reject: Відхилити
+      payment_confirmed: Оплату підтверджено.
+      payment_rejected: Оплату відхилено.
+      payments_overview: Огляд оплат
+      open_payments: Відкрити оплати
+      payments_received: Оплати за цей місяць
+      lesson_revenue: Дохід з уроків за місяць
+      outstanding_debt: Заборгованість учнів
+      payouts_remaining: Залишок виплат викладачам
+      pending_confirmations: Очікують підтвердження
+      todays_lessons: Уроки сьогодні
+      create_lesson: Створити урок
+      no_lessons: Уроків не заплановано.
+      teacher_availability: Доступність викладачів
+      no_teachers: Ще немає викладачів.
+      lessons_count:
+        one: "%{count} урок сьогодні"
+        few: "%{count} уроки сьогодні"
+        many: "%{count} уроків сьогодні"
+        other: "%{count} уроку сьогодні"
+      hours_count:
+        one: "%{count} година викладання"
+        few: "%{count} години викладання"
+        many: "%{count} годин викладання"
+        other: "%{count} години викладання"
+      next_at: "наступний о %{time}"
+      availability:
+        teaching_now: Зараз викладає
+        finished: Завершив на сьогодні
+        available: Доступний
+        absent: Відсутній
+        replacement_needed: Потрібна заміна
+      next_lesson: Наступний урок
+      starts_soon: Незабаром
+      view_lesson: Переглянути урок
+      no_more_today: На сьогодні більше немає уроків
+      todays_schedule: Розклад на сьогодні
+      homework_review: Домашні на перевірку
+      homework_empty: Усе перевірено — немає домашніх на ревʼю.
+      review: Перевірити
+      join_lesson: Приєднатися
+      teaching_hours: Години викладання
+      substitute_lessons: Заміни
     lessons:
       title: Уроки
       subtitle: Керуйте всіма уроками та переглядайте їх.
@@ -575,6 +678,22 @@ ua:
       deleted_toast: Урок видалено.
       completed_toast: Урок позначено як завершений.
       mark_completed: Позначити завершеним
+      confirm_outcome: Підтвердити результат
+      outcome_title: Підтвердіть результат уроку
+      outcome_text: Урок завершився. Він відбувся?
+      outcome_completed: Урок відбувся
+      outcome_completed_text: Зафіксуйте відвідуваність, нарахуйте оплату та за потреби додайте домашнє.
+      outcome_missed: Урок не відбувся
+      outcome_missed_text: Оберіть причину скасування і чи нараховувати оплату.
+      attendance: Відвідуваність
+      attendance_present: Присутній
+      attendance_late: Запізнився
+      attendance_absent: Відсутній
+      duration: Тривалість (хв)
+      teacher_note: Нотатка викладача
+      progress_note: Нотатка про прогрес
+      correct_outcome: Виправити результат
+      corrected_toast: Результат уроку виправлено.
       close_details: Закрити деталі уроку
       close: Закрити
       not_found: Цей урок не знайдено.
@@ -612,6 +731,89 @@ ua:
       settings:
         title: Налаштування
         description: Налаштуйте параметри робочого простору.
+    payments:
+      title: Оплати
+      subtitle: Баланси учнів, списання за уроки, нарахування та виплати викладачам.
+      forbidden_text: У вас немає доступу до фінансової інформації.
+      tabs_aria: Розділи оплат
+      tab_overview: Огляд
+      tab_balances: Баланси учнів
+      tab_payouts: Виплати викладачам
+      tab_transactions: Операції
+      received: Отримані оплати
+      received_hint: Підтверджені поповнення учнів
+      lesson_revenue: Дохід з уроків
+      lesson_revenue_hint: Визнається після завершення, а не в момент оплати
+      outstanding_debt: Заборгованість учнів
+      outstanding_hint: По всіх учнях
+      teacher_earnings: Нарахування викладачам
+      teacher_earnings_hint: З завершених і платних скасованих уроків
+      teacher_payouts: Виплати викладачам
+      teacher_payouts_hint: Зафіксовані як виплачені поза DANLIO
+      school_profit: Валовий прибуток школи
+      school_profit_hint: Дохід з уроків мінус нарахування викладачам
+      your_revenue: Ваш дохід
+      your_revenue_hint: Індивідуальний акаунт — списання за уроки є вашим доходом
+      no_students: Ще немає учнів
+      no_teachers: Ще немає викладачів
+      no_transactions: Операцій не знайдено
+      col_student: Учень
+      col_teacher: Викладач
+      col_balance: Баланс
+      col_debt: Борг
+      col_covered: Покрито уроків
+      col_next: Наступний урок
+      col_status: Статус
+      col_actions: Дії
+      col_completed: Завершені уроки
+      col_hours: Години викладання
+      col_earnings: Нараховано
+      col_paid: Виплачено
+      col_remaining: Залишок
+      col_date: Дата
+      col_type: Тип
+      col_party: Учень / Викладач
+      col_description: Опис
+      col_amount: Сума
+      add_payment: Додати оплату
+      adjust: Коригування
+      record_payout: Зафіксувати виплату
+      confirm: Підтвердити
+      reject: Відхилити
+      payment_added: Оплату записано.
+      adjusted: Коригування записано.
+      payout_recorded: Виплату записано.
+      payment_confirmed: Оплату підтверджено.
+      payment_rejected: Оплату відхилено.
+      from_date: Від
+      to_date: До
+      all_types: Усі типи
+      all_statuses: Усі статуси
+      all_students: Усі учні
+      all_currencies: Усі валюти
+      col_currency: Валюта
+      amount: Сума
+      date: Дата
+      method: Спосіб
+      reference: Референс
+      note: Нотатка
+      methods:
+        bank_transfer: Банківський переказ
+        cash: Готівка
+        card: Картка
+      rejected: Відхилено
+      status_healthy: У нормі
+      status_low_balance: Низький баланс
+      status_debt: Борг
+      status_payment_pending: Очікує підтвердження
+      types:
+        payment: Оплата
+        lesson_charge: Списання за урок
+        cancellation_charge: Списання за скасування
+        refund: Повернення
+        adjustment: Коригування
+        teacher_earning: Нарахування викладачу
+        teacher_payout: Виплата викладачу
     workspace:
       required: Спочатку створіть або приєднайтесь до робочого простору, щоб додавати викладачів і учнів.
     student_portal:
@@ -622,12 +824,17 @@ ua:
       staff_denied: Цей розділ доступний лише для учнів.
       nav:
         main: Навігація учня
+        home: Головна
         calendar: Календар
         homework: Домашні
         materials: Матеріали
+        payments: Оплати
         profile: Профіль
         notifications: Сповіщення
       pages:
+        home:
+          title: Головна
+          description: Наступний урок, домашні, матеріали та баланс в одному місці.
         calendar:
           title: Календар
           description: Переглядайте найближчі та минулі уроки.
@@ -639,6 +846,9 @@ ua:
           description: Файли, відео та матеріали, якими поділився викладач.
           empty_title: Немає матеріалів
           empty_text: Файли, відео та навчальні матеріали від викладача зʼявляться тут.
+        payments:
+          title: Оплати
+          description: Баланс, борг і історія оплат.
         profile:
           title: Профіль
           description: ""
@@ -660,6 +870,8 @@ ua:
         empty_title: Уроків не заплановано
         empty_text: Найближчі уроки зʼявляться тут, коли їх запланують.
         no_lessons_on: "Немає уроків %{date}."
+        join: Приєднатися
+        with_teacher: "З викладачем %{name}"
         months_short:
           jan: Січ
           feb: Лют
@@ -696,6 +908,40 @@ ua:
         empty_submitted: Зданих домашніх поки немає.
         empty_reviewed: Перевірених домашніх поки немає.
         empty_search: За пошуком домашніх не знайдено.
+        overdue_days:
+          one: Прострочено на 1 день
+          few: Прострочено на %{count} дні
+          many: Прострочено на %{count} днів
+          other: Прострочено на %{count} днів
+        due_today: До сьогодні
+        due_tomorrow: До завтра
+        due_in_days: Залишилось %{count} дн.
+        due_on: "До %{date}"
+        assigned_on: "Призначено %{date}"
+        materials_count:
+          one: "%{count} матеріал"
+          few: "%{count} матеріали"
+          many: "%{count} матеріалів"
+          other: "%{count} матеріалів"
+        score: "Оцінка %{score}"
+        details: Деталі
+        your_answer: Ваша відповідь
+        submitted_toast: Домашнє здано.
+        statuses:
+          assigned: Призначено
+          in_progress: У роботі
+          overdue: Прострочено
+          submitted: Здано
+          needs_review: На перевірці
+          reviewed: Перевірено
+          resubmission_requested: Потрібні зміни
+        actions:
+          start: Почати
+          continue: Продовжити
+          submit: Здати
+          view_submission: Переглянути роботу
+          view_feedback: Переглянути відгук
+          update: Оновити роботу
       materials:
         search: Пошук матеріалів
         search_placeholder: Пошук матеріалів…
@@ -715,3 +961,63 @@ ua:
         images: Зображення
         audio: Аудіо
         links: Посилання
+        empty_filter: Немає матеріалів за фільтрами.
+        clear_filters: Очистити фільтри
+        added: "Додано %{date}"
+        preparing: Готується…
+        unavailable: Недоступно
+        watch: Дивитися
+        open_link: Відкрити посилання
+        preview: Переглянути
+        view_details: Деталі
+        open: Відкрити
+        from_homework: "З домашнього: %{title}"
+        from_lesson: "З уроку: %{title}"
+        shared_directly: "Надіслано напряму: %{title}"
+        types:
+          video: Відео
+          document: Документ
+          image: Зображення
+          audio: Аудіо
+          link: Посилання
+        groups:
+          today: Сьогодні
+          this_week: Цього тижня
+          earlier: Раніше
+      home_page:
+        greeting: "З поверненням, %{name}"
+        lede: Ось що відбувається з вашими уроками.
+        next_lesson: Наступний урок
+        view_calendar: До календаря
+        empty_lesson: Найближчих уроків ще немає.
+        view_homework: До домашніх
+        empty_homework: Усе виконано — зараз немає домашніх.
+        recent_materials: Останні матеріали
+        view_materials: Усі матеріали
+        empty_materials: Матеріали від викладача зʼявляться тут.
+        balance: Баланс
+        view_payments: До оплат
+        empty_balance: Баланс зʼявиться тут.
+      payments:
+        disclaimer: Оплати фіксує школа або викладач — DANLIO не списує кошти напряму.
+        load_error: Не вдалося завантажити оплати.
+        available: Доступний баланс
+        debt: Заборгованість
+        debt_banner: Балансу не вистачає на всі завершені уроки. Зверніться до викладача або школи.
+        low_next: Балансу може не вистачити на наступний урок.
+        pending_title: Оплата очікує підтвердження
+        pending_item: ще не додано до балансу
+        lesson_price: Вартість уроку
+        price_unset: Ще не вказано
+        last_payment: "Остання оплата %{date} (%{amount})"
+        email_teacher: "Написати %{name}"
+        call: Зателефонувати
+        history: Історія операцій
+        empty_title: Операцій ще немає
+        empty_text: Оплати та списання за уроки зʼявляться тут.
+        col_date: Дата
+        col_description: Опис
+        col_amount: Сума
+      notifications:
+        empty_title: Сповіщень ще немає
+        empty_text: Оновлення про уроки та розклад зʼявляться тут.

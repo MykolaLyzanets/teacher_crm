@@ -1,0 +1,91 @@
+- summary = @dashboard[:summary]
+- next_lesson = @dashboard[:nextLesson]
+- today_lessons = Array(@dashboard[:todayLessons])
+
+.dash.dash--teacher
+  header.dash__header
+    h1 = t('app.dashboard.teacher_greeting', name: @dashboard[:firstName])
+    p
+      = l(@dashboard[:today], format: :long)
+      =< '·'
+      =< t('app.dashboard.lessons_count', count: summary[:lessonsToday])
+      =< '·'
+      =< t('app.dashboard.hours_count', count: summary[:teachingHoursToday])
+
+  .dash__stats.dash__stats--4
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'calendar', size: 20
+      span
+        strong = summary[:lessonsToday]
+        span = t('app.dashboard.lessons_today')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'clock', size: 20
+      span
+        strong = summary[:teachingHoursToday]
+        span = t('app.dashboard.teaching_hours')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'homework', size: 20
+      span
+        strong = summary[:homeworkToReview]
+        span = t('app.dashboard.homework_review')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'teachers', size: 20
+      span
+        strong = summary[:substituteLessonsCount]
+        span = t('app.dashboard.substitute_lessons')
+
+  .dash__grid.dash__grid--teacher
+    .dash__stack
+      section.dash__card
+        .dash__card-head
+          h2 = t('app.dashboard.next_lesson')
+          = link_to t('app.dashboard.open_calendar'), calendar_path
+        - if next_lesson
+          .dash__next
+            p.dash__next-kicker = t('app.dashboard.starts_soon')
+            h3 = next_lesson[:student]
+            p.dash__muted
+              = next_lesson[:title].presence || next_lesson[:subject]
+              =< '·'
+              =< format_lesson_time_range(next_lesson[:startTime], next_lesson[:endTime])
+            .dash__card-actions
+              - if next_lesson && next_lesson[:meetingLink].present?
+                = link_to t('app.dashboard.join_lesson'), next_lesson[:meetingLink], class: 'dash__primary', target: '_blank', rel: 'noreferrer'
+              = link_to t('app.dashboard.view_lesson'), lessons_path, class: 'dash__primary'
+              = link_to t('app.students.title'), students_path, class: 'dash__ghost'
+        - else
+          p.dash__empty = t('app.dashboard.no_more_today')
+
+      section.dash__card
+        h2 = t('app.dashboard.todays_schedule')
+        - if today_lessons.empty?
+          p.dash__empty = t('app.dashboard.no_lessons')
+        - else
+          ul.dash__agenda
+            - today_lessons.each do |lesson|
+              li
+                span.dash__time = format_lesson_time_range(lesson[:startTime], lesson[:endTime])
+                div
+                  p.dash__attention-title = lesson[:student]
+                  p.dash__muted = lesson[:title].presence || lesson[:subject]
+                span.dash-badge class="dash-badge--#{lesson_badge_tone(lesson_review_status(lesson))}"
+                  = t("app.lessons.tab_#{lesson_review_status(lesson)}")
+
+    .dash__stack
+      section.dash__card
+        h2 = t('app.dashboard.homework_review')
+        - review = Array(@dashboard[:homeworkReview])
+        - if review.blank?
+          p.dash__empty = t('app.dashboard.homework_empty')
+        - else
+          ul.dash__agenda
+            - review.each do |item|
+              li
+                div
+                  p.dash__attention-title = item[:title]
+                  p.dash__muted = [item[:studentName], item[:dueDate]].compact_blank.join(' · ')
+                = link_to t('app.dashboard.review'), homework_path, class: 'dash__text-btn'

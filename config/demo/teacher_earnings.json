@@ -1,0 +1,62 @@
+[
+  {
+    "id": "earn-1",
+    "teacherId": "tch-ava",
+    "teacher": "Ava Thompson",
+    "lessonId": "les-1",
+    "studentId": "stu-emma",
+    "kind": "lesson_completed",
+    "lessonPriceCents": 2500,
+    "currency": "EUR",
+    "lessonDurationMinutes": 60,
+    "compensationModel": "percentage",
+    "compensationPercent": 60,
+    "earningCents": 1500,
+    "createdAt": "2026-08-03T11:05:00.000Z"
+  },
+  {
+    "id": "earn-2",
+    "teacherId": "tch-ava",
+    "teacher": "Ava Thompson",
+    "lessonId": "les-emma-hist-1",
+    "studentId": "stu-emma",
+    "kind": "lesson_completed",
+    "lessonPriceCents": 2500,
+    "currency": "EUR",
+    "lessonDurationMinutes": 60,
+    "compensationModel": "percentage",
+    "compensationPercent": 60,
+    "earningCents": 1500,
+    "createdAt": "2026-08-07T10:05:00.000Z"
+  },
+  {
+    "id": "earn-3",
+    "teacherId": "tch-ava",
+    "teacher": "Ava Thompson",
+    "lessonId": "les-7",
+    "studentId": "stu-emma",
+    "kind": "lesson_completed",
+    "lessonPriceCents": 2500,
+    "currency": "EUR",
+    "lessonDurationMinutes": 60,
+    "compensationModel": "percentage",
+    "compensationPercent": 60,
+    "earningCents": 1500,
+    "createdAt": "2026-08-14T12:05:00.000Z"
+  },
+  {
+    "id": "earn-4",
+    "teacherId": "tch-noah",
+    "teacher": "Noah Patel",
+    "lessonId": "les-2",
+    "studentId": "stu-daniel",
+    "kind": "lesson_completed",
+    "lessonPriceCents": 3000,
+    "currency": "EUR",
+    "lessonDurationMinutes": 45,
+    "compensationModel": "percentage",
+    "compensationPercent": 70,
+    "earningCents": 2100,
+    "createdAt": "2026-08-03T13:35:00.000Z"
+  }
+]

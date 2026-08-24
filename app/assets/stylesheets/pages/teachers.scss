@@ -547,6 +547,19 @@
       margin: 4px 0 0;
       color: var(--foreground);
     }
+
+    &--stats {
+      grid-template-columns: 1fr;
+
+      @media (min-width: 640px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      dd {
+        font-size: 20px;
+        font-weight: 600;
+      }
+    }
   }
 
   &__notes-title {

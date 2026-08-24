@@ -1,0 +1,141 @@
+- summary = @dashboard[:summary]
+- attention = Array(@dashboard[:needsAttention])
+- today_lessons = Array(@dashboard[:todayLessons])
+- availability = Array(@dashboard[:availability])
+- payments = @dashboard[:payments]
+- payouts_remaining = @dashboard[:payoutsRemaining]
+
+.dash data-controller="dashboard"
+  header.dash__header
+    h1 = t('app.dashboard.school_title')
+    p = l(@dashboard[:today], format: :long)
+
+  .dash__stats
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'calendar', size: 20
+      span
+        strong = summary[:lessonsToday]
+        span = t('app.dashboard.lessons_today')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'check', size: 20
+      span
+        strong = summary[:completedToday]
+        span = t('app.dashboard.completed_today')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'clock', size: 20
+      span
+        strong = summary[:upcomingToday]
+        span = t('app.dashboard.upcoming_today')
+    .dash__stat
+      span.dash__stat-icon
+        = icon_tag 'teachers', size: 20
+      span
+        strong = summary[:teachersActiveToday]
+        span = t('app.dashboard.teachers_active')
+    .dash__stat class=("is-warn" if summary[:needsAttentionCount].to_i.positive?)
+      span.dash__stat-icon
+        = icon_tag 'bell', size: 20
+      span
+        strong = summary[:needsAttentionCount]
+        span = t('app.dashboard.needs_attention')
+
+  .dash__grid
+    section.dash__card.dash__card--wide
+      .dash__card-head
+        h2 = t('app.dashboard.needs_attention')
+        .dash__pills role="tablist"
+          - %w[all lessons teachers payments students].each do |id|
+            button.dash__pill type="button" class=("is-active" if id == 'all') data-dashboard-target="filter" data-filter=id data-action="dashboard#filter"
+              = t("app.dashboard.filter_#{id}")
+      - if attention.empty?
+        p.dash__empty = t('app.dashboard.attention_empty')
+      - else
+        ul.dash__attention
+          - attention.each do |item|
+            li data-dashboard-target="attention" data-category=item[:category]
+              div
+                p.dash__attention-title = item[:title]
+                p.dash__muted = item[:subtitle]
+              .dash__attention-meta
+                span.dash-badge class="dash-badge--neutral" = item[:badge]
+                - if item[:kind] == 'pending_payment'
+                  .dash__inline-actions
+                    button.dash__text-btn type="button" data-action="dashboard#toast" data-message=t('app.dashboard.payment_confirmed') = t('app.dashboard.confirm')
+                    button.dash__text-btn type="button" data-action="dashboard#toast" data-message=t('app.dashboard.payment_rejected') = t('app.dashboard.reject')
+                - elsif item[:kind].in?(%w[student_debt low_balance])
+                  = link_to item[:action], students_path, class: 'dash__text-btn'
+                - elsif item[:kind] == 'payout_due'
+                  = link_to item[:action], payments_path, class: 'dash__text-btn'
+                - else
+                  = link_to item[:action], lessons_path, class: 'dash__text-btn'
+
+    section.dash__card
+      .dash__card-head
+        h2 = t('app.dashboard.payments_overview')
+        = link_to t('app.dashboard.open_payments'), payments_path
+      - if can_view_finance?
+        dl.dash__pay
+          div
+            dt = t('app.dashboard.payments_received')
+            dd = grouped_money_label(payments[:paymentsReceived])
+          div
+            dt = t('app.dashboard.lesson_revenue')
+            dd = grouped_money_label(payments[:lessonRevenue])
+          div class=("is-warn" if payments[:outstandingDebt].values.sum.positive?)
+            dt = t('app.dashboard.outstanding_debt')
+            dd = grouped_money_label(payments[:outstandingDebt])
+          div
+            dt = t('app.dashboard.payouts_remaining')
+            dd = grouped_money_label(payouts_remaining)
+          div class=("is-warn" if @dashboard[:pendingCount].to_i.positive?)
+            dt = t('app.dashboard.pending_confirmations')
+            dd = @dashboard[:pendingCount]
+      - else
+        p.dash__empty = t('app.payments.forbidden_text')
+
+    section.dash__card.dash__card--wide
+      .dash__card-head
+        h2 = t('app.dashboard.todays_lessons')
+        .dash__card-actions
+          = link_to calendar_path(create: 1), class: 'dash__primary' do
+            span = t('app.dashboard.create_lesson')
+          = link_to t('app.dashboard.open_calendar'), calendar_path
+      - if today_lessons.empty?
+        p.dash__empty = t('app.dashboard.no_lessons')
+      - else
+        ul.dash__agenda
+          - today_lessons.each do |lesson|
+            li
+              span.dash__time = format_lesson_time_range(lesson[:startTime], lesson[:endTime])
+              span.dash__avatar = initials_for(lesson[:student])
+              div
+                p.dash__attention-title = lesson[:student]
+                p.dash__muted
+                  = lesson[:teacher]
+                  =< '·'
+                  =< lesson[:title].presence || lesson[:subject]
+              span.dash-badge class="dash-badge--#{lesson_badge_tone(lesson_review_status(lesson))}"
+                = t("app.lessons.tab_#{lesson_review_status(lesson)}")
+
+    section.dash__card
+      h2 = t('app.dashboard.teacher_availability')
+      - if availability.empty?
+        p.dash__empty = t('app.dashboard.no_teachers')
+      - else
+        ul.dash__people
+          - availability.each do |entry|
+            li
+              span.dash__avatar = initials_for(entry[:name])
+              div
+                p.dash__attention-title = entry[:name]
+                p.dash__muted
+                  = t('app.dashboard.lessons_count', count: entry[:lessonsToday])
+                  - if entry[:nextLessonTime].present?
+                    =< "· #{t('app.dashboard.next_at', time: format_lesson_time_label(entry[:nextLessonTime]))}"
+              span.dash-badge class="dash-badge--#{availability_tone(entry[:status])}"
+                = t("app.dashboard.availability.#{entry[:status]}")
+
+  p.dash__toast hidden="hidden" role="status" data-dashboard-target="toast"

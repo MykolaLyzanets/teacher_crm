@@ -1,0 +1,27 @@
+[
+  {
+    "id": "note-1",
+    "studentId": "stu-emma",
+    "body": "Prefers shorter speaking drills at the start of each lesson.",
+    "visibility": "teacher",
+    "author": "Ava Thompson",
+    "createdAt": "2026-08-10T09:00:00.000Z"
+  },
+  {
+    "id": "note-2",
+    "studentId": "stu-emma",
+    "body": "Family prefers invoice summaries by the 25th of each month.",
+    "visibility": "admin",
+    "author": "Ava Thompson",
+    "createdAt": "2026-08-05T12:00:00.000Z",
+    "financial": true
+  },
+  {
+    "id": "note-3",
+    "studentId": "stu-emma",
+    "body": "Keep reviewing irregular verbs before Friday lessons.",
+    "visibility": "student",
+    "author": "Ava Thompson",
+    "createdAt": "2026-08-12T16:00:00.000Z"
+  }
+]

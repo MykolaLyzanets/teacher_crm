@@ -1,1 +1,20 @@
 - content_for :title, "#{t('app.student_portal.pages.notifications.title')} | danlio"
+
+.sp-notes
+  section.sp-notes__card
+    - if @notifications.blank?
+      .sp-notes__empty
+        .sp-notes__empty-icon
+          = portal_icon 'bell', size: 24
+        h2 = t('app.student_portal.notifications.empty_title')
+        p = t('app.student_portal.notifications.empty_text')
+    - else
+      ul.sp-notes__list
+        - @notifications.each do |item|
+          li class=("is-unread" unless item[:read])
+            .sp-notes__row
+              p.sp-notes__title = item[:title]
+              - unless item[:read]
+                span.sp-notes__dot aria-hidden="true"
+            p.sp-notes__body = item[:body]
+            p.sp-notes__time = l(Time.zone.parse(item[:createdAt]), format: :short) rescue item[:createdAt]

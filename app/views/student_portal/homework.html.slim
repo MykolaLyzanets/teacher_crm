@@ -1,16 +1,21 @@
 - content_for :title, "#{t('app.student_portal.pages.homework.title')} | danlio"
+- summary = @homework_summary || { todo: 0, submitted: 0, needsAttention: 0 }
+- counts = homework_tab_counts
+- items = Array(@homework_items)
 
 .sp-homework data-controller="student-homework"
+  p.sp-toast hidden="hidden" role="status" data-student-homework-target="toast"
+
   section.sp-hw-summary aria-label="#{t('app.student_portal.homework.summary')}"
     .sp-hw-stat
       p.sp-hw-stat__label = t('app.student_portal.homework.todo')
-      p.sp-hw-stat__value 0
+      p.sp-hw-stat__value data-student-homework-target="todoStat" = summary[:todo]
     .sp-hw-stat
       p.sp-hw-stat__label = t('app.student_portal.homework.submitted')
-      p.sp-hw-stat__value 0
+      p.sp-hw-stat__value data-student-homework-target="submittedStat" = summary[:submitted]
     .sp-hw-stat
       p.sp-hw-stat__label = t('app.student_portal.homework.needs_attention')
-      p.sp-hw-stat__value 0
+      p.sp-hw-stat__value data-student-homework-target="attentionStat" = summary[:needsAttention]
 
   .sp-toolbar
     .sp-toolbar__row
@@ -18,7 +23,7 @@
         span.sr-only = t('app.student_portal.homework.search')
         span.sp-search__icon
           = portal_icon 'search', size: 18
-        input type="search" placeholder="#{t('app.student_portal.homework.search')}" autocomplete="off" data-student-homework-target="search" data-action="input->student-homework#syncEmpty"
+        input type="search" placeholder="#{t('app.student_portal.homework.search')}" autocomplete="off" data-student-homework-target="search" data-action="input->student-homework#filter"
       button.sp-filter-btn type="button" aria-expanded="false" data-student-homework-target="filtersToggle" data-action="student-homework#toggleFilters"
         = portal_icon 'filter', size: 18
         span = t('app.student_portal.homework.filters')
@@ -26,35 +31,56 @@
     .sp-filters data-student-homework-target="filters"
       label.sp-field
         span = t('app.student_portal.homework.subject')
-        select
+        select data-student-homework-target="subject" data-action="student-homework#filter"
           option value="" = t('app.student_portal.homework.all_subjects')
+          - homework_subjects(items).each do |subject|
+            option value=subject = subject
       label.sp-field
         span = t('app.student_portal.homework.teacher')
-        select
+        select data-student-homework-target="teacher" data-action="student-homework#filter"
           option value="" = t('app.student_portal.homework.all_teachers')
+          - homework_teachers(items).each do |teacher|
+            option value=teacher = teacher
       label.sp-field
         span = t('app.student_portal.homework.due')
-        select data-student-homework-target="due" data-action="student-homework#syncEmpty"
+        select data-student-homework-target="due" data-action="student-homework#filter"
           option value="" = t('app.student_portal.homework.any_due')
           option value="overdue" = t('app.student_portal.homework.overdue')
           option value="due_soon" = t('app.student_portal.homework.due_soon')
           option value="later" = t('app.student_portal.homework.later')
 
   .sp-hw-tabs role="tablist" aria-label="#{t('app.student_portal.homework.status')}"
-    button.sp-hw-tab.is-active type="button" role="tab" id="homework-tab-todo" aria-selected="true" aria-controls="homework-panel-todo" data-tab="todo" data-student-homework-target="tab" data-action="student-homework#setTab"
-      span = t('app.student_portal.homework.todo')
-      span.sp-hw-count 0
-    button.sp-hw-tab type="button" role="tab" id="homework-tab-submitted" aria-selected="false" aria-controls="homework-panel-submitted" data-tab="submitted" data-student-homework-target="tab" data-action="student-homework#setTab"
-      span = t('app.student_portal.homework.submitted')
-      span.sp-hw-count 0
-    button.sp-hw-tab type="button" role="tab" id="homework-tab-reviewed" aria-selected="false" aria-controls="homework-panel-reviewed" data-tab="reviewed" data-student-homework-target="tab" data-action="student-homework#setTab"
-      span = t('app.student_portal.homework.reviewed')
-      span.sp-hw-count 0
+    - %w[todo submitted reviewed].each_with_index do |tab, index|
+      button.sp-hw-tab class=("is-active" if index.zero?) type="button" role="tab" id="homework-tab-#{tab}" aria-selected=(index.zero? ? 'true' : 'false') aria-controls="homework-panel-#{tab}" data-tab=tab data-student-homework-target="tab" data-action="student-homework#setTab"
+        span = t("app.student_portal.homework.#{tab}")
+        span.sp-hw-count data-student-homework-target="count" data-tab=tab = counts[tab]
 
-  .sp-hw-empty role="tabpanel" id="homework-panel-todo" aria-labelledby="homework-tab-todo" data-student-homework-target="empty"
+  .sp-hw-list data-student-homework-target="list"
+    - items.each do |item|
+      = render 'student_portal/homework_card', item: item
+
+  .sp-hw-empty class=("is-hidden" if items.any?) role="tabpanel" id="homework-panel-todo" aria-labelledby="homework-tab-todo" data-student-homework-target="empty"
     .sp-hw-empty__icon data-student-homework-target="emptyIcon"
       = portal_icon 'homework', size: 22
     .sp-hw-empty__icon.is-search hidden="hidden" data-student-homework-target="searchIcon"
       = portal_icon 'search', size: 22
     h3 data-student-homework-target="emptyTitle" data-todo="#{t('app.student_portal.homework.empty_todo')}" data-submitted="#{t('app.student_portal.homework.empty_submitted')}" data-reviewed="#{t('app.student_portal.homework.empty_reviewed')}" data-search="#{t('app.student_portal.homework.empty_search')}" = t('app.student_portal.homework.empty_todo')
     p data-student-homework-target="emptyText" = t('app.student_portal.homework.empty_todo_text')
+
+  .sp-drawer.sp-drawer--hidden data-student-homework-target="drawer"
+    button.sp-drawer__backdrop type="button" aria-label="#{t('app.common.close')}" data-action="student-homework#closeDetails"
+    aside.sp-drawer__panel role="dialog" aria-modal="true" aria-labelledby="homework-drawer-title"
+      .sp-drawer__head
+        h2#homework-drawer-title data-student-homework-target="drawerTitle"
+        button.sp-icon-btn type="button" aria-label="#{t('app.common.close')}" data-action="student-homework#closeDetails"
+          = portal_icon 'x', size: 20
+      .sp-drawer__body
+        p.sp-drawer__kicker data-student-homework-target="drawerStatus"
+        p.sp-drawer__copy data-student-homework-target="drawerInstructions"
+        p.sp-drawer__copy data-student-homework-target="drawerFeedback"
+        label.sp-field
+          span = t('app.student_portal.homework.your_answer')
+          textarea data-student-homework-target="drawerResponse" rows="5"
+      .sp-drawer__foot
+        button.sp-btn.sp-btn--ghost type="button" data-action="student-homework#closeDetails" = t('app.common.close')
+        button.sp-btn.sp-btn--primary type="button" data-student-homework-target="drawerSubmit" data-action="student-homework#submitWork" data-message="#{t('app.student_portal.homework.submitted_toast')}" = t('app.student_portal.homework.actions.submit')

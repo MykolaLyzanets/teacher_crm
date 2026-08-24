@@ -1,0 +1,80 @@
+- content_for :title, "#{t('app.student_portal.pages.home.title')} | danlio"
+
+.sp-home
+  .sp-home__intro
+    h1.sp-home__hello = t('app.student_portal.home_page.greeting', name: portal_first_name)
+    p.sp-home__lede = t('app.student_portal.home_page.lede')
+
+  section.sp-home__card
+    .sp-home__card-head
+      h2
+        = portal_icon 'calendar', size: 18
+        span = t('app.student_portal.home_page.next_lesson')
+      = link_to t('app.student_portal.home_page.view_calendar'), student_calendar_path
+    - if @next_lesson
+      .sp-home__lesson
+        p.sp-home__kicker = t('app.student_portal.calendar.next_lesson')
+        p.sp-home__lesson-title = @next_lesson[:title].presence || @next_lesson[:subject]
+        p.sp-home__lesson-meta
+          span
+            = portal_icon 'clock', size: 16
+            = "#{format_lesson_day_short(@next_lesson[:date])} · #{format_lesson_time_range(@next_lesson[:startTime], @next_lesson[:endTime])}"
+          span
+            = portal_icon 'user', size: 16
+            = t('app.student_portal.calendar.with_teacher', name: @next_lesson[:teacher])
+        .sp-home__lesson-actions
+          - if @next_lesson[:meetingLink].present? && @next_lesson[:location].to_s == 'online'
+            = link_to @next_lesson[:meetingLink], class: 'sp-btn sp-btn--primary', target: '_blank', rel: 'noreferrer' do
+              = portal_icon 'video', size: 18
+              span = t('app.student_portal.calendar.join')
+          = link_to t('app.student_portal.calendar.view_details'), student_calendar_path, class: 'sp-btn sp-btn--ghost'
+          = link_to t('app.student_portal.calendar.view_homework'), student_homework_path, class: 'sp-home__text-link'
+    - else
+      .sp-home__empty = t('app.student_portal.home_page.empty_lesson')
+
+  section.sp-home__card
+    .sp-home__card-head
+      h2
+        = portal_icon 'homework', size: 18
+        span = t('app.student_portal.nav.homework')
+      = link_to t('app.student_portal.home_page.view_homework'), student_homework_path
+    - if @nearest_homework
+      = render 'student_portal/homework_card', item: @nearest_homework, embedded: true
+    - else
+      .sp-home__empty = t('app.student_portal.home_page.empty_homework')
+
+  section.sp-home__card
+    .sp-home__card-head
+      h2
+        = portal_icon 'folder', size: 18
+        span = t('app.student_portal.home_page.recent_materials')
+      = link_to t('app.student_portal.home_page.view_materials'), student_materials_path
+    - if @recent_materials.present?
+      ul.sp-home__materials
+        - @recent_materials.each do |item|
+          li
+            = render 'student_portal/material_row', item: item, embedded: true
+    - else
+      .sp-home__empty = t('app.student_portal.home_page.empty_materials')
+
+  section.sp-home__card
+    .sp-home__card-head
+      h2
+        = portal_icon 'wallet', size: 18
+        span = t('app.student_portal.home_page.balance')
+      = link_to t('app.student_portal.home_page.view_payments'), student_payments_path
+    - if @finance
+      .sp-home__balances
+        .sp-home__tile
+          p = t('app.student_portal.payments.available')
+          strong = money_label(@finance[:availableBalanceCents], @finance[:currency])
+        - if @finance[:debtCents].to_i.positive?
+          .sp-home__tile.sp-home__tile--warn
+            p = t('app.student_portal.payments.debt')
+            strong = money_label(@finance[:debtCents], @finance[:currency])
+      - if @finance[:nextLessonCovered] == false
+        p.sp-home__warn
+          = portal_icon 'alert', size: 16
+          span = t('app.student_portal.payments.low_next')
+    - else
+      .sp-home__empty = t('app.student_portal.home_page.empty_balance')

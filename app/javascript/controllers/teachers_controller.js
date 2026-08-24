@@ -53,7 +53,14 @@ export default class extends Controller {
     "assignBox",
     "removeDialog",
     "removeConfirm",
-    "toast"
+    "toast",
+    "absenceDialog",
+    "absenceList",
+    "absenceEmpty",
+    "absenceType",
+    "absenceStart",
+    "absenceEnd",
+    "absenceNote"
   ]
 
   static values = {
@@ -532,5 +539,33 @@ export default class extends Controller {
     this.element.querySelectorAll("[data-color]").forEach((button) => {
       button.setAttribute("aria-pressed", button.dataset.color === value ? "true" : "false")
     })
+  }
+
+  toast(event) {
+    const message = event.currentTarget.dataset.message
+    if (message) this.showToast(message)
+  }
+
+  openAbsence() {
+    if (this.hasAbsenceDialogTarget) this.absenceDialogTarget.hidden = false
+  }
+
+  closeAbsence() {
+    if (this.hasAbsenceDialogTarget) this.absenceDialogTarget.hidden = true
+  }
+
+  confirmAbsence() {
+    const type = this.hasAbsenceTypeTarget ? this.absenceTypeTarget.selectedOptions[0]?.textContent : "Absence"
+    const start = this.hasAbsenceStartTarget ? this.absenceStartTarget.value : ""
+    const end = this.hasAbsenceEndTarget ? this.absenceEndTarget.value : start
+    if (!start) return
+    if (this.hasAbsenceEmptyTarget) this.absenceEmptyTarget.hidden = true
+    if (this.hasAbsenceListTarget) {
+      const item = document.createElement("li")
+      item.innerHTML = `<div class="teachers-page__assigned-main"><div><p class="teachers-page__name">${type}</p><p class="teachers-page__meta">${start} – ${end || start}</p></div></div>`
+      this.absenceListTarget.prepend(item)
+    }
+    this.closeAbsence()
+    this.showToast(this.t("teachers", "absence_recorded") || "Absence recorded.")
   }
 }

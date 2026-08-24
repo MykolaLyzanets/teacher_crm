@@ -1,4 +1,6 @@
 - content_for :title, "#{t('app.student_portal.pages.materials.title')} | danlio"
+- items = Array(@materials_items)
+- groups = grouped_portal_materials(items)
 
 .sp-materials data-controller="student-materials"
   .sp-toolbar
@@ -7,7 +9,7 @@
         span.sr-only = t('app.student_portal.materials.search')
         span.sp-search__icon
           = portal_icon 'search', size: 18
-        input type="search" placeholder="#{t('app.student_portal.materials.search_placeholder')}" autocomplete="off"
+        input type="search" placeholder="#{t('app.student_portal.materials.search_placeholder')}" autocomplete="off" data-student-materials-target="search" data-action="input->student-materials#filter"
 
       .sp-toolbar__actions
         button.sp-filter-btn.sp-filter-btn--lg type="button" aria-expanded="false" data-student-materials-target="filtersToggle" data-action="student-materials#toggleFilters"
@@ -16,7 +18,7 @@
 
         label.sp-sort
           span = t('app.student_portal.materials.sort')
-          select
+          select data-student-materials-target="sort" data-action="student-materials#filter"
             option value="newest" = t('app.student_portal.materials.newest')
             option value="oldest" = t('app.student_portal.materials.oldest')
             option value="name" = t('app.student_portal.materials.name')
@@ -32,7 +34,7 @@
     .sp-filters.sp-filters--materials data-student-materials-target="filters"
       label.sp-field
         span = t('app.student_portal.materials.type')
-        select
+        select data-student-materials-target="type" data-action="student-materials#filter"
           option value="" = t('app.student_portal.materials.all_types')
           option value="video" = t('app.student_portal.materials.videos')
           option value="document" = t('app.student_portal.materials.documents')
@@ -41,21 +43,52 @@
           option value="link" = t('app.student_portal.materials.links')
       label.sp-field
         span = t('app.student_portal.materials.subject')
-        select
+        select data-student-materials-target="subject" data-action="student-materials#filter"
           option value="" = t('app.student_portal.homework.all_subjects')
+          - material_subjects(items).each do |subject|
+            option value=subject = subject
+      label.sp-field
+        span = t('app.student_portal.homework.teacher')
+        select data-student-materials-target="teacher" data-action="student-materials#filter"
+          option value="" = t('app.student_portal.homework.all_teachers')
+          - material_teachers(items).each do |teacher|
+            option value=teacher = teacher
       label.sp-sort.sp-sort--mobile
         span = t('app.student_portal.materials.sort')
-        select
+        select data-action="student-materials#syncMobileSort"
           option value="newest" = t('app.student_portal.materials.newest')
           option value="oldest" = t('app.student_portal.materials.oldest')
           option value="name" = t('app.student_portal.materials.name')
 
-  .sp-mat-empty data-student-materials-target="empty"
+  .sp-mat-empty class=("is-hidden" if items.any?) data-student-materials-target="empty"
     .sp-mat-empty__icon
       = portal_icon 'folder', size: 24
-    h2 = t('app.student_portal.pages.materials.empty_title')
-    p = t('app.student_portal.pages.materials.empty_text')
+    h2 data-student-materials-target="emptyTitle" data-none="#{t('app.student_portal.pages.materials.empty_title')}" data-filter="#{t('app.student_portal.materials.empty_filter')}" = t('app.student_portal.pages.materials.empty_title')
+    p data-student-materials-target="emptyText" = t('app.student_portal.pages.materials.empty_text')
+    button.sp-btn.sp-btn--ghost type="button" hidden="hidden" data-student-materials-target="clearFilters" data-action="student-materials#clearFilters" = t('app.student_portal.materials.clear_filters')
 
-  .sp-mat-library hidden="hidden" data-student-materials-target="library" data-view="grid"
-    .sp-mat-grid
-    .sp-mat-list
+  .sp-mat-library class=("is-hidden" unless items.any?) data-view="grid" data-student-materials-target="library"
+    - groups.each do |group_id, group_items|
+      section.sp-mat-group data-student-materials-target="group"
+        h2 = t("app.student_portal.materials.groups.#{group_id}")
+        .sp-mat-grid
+          - group_items.each do |item|
+            = render 'student_portal/material_card', item: item
+        .sp-mat-list
+          - group_items.each do |item|
+            = render 'student_portal/material_row', item: item
+
+  .sp-drawer.sp-drawer--hidden data-student-materials-target="drawer"
+    button.sp-drawer__backdrop type="button" aria-label="#{t('app.common.close')}" data-action="student-materials#closeDetails"
+    aside.sp-drawer__panel role="dialog" aria-modal="true" aria-labelledby="material-drawer-title"
+      .sp-drawer__head
+        h2#material-drawer-title data-student-materials-target="drawerTitle"
+        button.sp-icon-btn type="button" aria-label="#{t('app.common.close')}" data-action="student-materials#closeDetails"
+          = portal_icon 'x', size: 20
+      .sp-drawer__body
+        p.sp-drawer__copy data-student-materials-target="drawerMeta"
+        p.sp-drawer__copy data-student-materials-target="drawerSource"
+        p.sp-drawer__copy data-student-materials-target="drawerDescription"
+      .sp-drawer__foot
+        button.sp-btn.sp-btn--ghost type="button" data-action="student-materials#closeDetails" = t('app.common.close')
+        a.sp-btn.sp-btn--primary href="#" target="_blank" rel="noreferrer" data-student-materials-target="drawerLink" = t('app.student_portal.materials.open')
