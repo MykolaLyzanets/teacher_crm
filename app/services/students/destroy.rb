@@ -7,7 +7,7 @@ module Students
     end
 
     def call
-      student_profile.update!(deleted_at: Time.current)
+      student_profile.update!(status: :archived)
     end
 
     private

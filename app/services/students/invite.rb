@@ -21,8 +21,7 @@ module Students
       return unless send_invitation?
       return if user.email.blank?
 
-      user.send_reset_password_instructions
-      @invited = true
+      # Mail is not configured yet; invitations are a no-op.
     end
   end
 end

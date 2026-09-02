@@ -98,12 +98,12 @@ ua:
       col_actions: Дії
       view_aria: "Переглянути %{name}"
       edit_aria: "Редагувати %{name}"
-      delete: Видалити учня
-      delete_aria: "Видалити %{name}"
-      delete_title: Видалити учня?
-      delete_text: Видалити цього учня? Цю дію не можна скасувати.
-      delete_confirm: Видалити учня
-      deleted_toast: Учня видалено.
+      delete: Архівувати учня
+      delete_aria: "Архівувати %{name}"
+      delete_title: Архівувати учня?
+      delete_text: Учня буде переміщено в архів. Пізніше статус можна змінити знову.
+      delete_confirm: Архівувати
+      deleted_toast: Учня переміщено в архів.
       select_all: Вибрати всіх видимих учнів
       select_one: "Вибрати %{name}"
       not_found_title: Учня не знайдено
@@ -159,6 +159,7 @@ ua:
       created_and_invited: "%{name} створено та запрошено в портал."
       updated: "%{name} успішно оновлено."
       deleted: "%{name} успішно видалено."
+      archived: "%{name} переміщено в архів."
       invite_sent: "Запрошення в портал надіслано для %{name}."
       send_invite: Запросити в портал учня
       resend_invite: Надіслати запрошення в портал ще раз

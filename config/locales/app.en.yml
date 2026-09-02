@@ -98,12 +98,12 @@ en:
       col_actions: Actions
       view_aria: "View %{name}"
       edit_aria: "Edit %{name}"
-      delete: Delete student
-      delete_aria: "Delete %{name}"
-      delete_title: Delete student?
-      delete_text: Are you sure you want to delete this student? This action cannot be undone.
-      delete_confirm: Delete student
-      deleted_toast: Student deleted.
+      delete: Archive student
+      delete_aria: "Archive %{name}"
+      delete_title: Archive student?
+      delete_text: This student will be moved to the archive. You can change the status later.
+      delete_confirm: Archive
+      deleted_toast: Student archived.
       select_all: Select all visible students
       select_one: "Select %{name}"
       not_found_title: Student not found
@@ -159,6 +159,7 @@ en:
       created_and_invited: "%{name} created and invited to the portal."
       updated: "%{name} updated successfully."
       deleted: "%{name} deleted successfully."
+      archived: "%{name} moved to the archive."
       invite_sent: "Portal invitation sent to %{name}."
       send_invite: Invite to student portal
       resend_invite: Resend portal invitation

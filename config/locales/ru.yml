@@ -23,3 +23,53 @@ ru:
       short: "%-d %b, %H:%M"
     am: утра
     pm: вечера
+
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      accepted: должно быть принято
+      blank: не может быть пустым
+      confirmation: не совпадает с подтверждением
+      empty: не может быть пустым
+      inclusion: не входит в список допустимых значений
+      invalid: имеет неверное значение
+      required: не может быть пустым
+      taken: уже используется
+      too_long:
+        one: слишком длинное (максимум %{count} символ)
+        few: слишком длинное (максимум %{count} символа)
+        many: слишком длинное (максимум %{count} символов)
+        other: слишком длинное (максимум %{count} символа)
+      too_short:
+        one: слишком короткое (минимум %{count} символ)
+        few: слишком короткое (минимум %{count} символа)
+        many: слишком короткое (минимум %{count} символов)
+        other: слишком короткое (минимум %{count} символа)
+
+  activerecord:
+    models:
+      user: Пользователь
+      student_profile: Ученик
+      teacher_profile: Преподаватель
+    attributes:
+      user:
+        email: Email
+        password: Пароль
+        full_name: Полное имя
+      student_profile:
+        first_name: Имя
+        last_name: Фамилия
+        teacher_id: Преподаватель
+      teacher_profile:
+        first_name: Имя
+        last_name: Фамилия
+    errors:
+      messages:
+        taken: уже используется
+        record_invalid: "Возникли ошибки: %{errors}"
+      models:
+        user:
+          attributes:
+            email:
+              taken: уже используется
+              blank: не может быть пустым

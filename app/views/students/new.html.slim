@@ -124,7 +124,7 @@
         .students-page__invite
           input type="hidden" name="invite_to_workspace" value="0"
           label.students-page__check
-            input type="checkbox" name="invite_to_workspace" value="1" checked=(!editing) data-students-target="inviteCheckbox" data-action="change->students#markTouched"
+            input type="checkbox" name="invite_to_workspace" value="1" checked=student.fetch(:inviteToWorkspace, !editing) data-students-target="inviteCheckbox" data-action="change->students#markTouched"
             span
               strong = editing ? t('app.students.resend_invite') : t('app.students.send_invite')
               span.students-page__hint = t('app.students.invite_hint')

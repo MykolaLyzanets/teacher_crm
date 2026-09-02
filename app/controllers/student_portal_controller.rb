@@ -42,7 +42,7 @@ class StudentPortalController < ApplicationController
       redirect_to dashboard_path, alert: I18n.t('app.student_portal.staff_denied')
       return
     end
-    return unless current_user.student_profile&.deleted_at
+    return unless current_user.student_profile&.archived?
 
     sign_out current_user
     redirect_to new_user_session_path, alert: I18n.t('app.students.not_found_text')

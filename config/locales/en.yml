@@ -3,6 +3,52 @@ en:
   ua: Українська
   ru: Russian
 
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      accepted: must be accepted
+      blank: can't be blank
+      confirmation: doesn't match confirmation
+      empty: can't be empty
+      inclusion: is not included in the list
+      invalid: is invalid
+      required: must exist
+      taken: has already been taken
+      too_long:
+        one: is too long (maximum is %{count} character)
+        other: is too long (maximum is %{count} characters)
+      too_short:
+        one: is too short (minimum is %{count} character)
+        other: is too short (minimum is %{count} characters)
+
+  activerecord:
+    models:
+      user: User
+      student_profile: Student
+      teacher_profile: Teacher
+    attributes:
+      user:
+        email: Email
+        password: Password
+        full_name: Full name
+      student_profile:
+        first_name: First name
+        last_name: Last name
+        teacher_id: Teacher
+      teacher_profile:
+        first_name: First name
+        last_name: Last name
+    errors:
+      messages:
+        taken: has already been taken
+        record_invalid: "Validation failed: %{errors}"
+      models:
+        user:
+          attributes:
+            email:
+              taken: has already been taken
+              blank: can't be blank
+
   header:
     product: Product
     pricing: Pricing

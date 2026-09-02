@@ -24,6 +24,56 @@ ua:
     am: ранку
     pm: вечора
 
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      accepted: має бути прийняте
+      blank: не може бути порожнім
+      confirmation: не збігається з підтвердженням
+      empty: не може бути порожнім
+      inclusion: не входить до переліку допустимих значень
+      invalid: є некоректним
+      required: не може бути порожнім
+      taken: уже використовується
+      too_long:
+        one: занадто довге (максимум %{count} символ)
+        few: занадто довге (максимум %{count} символи)
+        many: занадто довге (максимум %{count} символів)
+        other: занадто довге (максимум %{count} символу)
+      too_short:
+        one: занадто коротке (мінімум %{count} символ)
+        few: занадто коротке (мінімум %{count} символи)
+        many: занадто коротке (мінімум %{count} символів)
+        other: занадто коротке (мінімум %{count} символу)
+
+  activerecord:
+    models:
+      user: Користувач
+      student_profile: Учень
+      teacher_profile: Викладач
+    attributes:
+      user:
+        email: Email
+        password: Пароль
+        full_name: Повне імʼя
+      student_profile:
+        first_name: Імʼя
+        last_name: Прізвище
+        teacher_id: Викладач
+      teacher_profile:
+        first_name: Імʼя
+        last_name: Прізвище
+    errors:
+      messages:
+        taken: уже використовується
+        record_invalid: "Виникли помилки: %{errors}"
+      models:
+        user:
+          attributes:
+            email:
+              taken: уже використовується
+              blank: не може бути порожнім
+
   header:
     product: Product
     pricing: Pricing

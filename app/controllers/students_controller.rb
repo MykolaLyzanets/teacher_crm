@@ -61,7 +61,7 @@ class StudentsController < AppController
       notice = service.invited? ? I18n.t('app.students.created_and_invited', name:) : I18n.t('app.students.created', name:)
       redirect_to student_path(service.student_profile), notice:
     else
-      @student = default_student_attrs
+      @student = student_form_attrs
       @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
       @editing = false
       flash.now[:alert] = service.error_messages.to_sentence
@@ -78,7 +78,7 @@ class StudentsController < AppController
       notice = service.invited? ? I18n.t('app.students.invite_sent', name:) : I18n.t('app.students.updated', name:)
       redirect_to student_path(service.student_profile), notice:
     else
-      @student = @student_record.as_catalog
+      @student = student_form_attrs(record: @student_record)
       @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
       @editing = true
       flash.now[:alert] = service.error_messages.to_sentence
@@ -94,7 +94,7 @@ class StudentsController < AppController
 
     name = @student_record.display_label
     Students::Destroy.new(student_profile: @student_record).call
-    redirect_to students_path, notice: I18n.t('app.students.deleted', name:)
+    redirect_to students_path, notice: I18n.t('app.students.archived', name:)
   end
 
   def delete_dialog
@@ -202,6 +202,39 @@ class StudentsController < AppController
       notes: '',
       teacherId: nil
     }.with_indifferent_access
+  end
+
+  def student_form_attrs(submitted = student_params, record: nil)
+    fallback = record&.as_catalog || default_student_attrs
+    data = submitted.to_h.with_indifferent_access
+    photo = data[:remove_photo].to_s == '1' ? nil : fallback[:photo]
+
+    fallback.merge(
+      firstName: data[:first_name].to_s,
+      lastName: data[:last_name].to_s,
+      preferredName: data[:preferred_name].to_s,
+      dateOfBirth: data[:date_of_birth].presence,
+      gender: data[:gender].to_s,
+      status: data[:status].presence || 'active',
+      email: data[:email].to_s,
+      phone: data[:phone].to_s,
+      address: data[:address].to_s,
+      teacherId: data.key?(:teacher_id) ? data[:teacher_id].presence : fallback[:teacherId],
+      grade: data[:grade].to_s,
+      studentCode: data[:student_code].to_s,
+      enrollmentDate: data[:enrollment_date].presence,
+      academicYear: data[:academic_year].to_s,
+      locationPreference: data[:location_preference].presence || 'online',
+      preferredTimeNotes: data[:preferred_time_notes].to_s,
+      preferredDays: Array(data[:preferred_days]).compact_blank,
+      parentName: data[:parent_name].to_s,
+      relationship: data[:relationship].to_s,
+      parentEmail: data[:parent_email].to_s,
+      parentPhone: data[:parent_phone].to_s,
+      notes: data[:notes].to_s,
+      photo:,
+      inviteToWorkspace: data[:invite_to_workspace].to_s == '1'
+    ).with_indifferent_access
   end
 
   def calculate_stats(students)

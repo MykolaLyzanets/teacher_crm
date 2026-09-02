@@ -68,7 +68,7 @@ module Teachers
     end
 
     def invite_user
-      user.send_reset_password_instructions
+      # Mail is not configured yet; invitations are a no-op.
     end
 
     def send_invitation?
