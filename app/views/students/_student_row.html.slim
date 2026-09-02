@@ -14,7 +14,7 @@ li.students-page__row[
 ]
   .students-page__cell
     - if can_assign_teacher?
-      input type="checkbox" aria-label=t('app.students.select_one', name: name) data-students-target="checkbox" data-action="change->students#syncSelection" data-id=student[:id]
+      input type="checkbox" name="student_ids[]" value=student[:id] form="bulk-assign-form" aria-label=t('app.students.select_one', name: name) data-students-target="checkbox" data-action="change->students#syncSelection"
   .students-page__cell.students-page__student
     = student_avatar(student)
     .students-page__student-copy
@@ -32,7 +32,7 @@ li.students-page__row[
   .students-page__cell.students-page__teacher
     - if teacher_name.present?
       - if can_assign_teacher?
-        button.students-page__teacher-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
+        = link_to student_assign_dialog_path(student), class: 'students-page__teacher-btn', data: assign_dialog_turbo_data do
           span.students-page__avatar.students-page__avatar--sm
             - if teacher
               = teacher[:firstName].to_s[0]
@@ -45,7 +45,7 @@ li.students-page__row[
     - elsif can_assign_teacher?
       .students-page__assign-wrap
         span.status-badge.status-badge--neutral = t('app.common.unassigned')
-        button.students-page__assign-btn type="button" data-action="students#openAssignFor" data-id=student[:id]
+        = link_to student_assign_dialog_path(student), class: 'students-page__assign-btn', data: assign_dialog_turbo_data do
           = icon_tag 'user-plus', size: 14
           = t('app.common.assign')
     - else

@@ -58,38 +58,16 @@
         = render 'students/profile/notes', notes: notes
 
     - if can_assign_teacher?
-      .students-page__dialog[hidden] data-students-target="dialog"
-        .students-page__dialog-backdrop data-action="click->students#closeAssign"
-        .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
-          h2#assign-teacher-title = t('app.students.assign_dialog_title')
-          p = t('app.students.assign_dialog_text')
-          select data-students-target="assignSelect"
-            option value="" = t('app.students.select_teacher')
-            - @teachers.each do |item|
-              - teacher_name = item[:displayName].presence || [item[:firstName], item[:lastName]].compact_blank.join(' ')
-              - initials = [item[:firstName].to_s[0], item[:lastName].to_s[0]].join
-              - job = item[:jobTitle].presence || t('app.common.teacher')
-              option value=item[:id] data-job=job data-initials=initials data-path=teacher_path(item[:id]) = teacher_name
-          .students-page__dialog-actions
-            button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
-            button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')
+      = turbo_frame_tag 'assign_dialog'
 
-      .students-page__dialog[hidden] data-students-target="removeDialog"
+      .students-page__dialog hidden="hidden" data-students-target="removeDialog"
         .students-page__dialog-backdrop data-action="click->students#closeRemove"
         .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="remove-assignment-title"
           h2#remove-assignment-title = t('app.students.remove_confirm_title')
           p = t('app.students.remove_confirm_text')
+          = form_with url: unassign_student_path(student[:id]), method: :delete, html: { hidden: true, data: { students_target: 'unassignForm' } }
           .students-page__dialog-actions
             button.students-page__secondary-btn type="button" data-action="students#closeRemove" = t('app.common.cancel')
             button.students-page__danger-btn type="button" data-action="students#confirmRemove" = t('app.students.remove_assignment')
 
-    .students-page__dialog[hidden] data-students-target="deleteDialog"
-      .students-page__dialog-backdrop data-action="click->students#closeDelete"
-      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-student-title"
-        h2#delete-student-title = t('app.students.delete_title')
-        p = t('app.students.delete_text')
-        p.sr-only data-students-target="deleteName"
-        = form_with url: student_path(student[:id]), method: :delete, html: { hidden: true, data: { students_target: 'deleteForm' } }
-        .students-page__dialog-actions
-          button.students-page__secondary-btn type="button" data-action="students#closeDelete" = t('app.common.cancel')
-          button.students-page__danger-btn type="button" data-action="students#confirmDelete" = t('app.students.delete_confirm')
+    = turbo_frame_tag 'delete_dialog'

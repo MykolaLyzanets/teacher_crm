@@ -370,6 +370,39 @@ module StudentsHelper
     end
   end
 
+  def teacher_picker_name(teacher)
+    teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ').presence || t('app.common.teacher')
+  end
+
+  def teacher_picker_initials(teacher)
+    parts = teacher_picker_name(teacher).split(/\s+/).reject(&:blank?)
+    return 'T' if parts.empty?
+    return parts.first[0, 2].upcase if parts.size == 1
+
+    "#{parts[0][0]}#{parts[1][0]}".upcase
+  end
+
+  def teacher_picker_meta(teacher)
+    role = teacher[:jobTitle].presence || Array(teacher[:subjects]).first.presence || t('app.common.teacher')
+    "#{role} · #{t('app.students.assign_load', count: teacher[:assignedCount].to_i)}"
+  end
+
+  def teacher_picker_tone(status)
+    status.to_s == 'active' ? 'olive' : 'neutral'
+  end
+
+  def assign_dialog_turbo_data
+    { turbo: true, turbo_frame: 'assign_dialog' }
+  end
+
+  def student_assign_dialog_path(student)
+    assign_dialog_students_path(student_ids: [student[:id]])
+  end
+
+  def student_delete_dialog_path(student)
+    delete_dialog_students_path(student_id: student[:id])
+  end
+
   def student_homework_tone(status)
     {
       'overdue' => 'rose',

@@ -19,8 +19,9 @@ export default class extends Controller {
     "checkbox",
     "bulk",
     "bulkCount",
-    "dialog",
-    "assignSelect",
+    "assignSearch",
+    "assignOption",
+    "assignEmpty",
     "stat",
     "firstName",
     "lastName",
@@ -53,9 +54,8 @@ export default class extends Controller {
     "teacherMeta",
     "teacherLink",
     "removeDialog",
-    "deleteDialog",
-    "deleteName",
-    "deleteForm",
+    "unassignForm",
+    "inviteCheckbox",
     "menu",
     "menuButton",
     "lessonRow",
@@ -70,7 +70,6 @@ export default class extends Controller {
 
   connect() {
     this.statsFilter = "all"
-    this.assignIds = []
     this.touched = new Set()
     this.photoUrl = ""
     this.boundCloseMenu = this.closeMenu.bind(this)
@@ -136,6 +135,8 @@ export default class extends Controller {
 
       const show = matchesQuery && matchesStatus && matchesTeacher && matchesStats
       row.classList.toggle("students-page__row--hidden", !show)
+      const box = row.querySelector('[data-students-target="checkbox"]')
+      if (box) box.disabled = !show
       if (show) visible += 1
     })
 
@@ -219,89 +220,19 @@ export default class extends Controller {
     }
   }
 
-  openAssign(event) {
-    const id = event?.currentTarget?.dataset?.id
-    if (id) {
-      this.assignIds = [id]
-    } else {
-      this.assignIds = this.visibleCheckboxes()
-        .filter((box) => box.checked)
-        .map((box) => box.dataset.id)
+  filterTeachers() {
+    const query = this.hasAssignSearchTarget ? this.assignSearchTarget.value.trim().toLowerCase() : ""
+    let visible = 0
+    if (this.hasAssignOptionTarget) {
+      this.assignOptionTargets.forEach((option) => {
+        const show = !query || option.dataset.name?.includes(query)
+        const item = option.closest("li")
+        if (item) item.hidden = !show
+        if (show) visible += 1
+      })
     }
-    this.showDialog()
-  }
-
-  openAssignFor(event) {
-    this.assignIds = [event.currentTarget.dataset.id]
-    this.showDialog()
-  }
-
-  closeAssign() {
-    if (this.hasDialogTarget) this.dialogTarget.hidden = true
-  }
-
-  confirmAssign() {
-    const teacherId = this.hasAssignSelectTarget ? this.assignSelectTarget.value : ""
-    if (!teacherId) {
-      this.closeAssign()
-      return
-    }
-
-    const option = this.assignSelectTarget.selectedOptions[0]
-    const teacherName = option?.textContent?.trim() || "Teacher"
-    const hadTeacher = this.hasAssignedBlockTarget && !this.assignedBlockTarget.classList.contains("students-page__is-hidden") && !this.assignedBlockTarget.hidden
-
-    if (this.hasAssignedBlockTarget) {
-      this.applyProfileAssignment(option, teacherName)
-      this.showToast(
-        this.t("students", hadTeacher ? "reassigned_toast" : "assigned_to_toast", { name: teacherName })
-      )
-    } else {
-      this.assignIds.forEach((id) => this.applyRowAssignment(id, teacherId, teacherName))
-      this.showToast(this.t("students", "assigned_toast", { name: teacherName }))
-      this.filter()
-    }
-
-    this.closeAssign()
-  }
-
-  applyRowAssignment(id, teacherId, teacherName) {
-    this.rowTargets.forEach((row) => {
-      const box = row.querySelector('[data-students-target="checkbox"]')
-      if (!box || box.dataset.id !== id) return
-      row.dataset.teacherId = teacherId
-      row.dataset.assigned = "1"
-      const teacherCell = row.querySelector(".students-page__teacher")
-      if (teacherCell) {
-        teacherCell.innerHTML = `<button class="students-page__teacher-btn" type="button" data-action="students#openAssignFor" data-id="${id}"><span class="students-page__avatar students-page__avatar--sm">T</span><span>${teacherName}</span></button>`
-      }
-    })
-  }
-
-  applyProfileAssignment(option, teacherName) {
-    const initials = option?.dataset.initials || "T"
-    const job = option?.dataset.job || this.t("common", "teacher")
-    const path = option?.dataset.path || "#"
-
-    this.setAssignmentState(true)
-    if (this.hasTeacherAvatarTarget) this.teacherAvatarTarget.textContent = initials
-    if (this.hasTeacherNameTarget) this.teacherNameTarget.textContent = teacherName
-    if (this.hasTeacherMetaTarget) this.teacherMetaTarget.textContent = job
-    if (this.hasTeacherLinkTarget) this.teacherLinkTarget.setAttribute("href", path)
-  }
-
-  setAssignmentState(assigned) {
-    if (this.hasAssignedBlockTarget) {
-      this.assignedBlockTarget.classList.toggle("students-page__is-hidden", !assigned)
-      this.assignedBlockTarget.hidden = !assigned
-    }
-    if (this.hasUnassignedBlockTarget) {
-      this.unassignedBlockTarget.classList.toggle("students-page__is-hidden", assigned)
-      this.unassignedBlockTarget.hidden = assigned
-    }
-    if (this.hasAssignBadgeTarget) {
-      this.assignBadgeTarget.textContent = this.t("students", assigned ? "assignment_assigned" : "assignment_unassigned")
-      this.assignBadgeTarget.className = `status-badge status-badge--${assigned ? "olive" : "neutral"}`
+    if (this.hasAssignEmptyTarget) {
+      this.assignEmptyTarget.classList.toggle("students-page__is-hidden", visible > 0)
     }
   }
 
@@ -354,31 +285,8 @@ export default class extends Controller {
   }
 
   confirmRemove() {
-    this.setAssignmentState(false)
-    this.closeRemove()
-    this.showToast(this.t("students", "removed_toast"))
-  }
-
-  askDelete(event) {
-    this.closeMenu()
-    this.deleteId = event.currentTarget.dataset.id
-    this.deleteUrl = event.currentTarget.dataset.url
-    this.deleteName = event.currentTarget.dataset.name || ""
-    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = this.deleteName
-    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = false
-  }
-
-  closeDelete() {
-    this.deleteId = null
-    this.deleteUrl = ""
-    this.deleteName = ""
-    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = true
-  }
-
-  confirmDelete() {
-    if (!this.deleteUrl || !this.hasDeleteFormTarget) return
-    this.deleteFormTarget.setAttribute("action", this.deleteUrl)
-    this.deleteFormTarget.requestSubmit()
+    if (!this.hasUnassignFormTarget) return
+    this.unassignFormTarget.requestSubmit()
   }
 
   pickPhoto() {
@@ -474,7 +382,8 @@ export default class extends Controller {
       parent_name: "parentName",
       parent_email: "parentEmail",
       parent_phone: "parentPhone",
-      notes: "notes"
+      notes: "notes",
+      invite_to_workspace: "email"
     }
     const key = map[event.currentTarget.name]
     if (key) {
@@ -511,22 +420,17 @@ export default class extends Controller {
     const grade = this.hasGradeTarget ? this.gradeTarget.value.trim() : ""
     const enrollment = this.hasEnrollmentDateTarget ? this.enrollmentDateTarget.value : ""
     const year = this.hasAcademicYearTarget ? this.academicYearTarget.value : ""
-    const parentName = this.hasParentNameTarget ? this.parentNameTarget.value.trim() : ""
     const parentEmail = this.hasParentEmailTarget ? this.parentEmailTarget.value.trim() : ""
-    const parentPhone = this.hasParentPhoneTarget ? this.parentPhoneTarget.value.trim() : ""
     const notes = this.hasNotesTarget ? this.notesTarget.value : ""
 
     if (!first) errors.firstName = this.t("students", "enter_first_name")
     if (!last) errors.lastName = this.t("students", "enter_last_name")
-    if (email && !EMAIL_RE.test(email)) errors.email = this.t("students", "enter_email")
+    if (!email || !EMAIL_RE.test(email)) errors.email = this.t("students", "enter_email")
     if (!status) errors.status = this.t("students", "select_status")
     if (!grade) errors.grade = this.t("students", "select_grade_error")
     if (!enrollment) errors.enrollmentDate = this.t("students", "choose_enrollment")
     if (!year) errors.academicYear = this.t("students", "select_year")
-    if (!parentName) errors.parentName = this.t("students", "enter_parent_name")
-    if (!parentEmail) errors.parentEmail = this.t("students", "enter_parent_email")
-    else if (!EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
-    if (!parentPhone) errors.parentPhone = this.t("students", "enter_parent_phone")
+    if (parentEmail && !EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
     if (notes.length > 300) errors.notes = this.t("students", "notes_too_long")
     return errors
   }
@@ -540,10 +444,6 @@ export default class extends Controller {
       const field = node.closest(".students-page__field")
       field?.classList.toggle("students-page__field--invalid", Boolean(show))
     })
-  }
-
-  showDialog() {
-    if (this.hasDialogTarget) this.dialogTarget.hidden = false
   }
 
   showToast(message) {

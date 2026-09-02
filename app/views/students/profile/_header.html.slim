@@ -27,6 +27,6 @@ section.students-page__hero
             = t('app.students.open_calendar')
           = link_to students_path, class: 'students-page__menu-item' do
             = t('app.students.back')
-          button.students-page__menu-item type="button" data-action="students#askDelete" data-id=student[:id] data-name=name data-url=student_path(student[:id])
+          a.students-page__menu-item href=student_delete_dialog_path(student) data-turbo="true" data-turbo-frame="delete_dialog"
             = icon_tag 'trash', size: 16
             span = t('app.students.delete')

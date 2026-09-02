@@ -3,8 +3,9 @@
 class StudentsController < AppController
   helper LessonsHelper
   helper FinanceHelper
-  before_action :require_workspace!, only: %i[new create edit update destroy]
-  before_action :set_student_record, only: %i[show edit update destroy]
+  before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign unassign delete_dialog]
+  before_action :require_assign_permission!, only: %i[assign_dialog assign unassign]
+  before_action :set_student_record, only: %i[show edit update destroy unassign]
 
   def index
     @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
@@ -57,7 +58,8 @@ class StudentsController < AppController
     service = Students::Create.new(workspace: current_workspace, actor: current_user, params: student_params)
     if service.save
       name = service.student_profile.display_label
-      redirect_to student_path(service.student_profile), notice: I18n.t('app.students.created', name:)
+      notice = service.invited? ? I18n.t('app.students.created_and_invited', name:) : I18n.t('app.students.created', name:)
+      redirect_to student_path(service.student_profile), notice:
     else
       @student = default_student_attrs
       @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
@@ -73,7 +75,8 @@ class StudentsController < AppController
     service = Students::Update.new(student_profile: @student_record, actor: current_user, params: student_params)
     if service.save
       name = service.student_profile.display_label
-      redirect_to student_path(service.student_profile), notice: I18n.t('app.students.updated', name:)
+      notice = service.invited? ? I18n.t('app.students.invite_sent', name:) : I18n.t('app.students.updated', name:)
+      redirect_to student_path(service.student_profile), notice:
     else
       @student = @student_record.as_catalog
       @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
@@ -94,6 +97,67 @@ class StudentsController < AppController
     redirect_to students_path, notice: I18n.t('app.students.deleted', name:)
   end
 
+  def delete_dialog
+    @student_record = student_profiles_scope.find_by(id: params[:student_id])
+    if @student_record.blank?
+      return redirect_to students_path unless turbo_frame_request?
+
+      render :delete_dialog, layout: false
+      return
+    end
+
+    @student = @student_record.as_catalog
+    render :delete_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def assign_dialog
+    @student_ids = student_profiles_scope.where(id: Array(params[:student_ids])).ids
+    if @student_ids.empty?
+      return redirect_to students_path unless turbo_frame_request?
+
+      render :assign_dialog, layout: false
+      return
+    end
+
+    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @selected_teacher_id =
+      if @student_ids.one?
+        student_profiles_scope.find_by(id: @student_ids.first)&.teacher_id
+      end
+    render :assign_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def assign
+    service = Students::Assign.new(
+      student_scope: student_profiles_scope,
+      teacher_scope: teacher_profiles_scope,
+      actor: current_user,
+      student_ids: params[:student_ids],
+      teacher_id: params[:teacher_id]
+    )
+    if service.save
+      notice =
+        if service.count == 1
+          I18n.t('app.students.assigned_to_toast', name: service.teacher_name)
+        else
+          I18n.t('app.students.assigned_many', count: service.count, name: service.teacher_name)
+        end
+      redirect_back fallback_location: students_path, notice:
+    else
+      redirect_back fallback_location: students_path, alert: service.error_messages.to_sentence
+    end
+  end
+
+  def unassign
+    if @student_record.blank?
+      redirect_to students_path, alert: I18n.t('app.students.not_found_text')
+      return
+    end
+
+    @student_record.unassign!
+    redirect_to student_path(@student_record), notice: I18n.t('app.students.removed_toast')
+  end
+
   private
 
   def student_params
@@ -102,7 +166,7 @@ class StudentsController < AppController
       :teacher_id, :email, :phone, :address, :parent_name, :relationship, :parent_email,
       :parent_phone, :grade, :student_code, :enrollment_date, :academic_year, :level,
       :location_preference, :preferred_time_notes, :emergency_name, :emergency_relationship,
-      :emergency_phone, :notes, :photo, :remove_photo, subjects: [], preferred_days: []
+      :emergency_phone, :notes, :photo, :remove_photo, :invite_to_workspace, subjects: [], preferred_days: []
     )
     permitted.delete(:teacher_id) unless can_assign_teacher?
     permitted
@@ -110,6 +174,12 @@ class StudentsController < AppController
 
   def set_student_record
     @student_record = student_profiles_scope.find_by(id: params[:id])
+  end
+
+  def require_assign_permission!
+    return if can_assign_teacher?
+
+    redirect_to students_path, alert: I18n.t('app.teachers.forbidden')
   end
 
   def default_student_attrs

@@ -80,6 +80,11 @@ en:
       assign_teacher: Assign teacher
       assign_dialog_title: Assign teacher
       assign_dialog_text: Choose a teacher for the selected students.
+      assign_dialog_text_one: Select a teacher for this student.
+      search_teachers: Search teachers...
+      search_teachers_aria: Search teachers
+      assign_empty: No teachers match your search.
+      assign_load: "%{count} assigned"
       select_teacher: Select teacher
       empty_filtered_title: No students match your filters
       empty_filtered_text: Try a different search or clear the filters.
@@ -151,8 +156,16 @@ en:
       stats_unassigned_aria: Filter unassigned students
       stats_new_aria: Filter students created this month
       created: "%{name} created successfully."
+      created_and_invited: "%{name} created and invited to the portal."
       updated: "%{name} updated successfully."
       deleted: "%{name} deleted successfully."
+      invite_sent: "Portal invitation sent to %{name}."
+      send_invite: Invite to student portal
+      resend_invite: Resend portal invitation
+      invite_hint: Sends an email with a link to set a password and sign in to the student portal.
+      assign_none: Select at least one student.
+      assign_teacher_missing: Select a teacher.
+      assigned_many: "Assigned %{count} students to %{name}."
       profile_fallback: Student profile
       photo: Profile photo
       photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.

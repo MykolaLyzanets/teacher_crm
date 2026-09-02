@@ -3,6 +3,7 @@
 module Students
   class Update
     include Photo
+    include Invite
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
@@ -55,6 +56,7 @@ module Students
       student_profile.errors.add(:first_name, :blank) if student_profile.first_name.blank?
       student_profile.errors.add(:last_name, :blank) if student_profile.last_name.blank?
       validate_photo!
+      validate_invitation!
     end
 
     def persist
@@ -63,6 +65,7 @@ module Students
         user.save!
         student_profile.save!
       end
+      invite_user!
     end
 
     def assign_teacher

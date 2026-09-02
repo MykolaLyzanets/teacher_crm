@@ -55,6 +55,7 @@ class TeacherProfile < ApplicationRecord
       inviteToWorkspace: true,
       invitationStatus: invited? ? 'sent' : 'active',
       notes:,
+      assignedCount: student_profiles.count { |profile| profile.deleted_at.nil? },
       createdAt: created_at&.iso8601
     }.with_indifferent_access
   end

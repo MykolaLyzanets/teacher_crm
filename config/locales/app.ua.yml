@@ -80,6 +80,11 @@ ua:
       assign_teacher: Призначити викладача
       assign_dialog_title: Призначити викладача
       assign_dialog_text: Оберіть викладача для вибраних учнів.
+      assign_dialog_text_one: Оберіть викладача для цього учня.
+      search_teachers: Пошук викладачів…
+      search_teachers_aria: Пошук викладачів
+      assign_empty: Немає викладачів за цим запитом.
+      assign_load: "%{count} призначено"
       select_teacher: Оберіть викладача
       empty_filtered_title: Немає учнів за вашими фільтрами
       empty_filtered_text: Спробуйте інший пошук або очистіть фільтри.
@@ -151,8 +156,16 @@ ua:
       stats_unassigned_aria: Фільтр учнів без викладача
       stats_new_aria: Фільтр учнів, створених цього місяця
       created: "%{name} успішно створено."
+      created_and_invited: "%{name} створено та запрошено в портал."
       updated: "%{name} успішно оновлено."
       deleted: "%{name} успішно видалено."
+      invite_sent: "Запрошення в портал надіслано для %{name}."
+      send_invite: Запросити в портал учня
+      resend_invite: Надіслати запрошення в портал ще раз
+      invite_hint: Надсилає лист із посиланням, щоб встановити пароль і увійти в портал учня.
+      assign_none: Оберіть хоча б одного учня.
+      assign_teacher_missing: Оберіть викладача.
+      assigned_many: "Призначено учнів (%{count}) до %{name}."
       profile_fallback: Профіль учня
       photo: Фото профілю
       photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.

@@ -5,5 +5,5 @@ div class="students-page__icon-actions#{extra}"
     = icon_tag 'eye', size: 20
   = link_to edit_student_path(student[:id]), class: 'students-page__icon-btn', title: t('app.common.edit'), aria: { label: t('app.students.edit_aria', name: name) } do
     = icon_tag 'pencil', size: 20
-  button.students-page__icon-btn.students-page__icon-btn--danger type="button" title=t('app.students.delete') aria-label=t('app.students.delete_aria', name: name) data-action="students#askDelete" data-id=student[:id] data-name=name data-url=student_path(student[:id])
+  a.students-page__icon-btn.students-page__icon-btn--danger href=student_delete_dialog_path(student) title=t('app.students.delete') aria-label=t('app.students.delete_aria', name: name) data-turbo="true" data-turbo-frame="delete_dialog"
     = icon_tag 'trash', size: 20

@@ -113,12 +113,21 @@
       p.students-page__section-sub = t('app.students.contact_info_sub')
       .students-page__fields
         label.students-page__field
-          span = t('app.students.email_address')
-          input type="email" name="email" autocomplete="email" placeholder=t('app.students.email_placeholder') value=student[:email] data-students-target="email" data-action="blur->students#markTouched"
+          span
+            = t('app.students.email_address')
+            span.students-page__req *
+          input type="email" name="email" required=true autocomplete="email" placeholder=t('app.students.email_placeholder') value=student[:email] data-students-target="email" data-action="blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="email"
         label.students-page__field
           span = t('app.students.phone_number')
           input type="tel" name="phone" autocomplete="tel" placeholder=t('app.students.phone_placeholder') value=student[:phone]
+        .students-page__invite
+          input type="hidden" name="invite_to_workspace" value="0"
+          label.students-page__check
+            input type="checkbox" name="invite_to_workspace" value="1" checked=(!editing) data-students-target="inviteCheckbox" data-action="change->students#markTouched"
+            span
+              strong = editing ? t('app.students.resend_invite') : t('app.students.send_invite')
+              span.students-page__hint = t('app.students.invite_hint')
         label.students-page__field.students-page__field--full
           span = t('app.students.address')
           input type="text" name="address" autocomplete="street-address" placeholder=t('app.students.address_placeholder') value=student[:address]
@@ -126,10 +135,8 @@
         h3 = t('app.students.parent_guardian')
         .students-page__fields
           label.students-page__field
-            span
-              = t('app.students.parent_name')
-              span.students-page__req *
-            input type="text" name="parent_name" required=true placeholder=t('app.students.parent_name_placeholder') value=student[:parentName] data-students-target="parentName" data-action="blur->students#markTouched"
+            span = t('app.students.parent_name')
+            input type="text" name="parent_name" placeholder=t('app.students.parent_name_placeholder') value=student[:parentName] data-students-target="parentName" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentName"
           label.students-page__field
             span = t('app.students.relationship')
@@ -141,16 +148,12 @@
               option value="guardian" selected=(student[:relationship].to_s == 'guardian') = t('app.students.relationship_guardian')
               option value="other" selected=(student[:relationship].to_s == 'other') = t('app.students.relationship_other')
           label.students-page__field
-            span
-              = t('app.students.email_address')
-              span.students-page__req *
-            input type="email" name="parent_email" required=true placeholder=t('app.students.email_placeholder') value=student[:parentEmail] data-students-target="parentEmail" data-action="blur->students#markTouched"
+            span = t('app.students.email_address')
+            input type="email" name="parent_email" placeholder=t('app.students.email_placeholder') value=student[:parentEmail] data-students-target="parentEmail" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentEmail"
           label.students-page__field
-            span
-              = t('app.students.phone_number')
-              span.students-page__req *
-            input type="tel" name="parent_phone" required=true placeholder=t('app.students.phone_placeholder') value=student[:parentPhone] data-students-target="parentPhone" data-action="blur->students#markTouched"
+            span = t('app.students.phone_number')
+            input type="tel" name="parent_phone" placeholder=t('app.students.phone_placeholder') value=student[:parentPhone] data-students-target="parentPhone" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
 
     section.students-page__card

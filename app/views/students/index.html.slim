@@ -37,7 +37,8 @@
       - if can_assign_teacher?
         .students-page__bulk.students-page__bulk--hidden data-students-target="bulk"
           p data-students-target="bulkCount" = t('app.common.selected', count: 0)
-          button.students-page__secondary-btn type="button" data-action="students#openAssign" = t('app.students.assign_teacher')
+          = form_with url: assign_dialog_students_path, method: :get, html: { id: 'bulk-assign-form', data: { turbo: true, turbo_frame: 'assign_dialog' } } do
+            button.students-page__secondary-btn type="submit" = t('app.students.assign_teacher')
 
     .students-page__empty.students-page__empty--hidden data-students-target="empty"
       .students-page__empty-icon
@@ -64,27 +65,5 @@
           = render 'student_row', student: student, teachers: @teachers
 
   - if can_assign_teacher?
-    .students-page__dialog[hidden] data-students-target="dialog"
-      .students-page__dialog-backdrop data-action="click->students#closeAssign"
-      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
-        h2#assign-teacher-title = t('app.students.assign_dialog_title')
-        p = t('app.students.assign_dialog_text')
-        select data-students-target="assignSelect"
-          option value="" = t('app.students.select_teacher')
-          - @teachers.each do |teacher|
-            - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
-            option value=teacher[:id] = name
-        .students-page__dialog-actions
-          button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
-          button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')
-
-  .students-page__dialog[hidden] data-students-target="deleteDialog"
-    .students-page__dialog-backdrop data-action="click->students#closeDelete"
-    .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-student-title"
-      h2#delete-student-title = t('app.students.delete_title')
-      p = t('app.students.delete_text')
-      p.sr-only data-students-target="deleteName"
-      = form_with url: students_path, method: :delete, html: { hidden: true, data: { students_target: 'deleteForm' } }
-      .students-page__dialog-actions
-        button.students-page__secondary-btn type="button" data-action="students#closeDelete" = t('app.common.cancel')
-        button.students-page__danger-btn type="button" data-action="students#confirmDelete" = t('app.students.delete_confirm')
+    = turbo_frame_tag 'assign_dialog'
+  = turbo_frame_tag 'delete_dialog'

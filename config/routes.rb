@@ -26,7 +26,16 @@ Rails.application.routes.draw do
 
     get 'dashboard', to: 'dashboard#index'
 
-    resources :students, only: %i[index show new create edit update destroy]
+    resources :students, only: %i[index show new create edit update destroy] do
+      collection do
+        get :assign_dialog
+        patch :assign
+        get :delete_dialog
+      end
+      member do
+        delete :unassign
+      end
+    end
     resources :teachers, only: %i[index show new create edit update]
     get 'calendar', to: 'calendar#index'
     get 'lessons', to: 'lessons#index'

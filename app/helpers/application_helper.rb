@@ -68,8 +68,8 @@ module ApplicationHelper
   def app_nav_items
     items = [
       { path: dashboard_path, label: t('app.nav.dashboard'), icon: 'dashboard', match: 'dashboard' },
-      { path: students_path, label: t('app.nav.students'), icon: 'students', match: 'students' },
       { path: teachers_path, label: t('app.nav.teachers'), icon: 'teachers', match: 'teachers' },
+      { path: students_path, label: t('app.nav.students'), icon: 'students', match: 'students' },
       { path: calendar_path, label: t('app.nav.calendar'), icon: 'calendar', match: 'calendar' },
       { path: lessons_path, label: t('app.nav.lessons'), icon: 'book', match: 'lessons' },
       { path: homework_path, label: t('app.nav.homework'), icon: 'homework', match: 'homework' },

@@ -21,7 +21,7 @@ section.students-page__profile-panel.students-page__teacher-panel
       - if can_manage_teachers?
         a.students-page__ghost-btn href=(@teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherLink" = t('app.students.view_profile')
       - if can_assign_teacher?
-        button.students-page__olive-btn type="button" data-action="students#openAssign" data-id=student[:id]
+        = link_to student_assign_dialog_path(student), class: 'students-page__olive-btn', data: assign_dialog_turbo_data do
           = icon_tag 'user-switch', size: 16
           span = t('app.students.change_teacher')
         button.students-page__danger-btn type="button" data-action="students#openRemove"
@@ -36,6 +36,6 @@ section.students-page__profile-panel.students-page__teacher-panel
         p.students-page__empty-title = t('app.students.no_teacher_title')
         p.students-page__empty-text = t('app.students.no_teacher_hint')
     - if can_assign_teacher?
-      button.students-page__create-btn type="button" data-action="students#openAssign" data-id=student[:id]
+      = link_to student_assign_dialog_path(student), class: 'students-page__create-btn', data: assign_dialog_turbo_data do
         = icon_tag 'user-check', size: 18
         span = t('app.students.assign_teacher_cta')
