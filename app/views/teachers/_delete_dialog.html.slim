@@ -1,0 +1,9 @@
+.teachers-page__dialog role="presentation"
+  a.teachers-page__dialog-backdrop href=delete_dialog_teachers_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="delete_dialog"
+  .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-teacher-title"
+    h2#delete-teacher-title = t('app.teachers.delete_title')
+    p = t('app.teachers.delete_text')
+    = form_with url: teacher_path(@teacher_record), method: :delete, html: { data: { turbo: false } } do
+      .teachers-page__dialog-actions
+        a.teachers-page__secondary-btn href=delete_dialog_teachers_path() data-turbo="true" data-turbo-frame="delete_dialog" = t('app.common.cancel')
+        button.teachers-page__danger-btn type="submit" = t('app.teachers.delete_confirm')

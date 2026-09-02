@@ -36,7 +36,13 @@ Rails.application.routes.draw do
         delete :unassign
       end
     end
-    resources :teachers, only: %i[index show new create edit update]
+    resources :teachers, only: %i[index show new create edit update destroy] do
+      collection do
+        get :delete_dialog
+        get :assign_dialog
+        get :unassign_dialog
+      end
+    end
     get 'calendar', to: 'calendar#index'
     get 'lessons', to: 'lessons#index'
     get 'payments', to: 'payments#index'

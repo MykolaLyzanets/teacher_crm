@@ -1,13 +1,23 @@
 - teacher = teacher.with_indifferent_access
 - name = teacher_display_name(teacher)
 - has_students = teacher_has_students?(teacher, students)
-- created_this_month = teacher_created_this_month?(teacher)
 
-li.teachers-page__row data-teachers-target="row" data-id=teacher[:id] data-search=teacher_search_haystack(teacher) data-status=teacher[:status] data-assigned=(has_students ? '1' : '0') data-new-month=(created_this_month ? '1' : '0')
+li.teachers-page__row[
+  data-teachers-target="row"
+  data-name=name.downcase
+  data-email=(teacher[:email].to_s.downcase)
+  data-status=teacher[:status].to_s
+  data-assigned=(has_students ? '1' : '0')
+  data-created=(teacher[:createdAt].to_s)
+  data-id=teacher[:id]
+]
   .teachers-page__teacher
     span.teachers-page__avatar
-      = teacher_initials(teacher)
-      span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}"
+      - if teacher[:photo].present?
+        img.teachers-page__avatar-img alt="" src=teacher[:photo]
+      - else
+        = teacher_initials(teacher)
+      span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}" title=t('app.teachers.calendar_color')
     .teachers-page__teacher-meta
       = link_to name, teacher_path(teacher[:id]), class: 'teachers-page__name'
       p.teachers-page__meta = teacher[:jobTitle].presence || Array(teacher[:subjects]).first(2).join(', ').presence || t('app.common.teacher')

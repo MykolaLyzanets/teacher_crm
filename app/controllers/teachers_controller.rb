@@ -2,8 +2,8 @@
 
 class TeachersController < AppController
   before_action :require_owner_staff!
-  before_action :require_workspace!, only: %i[new create edit update]
-  before_action :set_teacher_record, only: %i[show edit update]
+  before_action :require_workspace!, only: %i[new create edit update destroy delete_dialog assign_dialog unassign_dialog]
+  before_action :set_teacher_record, only: %i[show edit update destroy]
 
   def index
     records = teacher_profiles_scope.order(:first_name, :last_name)
@@ -18,7 +18,6 @@ class TeachersController < AppController
 
     assigned = @teacher_record.student_profiles.kept.includes(:user, :teacher_profile)
     @assigned_students = assigned.map(&:as_catalog)
-    @unassigned_students = student_profiles_scope.where(teacher_id: nil).map(&:as_catalog)
     @catalog_teacher = Demo::Catalog.match_teacher(@teacher)
     @earnings = Demo::Finance.teacher_payout_summary(@catalog_teacher[:id]) if @catalog_teacher
     @school_workspace = current_workspace.blank? || current_workspace.school? || current_user.admin?
@@ -43,7 +42,7 @@ class TeachersController < AppController
       name = service.teacher_profile.display_label
       redirect_to teacher_path(service.teacher_profile), notice: I18n.t('app.teachers.created', name:)
     else
-      @teacher = default_teacher_attrs
+      @teacher = teacher_form_attrs
       @editing = false
       flash.now[:alert] = service.error_messages.to_sentence
       render :new, status: :unprocessable_entity
@@ -58,11 +57,67 @@ class TeachersController < AppController
       name = service.teacher_profile.display_label
       redirect_to teacher_path(service.teacher_profile), notice: I18n.t('app.teachers.updated', name:)
     else
-      @teacher = @teacher_record.as_catalog
+      @teacher = teacher_form_attrs(record: @teacher_record)
       @editing = true
       flash.now[:alert] = service.error_messages.to_sentence
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    if @teacher_record.blank?
+      redirect_to teachers_path, alert: I18n.t('app.teachers.not_found_text')
+      return
+    end
+
+    name = @teacher_record.display_label
+    Teachers::Destroy.new(teacher_profile: @teacher_record).call
+    redirect_to teachers_path, notice: I18n.t('app.teachers.archived', name:)
+  end
+
+  def delete_dialog
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    if @teacher_record.blank?
+      return redirect_to teachers_path unless turbo_frame_request?
+
+      render :delete_dialog, layout: false
+      return
+    end
+
+    @teacher = @teacher_record.as_catalog
+    render :delete_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def assign_dialog
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    if @teacher_record.blank?
+      return redirect_to teachers_path unless turbo_frame_request?
+
+      render :assign_dialog, layout: false
+      return
+    end
+
+    @teacher = @teacher_record.as_catalog
+    @assignable_students = student_profiles_scope
+                           .where('student_profiles.teacher_id IS DISTINCT FROM ?', @teacher_record.id)
+                           .order(:first_name, :last_name)
+                           .map(&:as_catalog)
+    render :assign_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def unassign_dialog
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    @student_record = student_profiles_scope.find_by(id: params[:student_id])
+    if @teacher_record.blank? || @student_record.blank?
+      return redirect_to(@teacher_record.present? ? teacher_path(@teacher_record) : teachers_path) unless turbo_frame_request?
+
+      render :unassign_dialog, layout: false
+      return
+    end
+
+    @teacher = @teacher_record.as_catalog
+    @student = @student_record.as_catalog
+    render :unassign_dialog, layout: (turbo_frame_request? ? false : 'app')
   end
 
   private
@@ -74,7 +129,7 @@ class TeachersController < AppController
       :default_lesson_duration_minutes, :duration_preset, :custom_duration,
       :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
-      :notes, :workspace_role,
+      :notes, :workspace_role, :photo, :remove_photo,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
     )
     permitted[:working_hours] = permitted_working_hours
@@ -123,6 +178,64 @@ class TeachersController < AppController
       invitationTiming: 'send_now',
       notes: ''
     }.with_indifferent_access
+  end
+
+  def teacher_form_attrs(submitted = teacher_params, record: nil)
+    fallback = record&.as_catalog || default_teacher_attrs
+    data = submitted.to_h.with_indifferent_access
+    photo = data[:remove_photo].to_s == '1' ? nil : fallback[:photo]
+    duration =
+      if data[:duration_preset].to_s == 'custom'
+        data[:custom_duration].presence || fallback[:defaultLessonDurationMinutes]
+      else
+        data[:duration_preset].presence || data[:default_lesson_duration_minutes].presence ||
+          fallback[:defaultLessonDurationMinutes]
+      end
+    working_days = Array(data[:working_days]).compact_blank
+    hours = data[:working_hours]
+    working_hours =
+      if hours.respond_to?(:to_h)
+        working_days.filter_map do |day|
+          row = hours[day] || hours[day.to_sym]
+          next if row.blank?
+
+          start_time = row[:start] || row['start']
+          end_time = row[:end] || row['end']
+          next if start_time.blank? || end_time.blank?
+
+          { 'day' => day, 'startTime' => start_time, 'endTime' => end_time }
+        end
+      else
+        fallback[:workingHours]
+      end
+
+    fallback.merge(
+      firstName: data[:first_name].to_s,
+      lastName: data[:last_name].to_s,
+      displayName: data[:display_name].to_s,
+      jobTitle: data[:job_title].to_s,
+      status: data[:status].presence || fallback[:status],
+      email: data[:email].to_s,
+      phone: data[:phone].to_s,
+      preferredContactMethod: data[:preferred_contact_method].presence || 'email',
+      timezone: data[:timezone].presence || fallback[:timezone],
+      location: data[:location].to_s,
+      subjects: data.key?(:subjects) ? Array(data[:subjects]).compact_blank : fallback[:subjects],
+      experienceYears: data.key?(:experience_years) ? data[:experience_years] : fallback[:experienceYears],
+      bio: data.key?(:bio) ? data[:bio].to_s : fallback[:bio],
+      languages: data.key?(:languages) ? Array(data[:languages]).compact_blank : fallback[:languages],
+      tags: data.key?(:tags) ? Array(data[:tags]).compact_blank : fallback[:tags],
+      workingDays: working_days,
+      workingHours: working_hours,
+      defaultLessonDurationMinutes: duration.to_i.positive? ? duration.to_i : fallback[:defaultLessonDurationMinutes],
+      lessonFormats: Array(data[:lesson_formats]).compact_blank.presence || fallback[:lessonFormats],
+      defaultMeetingLink: data[:default_meeting_link].to_s,
+      maxLessonsPerDay: data[:max_lessons_per_day],
+      calendarColor: data[:calendar_color].presence || fallback[:calendarColor],
+      notes: data[:notes].to_s,
+      photo:,
+      inviteToWorkspace: data[:invite_to_workspace].to_s == '1'
+    ).with_indifferent_access
   end
 
   def calculate_stats(teachers, students, lessons)

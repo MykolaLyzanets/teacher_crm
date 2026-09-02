@@ -1,0 +1,33 @@
+.teachers-page__dialog role="presentation"
+  a.teachers-page__dialog-backdrop href=assign_dialog_teachers_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="assign_dialog"
+  .teachers-page__dialog-card.teachers-page__dialog-card--picker role="dialog" aria-modal="true" aria-labelledby="assign-students-title"
+    .teachers-page__dialog-head
+      div
+        h2#assign-students-title = t('app.teachers.assign_dialog_title')
+        p = t('app.teachers.assign_dialog_text')
+      a.teachers-page__dialog-close href=assign_dialog_teachers_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="assign_dialog"
+        = icon_tag 'x', size: 18
+    .teachers-page__assigned-search
+      = icon_tag 'search', size: 18
+      input type="search" placeholder=t('app.teachers.search_assigned') aria-label=t('app.teachers.search_assigned') data-teachers-target="assignSearch" data-action="input->teachers#filterAssignOptions"
+    = form_with url: assign_students_path(), method: :patch, html: { data: { turbo: false } } do
+      input type="hidden" name="teacher_id" value=@teacher_record.id
+      input type="hidden" name="return_to" value=teacher_path(@teacher_record)
+      - if @assignable_students.blank?
+        p.teachers-page__meta = t('app.teachers.no_unassigned')
+      - else
+        ul.teachers-page__assign-list
+          - @assignable_students.each do |student|
+            - student = student.with_indifferent_access
+            - name = student_display_name(student)
+            li
+              label.teachers-page__assign-option
+                input type="checkbox" name="student_ids[]" value=student[:id] data-teachers-target="assignOption" data-name="#{name.downcase} #{Array(student[:subjects]).join(' ').downcase}" data-status=student[:status]
+                span.teachers-page__avatar.teachers-page__avatar--sm = student_initials(student)
+                span
+                  span = name
+                  small.teachers-page__meta = student[:teacher].present? ? student[:teacher] : t('app.common.unassigned')
+        p.teachers-page__meta hidden="hidden" data-teachers-target="assignEmpty" = t('app.teachers.no_unassigned')
+      .teachers-page__dialog-actions
+        a.teachers-page__secondary-btn href=assign_dialog_teachers_path() data-turbo="true" data-turbo-frame="assign_dialog" = t('app.common.cancel')
+        button.teachers-page__primary-btn type="submit" = t('app.teachers.assign_students')

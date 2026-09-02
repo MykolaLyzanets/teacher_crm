@@ -142,9 +142,9 @@ class StudentsController < AppController
         else
           I18n.t('app.students.assigned_many', count: service.count, name: service.teacher_name)
         end
-      redirect_back fallback_location: students_path, notice:
+      redirect_after_assignment(students_path, notice:)
     else
-      redirect_back fallback_location: students_path, alert: service.error_messages.to_sentence
+      redirect_after_assignment(students_path, alert: service.error_messages.to_sentence)
     end
   end
 
@@ -155,7 +155,7 @@ class StudentsController < AppController
     end
 
     @student_record.unassign!
-    redirect_to student_path(@student_record), notice: I18n.t('app.students.removed_toast')
+    redirect_after_assignment(student_path(@student_record), notice: I18n.t('app.students.removed_toast'))
   end
 
   private
@@ -180,6 +180,15 @@ class StudentsController < AppController
     return if can_assign_teacher?
 
     redirect_to students_path, alert: I18n.t('app.teachers.forbidden')
+  end
+
+  def redirect_after_assignment(fallback, **flash)
+    path = params[:return_to].to_s
+    if path.start_with?('/') && !path.start_with?('//')
+      redirect_to path, **flash
+    else
+      redirect_back fallback_location: fallback, **flash
+    end
   end
 
   def default_student_attrs

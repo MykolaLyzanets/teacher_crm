@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class TeacherProfile < ApplicationRecord
-  STATUSES = { active: 0, invited: 1, on_leave: 2, inactive: 3 }.freeze
+  STATUSES = { active: 0, invited: 1, on_leave: 2, inactive: 3, archived: 4 }.freeze
   CONTACT_METHODS = { email: 0, phone: 1, either: 2 }.freeze
   LESSON_DURATIONS = [30, 45, 60, 90].freeze
   LESSON_FORMATS = %w[online in_person hybrid].freeze
@@ -10,6 +10,8 @@ class TeacherProfile < ApplicationRecord
   enum status: STATUSES
   enum preferred_contact_method: CONTACT_METHODS, _prefix: :contact
   enum calendar_color: CALENDAR_COLORS, _prefix: :calendar
+
+  mount_uploader :photo, ImageUploader
 
   belongs_to :user, inverse_of: :teacher_profile
   belongs_to :workspace, inverse_of: :teacher_profiles
@@ -25,13 +27,17 @@ class TeacherProfile < ApplicationRecord
     display_name.presence || [first_name, last_name].compact_blank.join(' ').presence || 'Teacher'
   end
 
+  def photo_url
+    photo.url if photo.present?
+  end
+
   def as_catalog
     {
       id:,
       firstName: first_name,
       lastName: last_name,
       displayName: display_label,
-      photo:,
+      photo: photo_url,
       jobTitle: job_title,
       status:,
       email: user&.email,

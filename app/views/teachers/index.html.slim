@@ -14,24 +14,26 @@
 
   section.teachers-page__panel
     .teachers-page__toolbar
-      .teachers-page__search
-        = icon_tag 'search', size: 18
-        input type="search" placeholder=t('app.teachers.search_placeholder') aria-label=t('app.teachers.search_placeholder') data-teachers-target="search" data-action="input->teachers#filter"
-      .teachers-page__filters
-        select aria-label=t('app.students.filter_status') data-teachers-target="status" data-action="change->teachers#filter"
-          option value="" = t('app.teachers.all_statuses')
-          option value="active" = t('app.statuses.active')
-          option value="invited" = t('app.statuses.invited')
-          option value="on_leave" = t('app.statuses.on_leave')
-          option value="inactive" = t('app.statuses.inactive')
-        select aria-label=t('app.students.filter_teacher') data-teachers-target="assignment" data-action="change->teachers#filter"
-          option value="all" = t('app.teachers.all_assignments')
-          option value="assigned" = t('app.teachers.with_students')
-        span.teachers-page__chip.teachers-page__chip--hidden data-teachers-target="newChip" = t('app.teachers.created_this_month')
+      .teachers-page__toolbar-row
+        .teachers-page__search
+          = icon_tag 'search', size: 18
+          input type="search" placeholder=t('app.teachers.search_placeholder') aria-label=t('app.teachers.search_placeholder') data-teachers-target="search" data-action="input->teachers#filter"
+        .teachers-page__filters
+          select aria-label=t('app.teachers.filter_status') data-teachers-target="status" data-action="change->teachers#filter"
+            option value="" = t('app.teachers.all_statuses')
+            option value="active" = t('app.statuses.active')
+            option value="invited" = t('app.statuses.invited')
+            option value="on_leave" = t('app.statuses.on_leave')
+            option value="inactive" = t('app.statuses.inactive')
+            option value="archived" = t('app.statuses.archived')
+          select aria-label=t('app.teachers.filter_assignment') data-teachers-target="assignment" data-action="change->teachers#filter"
+            option value="all" = t('app.teachers.all_assignments')
+            option value="assigned" = t('app.teachers.with_students')
+          span.teachers-page__chip.teachers-page__chip--hidden data-teachers-target="newChip" = t('app.teachers.created_this_month')
 
     .teachers-page__empty.teachers-page__empty--hidden data-teachers-target="empty"
       .teachers-page__empty-icon
-        = icon_tag 'user', size: 24
+        = icon_tag 'users-group', size: 24
       h2 data-teachers-target="emptyTitle" = t('app.teachers.empty_filtered_title')
       p data-teachers-target="emptyText" = t('app.teachers.empty_filtered_text')
       button.teachers-page__secondary-btn type="button" data-action="teachers#clearFilters" data-teachers-target="clearBtn" = t('app.common.clear_filters')
@@ -50,12 +52,4 @@
         - @teachers.each do |teacher|
           = render 'teacher_row', teacher: teacher, students: @students
 
-  .teachers-page__dialog[hidden] data-teachers-target="deleteDialog"
-    .teachers-page__dialog-backdrop data-action="click->teachers#closeDelete"
-    .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-teacher-title"
-      h2#delete-teacher-title = t('app.teachers.delete_title')
-      p = t('app.teachers.delete_text')
-      p.sr-only data-teachers-target="deleteName"
-      .teachers-page__dialog-actions
-        button.teachers-page__secondary-btn type="button" data-action="teachers#closeDelete" = t('app.common.cancel')
-        button.teachers-page__danger-btn type="button" data-action="teachers#confirmDelete" = t('app.teachers.delete_confirm')
+  = turbo_frame_tag 'delete_dialog'

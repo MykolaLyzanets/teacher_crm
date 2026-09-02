@@ -2,6 +2,7 @@
 
 module Teachers
   class Create
+    include Photo
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
@@ -57,11 +58,13 @@ module Teachers
       user.errors.add(:email, :blank) if user.email.blank?
       teacher_profile.errors.add(:first_name, :blank) if teacher_profile.first_name.blank?
       teacher_profile.errors.add(:last_name, :blank) if teacher_profile.last_name.blank?
+      validate_photo!
     end
 
     def persist
       User.transaction do
         user.save!
+        persist_photo
         teacher_profile.save!
       end
       invite_user if send_invitation?

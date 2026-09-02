@@ -21,6 +21,10 @@ export default class extends Controller {
     "lastName",
     "displayName",
     "initialsPreview",
+    "formStatus",
+    "email",
+    "submitBtn",
+    "formAlert",
     "inviteToggle",
     "inviteFields",
     "notes",
@@ -30,6 +34,7 @@ export default class extends Controller {
     "photoPick",
     "photoRemove",
     "photoError",
+    "removePhotoInput",
     "workingDay",
     "hoursRow",
     "hoursWrap",
@@ -49,12 +54,9 @@ export default class extends Controller {
     "assignedList",
     "assignedEmpty",
     "assignedCount",
-    "assignDialog",
-    "assignBox",
-    "removeDialog",
-    "removeConfirm",
-    "deleteDialog",
-    "deleteName",
+    "assignSearch",
+    "assignOption",
+    "assignEmpty",
     "toast",
     "absenceDialog",
     "absenceList",
@@ -67,16 +69,16 @@ export default class extends Controller {
 
   static values = {
     i18n: Object,
-    name: String
+    name: String,
+    editing: Boolean
   }
 
   connect() {
+    this.statsFilter = "all"
     this.removeId = null
     this.photoUrl = ""
-    if (this.hasRowTarget) {
-      this.statsFilterValue = "all"
-      this.filter()
-    }
+    this.dirty = false
+    this.touched = new Set()
     if (this.hasNotesTarget) this.updateNotesCount()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
     this.syncHoursUi()
@@ -84,6 +86,7 @@ export default class extends Controller {
     this.boundPointer = this.closeSubjectOnOutside.bind(this)
     document.addEventListener("mousedown", this.boundPointer)
     if (this.hasAssignedRowTarget) this.filterAssigned()
+    if (this.hasRowTarget) this.filter()
   }
 
   disconnect() {
@@ -101,98 +104,100 @@ export default class extends Controller {
 
   filter() {
     if (!this.hasRowTarget) {
-      if (this.hasTableTarget) {
-        this.tableTarget.classList.add("teachers-page__table--hidden")
-        this.tableTarget.hidden = true
-      }
       if (this.hasEmptyTarget) this.emptyTarget.classList.remove("teachers-page__empty--hidden")
+      if (this.hasTableTarget) this.tableTarget.hidden = true
       if (this.hasEmptyTitleTarget) this.emptyTitleTarget.textContent = this.t("teachers", "empty_title")
       if (this.hasEmptyTextTarget) this.emptyTextTarget.textContent = this.t("teachers", "empty_text")
       if (this.hasAddBtnTarget) this.addBtnTarget.classList.remove("teachers-page__empty-add--hidden")
+      if (this.hasClearBtnTarget) this.clearBtnTarget.hidden = true
       return
     }
 
-    const query = (this.hasSearchTarget ? this.searchTarget.value : "").trim().toLowerCase()
+    const query = this.hasSearchTarget ? this.searchTarget.value.trim().toLowerCase() : ""
     const status = this.hasStatusTarget ? this.statusTarget.value : ""
     const assignment = this.hasAssignmentTarget ? this.assignmentTarget.value : "all"
-    const statsFilter = this.statsFilterValue || "all"
-
     let visible = 0
 
     this.rowTargets.forEach((row) => {
-      const haystack = (row.dataset.search || "").toLowerCase()
-      const rowStatus = row.dataset.status || ""
-      const assigned = row.dataset.assigned === "1"
-      const newMonth = row.dataset.newMonth === "1"
+      const matchesQuery =
+        !query ||
+        row.dataset.name?.includes(query) ||
+        row.dataset.email?.includes(query)
+      const matchesStatus = !status || row.dataset.status === status
+      const matchesAssignment = assignment !== "assigned" || row.dataset.assigned === "1"
 
-      let show = true
-      if (query && !haystack.includes(query)) show = false
-      if (status && rowStatus !== status) show = false
-      if ((statsFilter === "withStudents" || assignment === "assigned") && !assigned) show = false
-      if (statsFilter === "active" && rowStatus !== "active") show = false
-      if (statsFilter === "newThisMonth" && !newMonth) show = false
+      let matchesStats = true
+      if (this.statsFilter === "active") matchesStats = row.dataset.status === "active"
+      if (this.statsFilter === "withStudents") matchesStats = row.dataset.assigned === "1"
+      if (this.statsFilter === "newThisMonth") {
+        const created = row.dataset.created ? new Date(row.dataset.created) : null
+        const now = new Date()
+        matchesStats =
+          !!created &&
+          created.getFullYear() === now.getFullYear() &&
+          created.getMonth() === now.getMonth()
+      }
 
+      const show = matchesQuery && matchesStatus && matchesAssignment && matchesStats
       row.classList.toggle("teachers-page__row--hidden", !show)
       if (show) visible += 1
     })
 
-    const hasFilters = Boolean(
-      query || status || assignment === "assigned" || statsFilter === "newThisMonth"
-    )
-
-    if (this.hasTableTarget) {
-      this.tableTarget.classList.toggle("teachers-page__table--hidden", visible === 0)
-      this.tableTarget.hidden = visible === 0
-    }
+    const hasFilters =
+      !!query ||
+      !!status ||
+      assignment !== "all" ||
+      this.statsFilter !== "all"
 
     if (this.hasEmptyTarget) {
       this.emptyTarget.classList.toggle("teachers-page__empty--hidden", visible > 0)
     }
-
-    if (visible === 0) {
-      if (this.hasEmptyTitleTarget) {
-        this.emptyTitleTarget.textContent = hasFilters
-          ? this.t("teachers", "empty_filtered_title")
-          : this.t("teachers", "empty_title")
-      }
-      if (this.hasEmptyTextTarget) {
-        this.emptyTextTarget.textContent = hasFilters
-          ? this.t("teachers", "empty_filtered_text")
-          : this.t("teachers", "empty_text")
-      }
-      if (this.hasClearBtnTarget) this.clearBtnTarget.hidden = !hasFilters
-      if (this.hasAddBtnTarget) {
-        this.addBtnTarget.classList.toggle("teachers-page__empty-add--hidden", hasFilters)
-      }
+    if (this.hasTableTarget) {
+      this.tableTarget.hidden = visible === 0
+      this.tableTarget.classList.toggle("teachers-page__table--hidden", visible === 0)
     }
-
+    if (this.hasEmptyTitleTarget) {
+      this.emptyTitleTarget.textContent = hasFilters
+        ? this.t("teachers", "empty_filtered_title")
+        : this.t("teachers", "empty_title")
+    }
+    if (this.hasEmptyTextTarget) {
+      this.emptyTextTarget.textContent = hasFilters
+        ? this.t("teachers", "empty_filtered_text")
+        : this.t("teachers", "empty_text")
+    }
+    if (this.hasAddBtnTarget) {
+      this.addBtnTarget.classList.toggle("teachers-page__empty-add--hidden", hasFilters)
+    }
+    if (this.hasClearBtnTarget) this.clearBtnTarget.hidden = !hasFilters
     if (this.hasNewChipTarget) {
-      this.newChipTarget.classList.toggle(
-        "teachers-page__chip--hidden",
-        statsFilter !== "newThisMonth"
-      )
+      this.newChipTarget.classList.toggle("teachers-page__chip--hidden", this.statsFilter !== "newThisMonth")
     }
-
-    this.syncStatsPressed()
   }
 
-  statsFilter(event) {
+  setStatsFilter(event) {
     const filter = event.currentTarget.dataset.filter
-    if (!filter) return
+    if (!filter || filter === "lessonsThisMonth") return
 
-    if (filter === "lessonsThisMonth") return
+    this.statsFilter = this.statsFilter === filter ? "all" : filter
 
-    this.statsFilterValue = filter
+    this.statTargets.forEach((stat) => {
+      const active = stat.dataset.filter === this.statsFilter && this.statsFilter !== "all"
+      stat.setAttribute("aria-pressed", active ? "true" : "false")
+    })
 
-    if (filter === "active" && this.hasStatusTarget) {
+    if (this.statsFilter === "active" && this.hasStatusTarget) {
       this.statusTarget.value = "active"
-      if (this.hasAssignmentTarget) this.assignmentTarget.value = "all"
-    } else if (filter === "withStudents") {
-      if (this.hasStatusTarget) this.statusTarget.value = ""
-      if (this.hasAssignmentTarget) this.assignmentTarget.value = "assigned"
-    } else if (filter === "all" || filter === "newThisMonth") {
-      if (this.hasStatusTarget) this.statusTarget.value = ""
-      if (this.hasAssignmentTarget) this.assignmentTarget.value = "all"
+    } else if (this.hasStatusTarget && ["all", "withStudents", "newThisMonth"].includes(this.statsFilter)) {
+      if (this.statsFilter !== "active") this.statusTarget.value = ""
+    }
+
+    if (this.hasAssignmentTarget) {
+      if (this.statsFilter === "withStudents") {
+        this.assignmentTarget.value = "assigned"
+      } else if (this.statsFilter === "all" || this.statsFilter === "active" || this.statsFilter === "newThisMonth") {
+        if (this.assignmentTarget.value === "assigned") this.assignmentTarget.value = "all"
+      }
     }
 
     this.filter()
@@ -202,17 +207,11 @@ export default class extends Controller {
     if (this.hasSearchTarget) this.searchTarget.value = ""
     if (this.hasStatusTarget) this.statusTarget.value = ""
     if (this.hasAssignmentTarget) this.assignmentTarget.value = "all"
-    this.statsFilterValue = "all"
+    this.statsFilter = "all"
+    if (this.hasStatTarget) {
+      this.statTargets.forEach((stat) => stat.setAttribute("aria-pressed", "false"))
+    }
     this.filter()
-  }
-
-  syncStatsPressed() {
-    if (!this.hasStatTarget) return
-    const active = this.statsFilterValue || "all"
-    this.statTargets.forEach((stat) => {
-      const isActive = stat.dataset.filter === active
-      stat.setAttribute("aria-pressed", isActive ? "true" : "false")
-    })
   }
 
   updateInitials() {
@@ -274,11 +273,13 @@ export default class extends Controller {
       const label = this.photoPickTarget.querySelector("span")
       if (label) label.textContent = this.t("teachers", "replace_photo")
     }
+    if (this.hasRemovePhotoInputTarget) this.removePhotoInputTarget.value = "0"
   }
 
   removePhoto() {
     this.clearPhoto()
     if (this.hasPhotoInputTarget) this.photoInputTarget.value = ""
+    if (this.hasRemovePhotoInputTarget) this.removePhotoInputTarget.value = "1"
   }
 
   clearPhoto() {
@@ -341,14 +342,94 @@ export default class extends Controller {
     })
   }
 
-  validateHours(event) {
+  markDirty() {
+    this.dirty = true
+  }
+
+  confirmLeave(event) {
+    if (!this.dirty) return
+    const key = this.editingValue ? "leave_unsaved_edit" : "leave_unsaved_create"
+    if (!window.confirm(this.t("teachers", key))) event.preventDefault()
+  }
+
+  syncLessonTypeRequirement() {
+    const status = this.hasFormStatusTarget ? this.formStatusTarget.value : "active"
+    const lessonTypes = this.application.getControllerForElementAndIdentifier(this.element, "lesson-types")
+    if (lessonTypes) lessonTypes.requireActiveValue = status === "active"
+  }
+
+  markTouched(event) {
+    const map = {
+      first_name: "firstName",
+      last_name: "lastName",
+      email: "email",
+      status: "status",
+      custom_duration: "customDuration",
+      notes: "notes"
+    }
+    const key = map[event.currentTarget.name]
+    if (key) {
+      this.touched.add(key)
+      this.renderErrors(this.validate())
+    }
+  }
+
+  validateSubmit(event) {
+    this.touched = new Set(["firstName", "lastName", "status", "email", "customDuration", "notes"])
     this.syncCustomDuration()
     const hoursError = this.hasHoursRowTarget ? this.hoursErrorMessage() : null
     if (this.hasHoursErrorTarget) {
       this.hoursErrorTarget.textContent = hoursError || ""
       this.hoursErrorTarget.hidden = !hoursError
     }
-    if (hoursError) event.preventDefault()
+    const errors = this.validate()
+    this.renderErrors(errors)
+    if (Object.keys(errors).length > 0 || hoursError) {
+      event.preventDefault()
+      if (this.hasFormAlertTarget) this.formAlertTarget.hidden = false
+      return
+    }
+    if (this.hasFormAlertTarget) this.formAlertTarget.hidden = true
+    this.submitBtnTargets.forEach((btn) => {
+      btn.textContent = this.t("teachers", this.editingValue ? "saving" : "creating")
+      btn.disabled = true
+    })
+  }
+
+  validate() {
+    const errors = {}
+    const first = this.hasFirstNameTarget ? this.firstNameTarget.value.trim() : ""
+    const last = this.hasLastNameTarget ? this.lastNameTarget.value.trim() : ""
+    const email = this.hasEmailTarget ? this.emailTarget.value.trim() : ""
+    const status = this.hasFormStatusTarget ? this.formStatusTarget.value : "active"
+    const notes = this.hasNotesTarget ? this.notesTarget.value : ""
+    const preset = this.hasDurationPresetTarget ? this.durationPresetTarget.value : ""
+    const custom = this.hasCustomMinutesTarget ? this.customMinutesTarget.value : ""
+
+    if (!first) errors.firstName = this.t("teachers", "enter_first_name")
+    if (!last) errors.lastName = this.t("teachers", "enter_last_name")
+    if (!status) errors.status = this.t("teachers", "select_status")
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = this.t("teachers", "enter_email")
+    }
+    if (preset === "custom") {
+      const minutes = Number(custom)
+      if (!Number.isInteger(minutes) || minutes <= 0) {
+        errors.customDuration = this.t("teachers", "custom_duration_error")
+      }
+    }
+    if (notes.length > 500) errors.notes = this.t("teachers", "notes_too_long")
+    return errors
+  }
+
+  renderErrors(errors) {
+    this.element.querySelectorAll("[data-error-for]").forEach((node) => {
+      const key = node.dataset.errorFor
+      const show = this.touched.has(key) && errors[key]
+      node.textContent = show ? errors[key] : ""
+      node.hidden = !show
+      node.closest(".teachers-page__field")?.classList.toggle("teachers-page__field--invalid", Boolean(show))
+    })
   }
 
   hoursErrorMessage() {
@@ -384,6 +465,19 @@ export default class extends Controller {
       total === 1
         ? this.t("teachers", "assigned_count_one")
         : this.t("teachers", "assigned_count", { count: total })
+  }
+
+  filterAssignOptions() {
+    if (!this.hasAssignOptionTarget) return
+    const query = this.hasAssignSearchTarget ? this.assignSearchTarget.value.trim().toLowerCase() : ""
+    let visible = 0
+    this.assignOptionTargets.forEach((option) => {
+      const show = !query || (option.dataset.name || "").includes(query)
+      const item = option.closest("li")
+      if (item) item.hidden = !show
+      if (show) visible += 1
+    })
+    if (this.hasAssignEmptyTarget) this.assignEmptyTarget.hidden = visible > 0
   }
 
   openAssign() {
@@ -464,28 +558,6 @@ export default class extends Controller {
     this.closeRemove()
     if (name) this.showToast(this.t("teachers", "removed_toast", { name }))
     this.filterAssigned()
-  }
-
-  askDelete(event) {
-    this.deleteId = event.currentTarget.dataset.id
-    this.deleteName = event.currentTarget.dataset.name || ""
-    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = this.deleteName
-    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = false
-  }
-
-  closeDelete() {
-    this.deleteId = null
-    this.deleteName = ""
-    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = true
-  }
-
-  confirmDelete() {
-    if (!this.deleteId) return
-    const row = this.rowTargets.find((item) => String(item.dataset.id) === String(this.deleteId))
-    row?.remove()
-    this.closeDelete()
-    this.showToast(this.t("teachers", "deleted_toast"))
-    this.filter()
   }
 
   showToast(message) {

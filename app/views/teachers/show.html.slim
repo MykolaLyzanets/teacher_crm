@@ -21,7 +21,10 @@
     section.teachers-page__hero
       .teachers-page__hero-main
         span.teachers-page__avatar.teachers-page__avatar--lg
-          = teacher_initials(teacher)
+          - if teacher[:photo].present?
+            img.teachers-page__avatar-img alt="" src=teacher[:photo]
+          - else
+            = teacher_initials(teacher)
           span.teachers-page__color style="background-color: #{teacher_calendar_color(teacher[:calendarColor])}"
         div
           .teachers-page__hero-title
@@ -36,13 +39,20 @@
                 = teacher[:email]
             - if teacher[:phone].present?
               span
-                = icon_tag 'message', size: 18
+                = icon_tag 'phone', size: 18
                 = teacher[:phone]
-      = link_to t('app.teachers.schedule_lesson'), calendar_path(teacherId: teacher[:id]), class: 'teachers-page__ghost-btn'
-      - if can_manage_teachers?
-        button.teachers-page__ghost-btn type="button" data-action="teachers#openAbsence"
-          = t('app.teachers.add_absence')
-      = link_to t('app.common.edit'), edit_teacher_path(teacher[:id]), class: 'teachers-page__primary-btn'
+      .teachers-page__hero-actions
+        - if can_manage_teachers?
+          = link_to edit_teacher_path(teacher[:id]), class: 'teachers-page__hero-btn' do
+            = icon_tag 'pencil', size: 18
+            span = t('app.teachers.edit_teacher')
+        = link_to calendar_path(teacherId: teacher[:id]), class: 'teachers-page__hero-btn' do
+          = icon_tag 'calendar-event', size: 18
+          span = t('app.teachers.schedule_lesson')
+        - if can_manage_teachers?
+          button.teachers-page__hero-btn type="button" data-action="teachers#openAbsence"
+            = icon_tag 'calendar-off', size: 18
+            span = t('app.teachers.add_absence')
 
     .teachers-page__grid
       section.teachers-page__card
@@ -137,7 +147,7 @@
           p.teachers-page__section-sub data-teachers-target="assignedCount"
             - count = @assigned_students.size
             = count == 1 ? t('app.teachers.assigned_count_one') : t('app.teachers.assigned_count', count: count)
-        button.teachers-page__primary-btn type="button" data-action="teachers#openAssign"
+        = link_to teacher_assign_dialog_path(teacher), class: 'teachers-page__primary-btn', data: teacher_dialog_turbo_data('assign_dialog') do
           = icon_tag 'user-plus', size: 16
           span = t('app.teachers.assign_students')
 
@@ -152,7 +162,7 @@
           = icon_tag 'students', size: 24
         h3 = t('app.teachers.no_students')
         p = t('app.teachers.no_students_text')
-        button.teachers-page__primary-btn type="button" data-action="teachers#openAssign"
+        = link_to teacher_assign_dialog_path(teacher), class: 'teachers-page__primary-btn', data: teacher_dialog_turbo_data('assign_dialog') do
           span = t('app.teachers.assign_students')
 
       ul.teachers-page__assigned data-teachers-target="assignedList" hidden=(@assigned_students.empty? ? true : nil)
@@ -167,39 +177,9 @@
                 p.teachers-page__meta = Array(student[:subjects]).first(2).join(', ').presence || student_status_label(student[:status])
             .teachers-page__assigned-actions
               = status_badge student_status_label(student[:status]), tone: student_status_tone(student[:status])
-              button.teachers-page__danger-btn type="button" aria-label=t('app.teachers.remove_for', name: student_name) data-action="teachers#openRemove" data-id=student[:id] data-name=student_name
+              = link_to teacher_unassign_dialog_path(teacher, student), class: 'teachers-page__danger-btn', aria: { label: t('app.teachers.remove_for', name: student_name) }, data: teacher_dialog_turbo_data('unassign_dialog') do
                 = icon_tag 'user-x', size: 14
                 span = t('app.teachers.remove')
-
-    .teachers-page__dialog[hidden] data-teachers-target="assignDialog"
-      .teachers-page__dialog-backdrop data-action="click->teachers#closeAssign"
-      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="assign-students-title"
-        h2#assign-students-title = t('app.teachers.assign_dialog_title')
-        p = t('app.teachers.assign_dialog_text')
-        - if @unassigned_students.blank?
-          p.teachers-page__meta = t('app.teachers.no_unassigned')
-        - else
-          ul.teachers-page__assign-list
-            - @unassigned_students.each do |student|
-              - student = student.with_indifferent_access
-              - student_name = [student[:preferredName].presence || student[:firstName], student[:lastName]].compact_blank.join(' ')
-              - initials = student_name.split.map { |part| part[0] }.first(2).join.upcase
-              li
-                label.teachers-page__assign-option
-                  input type="checkbox" data-teachers-target="assignBox" data-id=student[:id] data-name=student_name data-subjects=Array(student[:subjects]).join(', ') data-status=student[:status] data-path=student_path(student[:id]) data-initials=initials
-                  span = student_name
-        .teachers-page__dialog-actions
-          button.teachers-page__secondary-btn type="button" data-action="teachers#closeAssign" = t('app.common.cancel')
-          button.teachers-page__primary-btn type="button" data-action="teachers#confirmAssign" = t('app.common.confirm')
-
-    .teachers-page__dialog[hidden] data-teachers-target="removeDialog"
-      .teachers-page__dialog-backdrop data-action="click->teachers#closeRemove"
-      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="remove-from-teacher"
-        h2#remove-from-teacher = t('app.teachers.remove_confirm_title')
-        p = t('app.teachers.remove_confirm_text')
-        .teachers-page__dialog-actions
-          button.teachers-page__secondary-btn type="button" data-action="teachers#closeRemove" = t('app.common.cancel')
-          button.teachers-page__danger-btn type="button" data-action="teachers#confirmRemove" data-teachers-target="removeConfirm" = t('app.teachers.remove')
 
     .teachers-page__dialog[hidden] data-teachers-target="absenceDialog"
       .teachers-page__dialog-backdrop data-action="click->teachers#closeAbsence"
@@ -226,3 +206,7 @@
         .teachers-page__dialog-actions
           button.teachers-page__secondary-btn type="button" data-action="teachers#closeAbsence" = t('app.common.cancel')
           button.teachers-page__primary-btn type="button" data-action="teachers#confirmAbsence" = t('app.common.confirm')
+
+    = turbo_frame_tag 'assign_dialog'
+    = turbo_frame_tag 'unassign_dialog'
+    = turbo_frame_tag 'delete_dialog'

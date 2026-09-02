@@ -421,6 +421,8 @@ ua:
       subtitle: Керуйте профілями викладачів, доступністю та доступом до простору.
       add: Додати викладача
       search_placeholder: Шукати викладачів…
+      filter_status: Фільтр за статусом
+      filter_assignment: Фільтр за призначенням учнів
       all_statuses: Усі статуси
       all_assignments: Усі призначення
       with_students: З учнями
@@ -431,17 +433,19 @@ ua:
       empty_text: Додайте першого викладача, щоб призначати уроки та керувати доступом.
       view_aria: "Переглянути %{name}"
       edit_aria: "Редагувати %{name}"
-      delete: Видалити викладача
-      delete_aria: "Видалити %{name}"
-      delete_title: Видалити викладача?
-      delete_text: Видалити цього викладача? Цю дію не можна скасувати.
-      delete_confirm: Видалити викладача
-      deleted_toast: Викладача видалено.
+      delete: Архівувати викладача
+      delete_aria: "Архівувати %{name}"
+      delete_title: Архівувати викладача?
+      delete_text: Викладача буде переміщено в архів. Пізніше статус можна змінити знову.
+      delete_confirm: Архівувати
+      deleted_toast: Викладача переміщено в архів.
+      archived: "%{name} переміщено в архів."
       not_found_title: Викладача не знайдено
       not_found_text: Цього викладача могло бути видалено або він недоступний у поточній сесії.
       back: До списку викладачів
       schedule_lesson: Запланувати урок
       add_absence: Додати відсутність
+      edit_teacher: Редагувати викладача
       absence_text: Зазначте дати, коли викладач недоступний. Після збереження можна перепризначити уроки.
       absence_type: Тип відсутності
       absence_start: Дата початку
@@ -467,10 +471,10 @@ ua:
         other: Інше
       create_title: Створити викладача
       edit_title: Редагувати викладача
-      create_subtitle: Додайте викладача, налаштуйте деталі викладання та доступ.
-      edit_subtitle: Оновіть профіль викладача та параметри уроків.
+      create_subtitle: Додайте викладача та налаштуйте деталі викладання.
+      edit_subtitle: Оновіть дані цього викладача.
       create_teacher: Створити викладача
-      save_teacher: Зберегти викладача
+      save_teacher: Зберегти зміни
       created: "%{name} успішно створено."
       updated: "%{name} успішно оновлено."
       forbidden: Лише власник простору може керувати викладачами.
@@ -494,18 +498,22 @@ ua:
       first_name: Імʼя
       last_name: Прізвище
       display_name: Відображуване імʼя
-      display_name_hint: Імʼя, яке бачать учні
+      display_name_hint: Імʼя, яке бачать учні, якщо вказано.
       job_title: Посада
       teacher_status: Статус викладача
-      contact: Контакти
+      contact: Контактна інформація
       contact_sub: Контактні дані для робочого простору.
-      email: Email
-      phone: Телефон
+      email: Email-адреса
+      email_option: Email
+      email_hint: Необовʼязковий контактний email викладача.
+      phone: Номер телефону
+      phone_option: Телефон
       preferred_contact: Бажаний спосіб звʼязку
       timezone: Часовий пояс
+      timezone_hint: За замовчуванням — часовий пояс простору. Зберігається як IANA-назва.
       location: Локація
       teaching: Викладання
-      teaching_sub: Що викладає і як працює з учнями.
+      teaching_sub: Що викладає цей викладач?
       subjects: Предмети та курси
       subjects_hint: Додайте предмети або курси, які викладає цей викладач.
       add_subject: Додати предмет або курс
@@ -515,7 +523,7 @@ ua:
       default_price: Ціна уроку за замовчуванням
       default_price_hint: Використовується як ціна за замовчуванням під час створення уроку.
       lesson_types: Типи уроків і ціни
-      lesson_types_hint: Додайте типи уроків, які викладає цей викладач, з форматом, тривалістю та ціною.
+      lesson_types_hint: Додайте типи уроків або предмети, які викладає цей викладач, з форматом, тривалістю та ціною.
       currency: Валюта
       optional: · Необовʼязково
       years: років
@@ -602,12 +610,24 @@ ua:
       bio_placeholder: Коротке викладацьке біо…
       job_placeholder: Викладач англійської
       display_placeholder: Імʼя, яке бачать учні
-      location_placeholder: Місто, країна
+      location_placeholder: Місто, країна або місце викладання
       experience_placeholder: напр. 5
       meeting_placeholder: "https://meet.example.com/…"
       max_lessons_placeholder: Необовʼязково
       select_students: Оберіть учнів
       remove_for: "Зняти призначення для %{name}"
+      enter_first_name: Введіть імʼя.
+      enter_last_name: Введіть прізвище.
+      enter_email: Введіть коректну email-адресу.
+      select_status: Оберіть статус.
+      custom_duration_error: Вкажіть додатну тривалість у хвилинах.
+      notes_too_long: Нотатки мають бути до 500 символів.
+      fix_fields: Виправте підсвічені поля, перш ніж створити викладача.
+      fix_fields_save: Виправте підсвічені поля, перш ніж зберегти викладача.
+      creating: Створення…
+      saving: Збереження…
+      leave_unsaved_create: Є незбережені зміни. Вийти без створення викладача?
+      leave_unsaved_edit: Є незбережені зміни. Вийти без збереження викладача?
     calendar:
       title: Календар
       subtitle: Керуйте уроками, доступністю та подіями.

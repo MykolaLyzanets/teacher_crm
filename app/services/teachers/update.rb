@@ -2,6 +2,7 @@
 
 module Teachers
   class Update
+    include Photo
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
@@ -50,10 +51,12 @@ module Teachers
       user.errors.add(:email, :blank) if user.email.blank?
       teacher_profile.errors.add(:first_name, :blank) if teacher_profile.first_name.blank?
       teacher_profile.errors.add(:last_name, :blank) if teacher_profile.last_name.blank?
+      validate_photo!
     end
 
     def persist
       User.transaction do
+        persist_photo
         user.save!
         teacher_profile.save!
       end
@@ -77,11 +80,11 @@ module Teachers
         preferred_contact_method: params[:preferred_contact_method].presence || 'email',
         timezone: params[:timezone].presence,
         location: params[:location].to_s.strip.presence,
-        subjects: Array(params[:subjects]).compact_blank,
-        experience_years: integer_or_nil(params[:experience_years]),
-        bio: params[:bio].to_s.strip.presence,
-        languages: Array(params[:languages]).compact_blank,
-        tags: Array(params[:tags]).compact_blank,
+        subjects: params.key?(:subjects) ? Array(params[:subjects]).compact_blank : teacher_profile.subjects,
+        experience_years: params.key?(:experience_years) ? integer_or_nil(params[:experience_years]) : teacher_profile.experience_years,
+        bio: params.key?(:bio) ? params[:bio].to_s.strip.presence : teacher_profile.bio,
+        languages: params.key?(:languages) ? Array(params[:languages]).compact_blank : teacher_profile.languages,
+        tags: params.key?(:tags) ? Array(params[:tags]).compact_blank : teacher_profile.tags,
         working_days: Array(params[:working_days]).compact_blank,
         working_hours: normalized_working_hours,
         default_lesson_duration_minutes: lesson_duration_minutes,

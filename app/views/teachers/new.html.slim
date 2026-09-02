@@ -5,58 +5,72 @@
 - duration_preset = teacher.present? ? teacher_duration_preset(teacher) : '60'
 - form_url = editing ? teacher_path(teacher[:id]) : teachers_path
 - form_method = editing ? :patch : :post
+- cancel_path = editing ? teacher_path(teacher[:id]) : teachers_path
+- has_photo = teacher[:photo].present?
 - content_for :title, "#{editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')} | danlio"
 
-.teachers-page.teachers-page--form data-controller="teachers lesson-types" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-lesson-types-mode-value="teacher" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s != 'inactive') data-lesson-types-default-currency-value="UAH"
+.teachers-page.teachers-page--form data-controller="teachers lesson-types" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teachers-editing-value=editing data-teachers-name-value=teacher_display_name(teacher) data-lesson-types-mode-value="teacher" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s == 'active' || teacher[:status].blank?) data-lesson-types-default-currency-value="UAH"
   p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
   nav.teachers-page__breadcrumb aria-label="Breadcrumb"
     = link_to t('app.teachers.title'), teachers_path
     = icon_tag 'chevron-right', size: 16
+    - if editing
+      = link_to teacher_display_name(teacher), teacher_path(teacher[:id])
+      = icon_tag 'chevron-right', size: 16
     span = editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')
 
   .teachers-page__form-header
     .teachers-page__form-intro
       .teachers-page__empty-icon
-        = icon_tag 'user', size: 24
+        = icon_tag editing ? 'pencil' : 'user-plus', size: 24
       div
         h1.teachers-page__title = editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')
         p.teachers-page__subtitle = editing ? t('app.teachers.edit_subtitle') : t('app.teachers.create_subtitle')
     .teachers-page__form-actions.teachers-page__form-actions--top
-      = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
-      button.teachers-page__primary-btn type="submit" form="teacher-form" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
+      = link_to t('app.common.cancel'), cancel_path, class: 'teachers-page__secondary-btn', data: { action: 'teachers#confirmLeave' }
+      button.teachers-page__primary-btn type="submit" form="teacher-form" data-teachers-target="submitBtn" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
 
-  = form_with url: form_url, method: form_method, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateHours submit->lesson-types#validateAccess' } } do
+  = form_with url: form_url, method: form_method, multipart: true, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateSubmit submit->lesson-types#validateAccess input->teachers#markDirty change->teachers#markDirty' } } do
     section.teachers-page__card
       h2 = t('app.teachers.basic_info')
       p.teachers-page__section-sub = t('app.teachers.basic_info_sub')
       .teachers-page__photo
-        .teachers-page__photo-avatar
-          span data-teachers-target="initialsPreview" = teacher_initials(teacher)
-          img.teachers-page__photo-img alt="" hidden="hidden" data-teachers-target="photoImage"
+        .teachers-page__photo-frame
+          .teachers-page__photo-avatar
+            span data-teachers-target="initialsPreview" hidden=(has_photo || nil) = teacher_initials(teacher)
+            img.teachers-page__photo-img alt="" hidden=(has_photo ? nil : true) data-teachers-target="photoImage" src=teacher[:photo].presence
           span.teachers-page__photo-badge
-            = icon_tag 'user', size: 16
+            = icon_tag 'camera', size: 16
         .teachers-page__photo-copy
           p.teachers-page__photo-title = t('app.teachers.photo')
           p.teachers-page__photo-hint = t('app.teachers.photo_hint')
           .teachers-page__photo-actions
             button.teachers-page__olive-btn type="button" data-action="teachers#pickPhoto" data-teachers-target="photoPick"
-              = icon_tag 'file', size: 18
-              span = t('app.teachers.choose_file')
-            button.teachers-page__secondary-btn type="button" hidden="hidden" data-action="teachers#removePhoto" data-teachers-target="photoRemove"
-              = icon_tag 'x', size: 18
+              = icon_tag 'upload', size: 18
+              span = has_photo ? t('app.teachers.replace_photo') : t('app.teachers.choose_file')
+            button.teachers-page__secondary-btn type="button" hidden=(has_photo ? nil : true) data-action="teachers#removePhoto" data-teachers-target="photoRemove"
+              = icon_tag 'trash', size: 18
               span = t('app.teachers.remove_photo')
           p.teachers-page__field-error hidden="hidden" data-teachers-target="photoError"
-          input.sr-only type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-teachers-target="photoInput" data-action="change->teachers#previewPhoto"
+          input type="hidden" name="remove_photo" value="0" data-teachers-target="removePhotoInput"
+          input.sr-only type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-teachers-target="photoInput" data-action="change->teachers#previewPhoto"
       .teachers-page__fields
         label.teachers-page__field
-          span = t('app.teachers.first_name') + ' *'
-          input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Olivia" value=teacher[:firstName] data-teachers-target="firstName" data-action="input->teachers#updateInitials"
+          span
+            = t('app.teachers.first_name')
+            span.teachers-page__req *
+          input type="text" name="first_name" required=true autocomplete="given-name" placeholder="Olivia" value=teacher[:firstName] data-teachers-target="firstName" data-action="input->teachers#updateInitials blur->teachers#markTouched"
+          p.teachers-page__field-error hidden="hidden" data-error-for="firstName"
         label.teachers-page__field
-          span = t('app.teachers.last_name') + ' *'
-          input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Anderson" value=teacher[:lastName] data-teachers-target="lastName" data-action="input->teachers#updateInitials"
+          span
+            = t('app.teachers.last_name')
+            span.teachers-page__req *
+          input type="text" name="last_name" required=true autocomplete="family-name" placeholder="Anderson" value=teacher[:lastName] data-teachers-target="lastName" data-action="input->teachers#updateInitials blur->teachers#markTouched"
+          p.teachers-page__field-error hidden="hidden" data-error-for="lastName"
         label.teachers-page__field
           span = t('app.teachers.display_name')
           input type="text" name="display_name" placeholder=t('app.teachers.display_placeholder') value=teacher[:displayName] data-teachers-target="displayName" data-action="input->teachers#updateInitials"
+          span.teachers-page__hint = t('app.teachers.display_name_hint')
         label.teachers-page__field
           span = t('app.teachers.job_title')
           input type="text" name="job_title" placeholder=t('app.teachers.job_placeholder') value=teacher[:jobTitle] list="teacher-job-title-examples"
@@ -66,12 +80,17 @@
             option value="Senior teacher"
             option value="Academic coordinator"
         label.teachers-page__field
-          span = t('app.teachers.teacher_status') + ' *'
-          select name="status" required=true
+          span
+            = t('app.teachers.teacher_status')
+            span.teachers-page__req *
+          select name="status" required=true data-teachers-target="formStatus" data-action="change->teachers#syncLessonTypeRequirement blur->teachers#markTouched"
             option value="active" selected=(teacher[:status].to_s == 'active' || teacher[:status].blank?) = t('app.statuses.active')
             option value="invited" selected=(teacher[:status].to_s == 'invited') = t('app.statuses.invited')
             option value="on_leave" selected=(teacher[:status].to_s == 'on_leave') = t('app.statuses.on_leave')
             option value="inactive" selected=(teacher[:status].to_s == 'inactive') = t('app.statuses.inactive')
+            - if teacher[:status].to_s == 'archived'
+              option value="archived" selected=true = t('app.statuses.archived')
+          p.teachers-page__field-error hidden="hidden" data-error-for="status"
 
     section.teachers-page__card
       h2 = t('app.teachers.contact')
@@ -81,23 +100,26 @@
           span = t('app.teachers.email')
           .teachers-page__input-icon
             = icon_tag 'mail', size: 18
-            input type="email" name="email" autocomplete="email" placeholder="olivia@example.com" value=teacher[:email]
+            input type="email" name="email" autocomplete="email" placeholder="olivia@example.com" value=teacher[:email] data-teachers-target="email" data-action="blur->teachers#markTouched"
+          span.teachers-page__hint = t('app.teachers.email_hint')
+          p.teachers-page__field-error hidden="hidden" data-error-for="email"
         label.teachers-page__field
           span = t('app.teachers.phone')
           .teachers-page__input-icon
-            = icon_tag 'message', size: 18
+            = icon_tag 'phone', size: 18
             input type="tel" name="phone" autocomplete="tel" placeholder="+1 555 0100" value=teacher[:phone]
         label.teachers-page__field
           span = t('app.teachers.preferred_contact')
           select name="preferred_contact_method"
-            option value="email" selected=(teacher[:preferredContactMethod].to_s == 'email' || teacher[:preferredContactMethod].blank?) = t('app.teachers.email')
-            option value="phone" selected=(teacher[:preferredContactMethod].to_s == 'phone') = t('app.teachers.phone')
+            option value="email" selected=(teacher[:preferredContactMethod].to_s == 'email' || teacher[:preferredContactMethod].blank?) = t('app.teachers.email_option')
+            option value="phone" selected=(teacher[:preferredContactMethod].to_s == 'phone') = t('app.teachers.phone_option')
             option value="either" selected=(teacher[:preferredContactMethod].to_s == 'either') = t('app.teachers.contact_either')
         label.teachers-page__field
           span = t('app.teachers.timezone')
           select name="timezone"
             - TeachersHelper::TIMEZONES.each do |tz|
-              option value=tz selected=(tz == (teacher[:timezone].presence || 'America/New_York')) = tz
+              option value=tz selected=(tz == (teacher[:timezone].presence || 'America/New_York')) = teacher_timezone_label(tz)
+          span.teachers-page__hint = t('app.teachers.timezone_hint')
         label.teachers-page__field.teachers-page__field--full
           span = t('app.teachers.location')
           input type="text" name="location" placeholder=t('app.teachers.location_placeholder') value=teacher[:location]
@@ -105,23 +127,6 @@
     section.teachers-page__card
       h2 = t('app.teachers.teaching')
       p.teachers-page__section-sub = t('app.teachers.teaching_sub')
-      .teachers-page__subject-select data-subject-root=""
-        p.teachers-page__chips-label = t('app.teachers.subjects')
-        p.teachers-page__hint = t('app.teachers.subjects_hint')
-        .teachers-page__subject-row
-          .teachers-page__subject-list data-teachers-target="subjectList"
-            - Array(teacher[:subjects]).each do |subject|
-              span.teachers-page__subject-chip
-                input type="hidden" name="subjects[]" value=subject
-                span = subject
-                button type="button" data-action="teachers#removeSubject" aria-label=t('app.teachers.remove_subject') ×
-          button.teachers-page__subject-add type="button" data-action="teachers#openSubjectPopover"
-            = icon_tag 'plus', size: 16
-            span = t('app.teachers.add_subject')
-        .teachers-page__subject-popover hidden="hidden" data-teachers-target="subjectPopover"
-          input type="text" placeholder=t('app.teachers.subject_placeholder') data-teachers-target="subjectDraft" data-action="keydown.enter->teachers#addSubject"
-          button.teachers-page__link-btn type="button" data-action="teachers#addSubject" = t('app.common.add')
-          p.teachers-page__field-error hidden="hidden" data-teachers-target="subjectError"
       .teachers-page__lesson-types
         p.teachers-page__chips-label = t('app.teachers.lesson_types')
         p.teachers-page__hint = t('app.teachers.lesson_types_hint')
@@ -130,19 +135,6 @@
         button.teachers-page__secondary-btn type="button" data-action="lesson-types#openNew"
           = icon_tag 'plus', size: 16
           span = t('app.lesson_types.add')
-      .teachers-page__fields
-        .teachers-page__field
-          p.teachers-page__chips-label
-            = t('app.teachers.experience')
-            span.teachers-page__optional = t('app.teachers.optional')
-          .teachers-page__price-row
-            input type="number" name="experience_years" min="0" step="1" placeholder="5" value=teacher[:experienceYears]
-            span.teachers-page__hint = t('app.teachers.years')
-        label.teachers-page__field.teachers-page__field--full
-          span
-            = t('app.teachers.bio')
-            span.teachers-page__optional = t('app.teachers.optional')
-          textarea name="bio" rows="4" maxlength="600" placeholder=t('app.teachers.bio_placeholder') = teacher[:bio]
 
     section.teachers-page__card
       h2 = t('app.teachers.availability')
@@ -177,8 +169,11 @@
               option value=minutes selected=(duration_preset == minutes.to_s) = t('app.teachers.minutes', count: minutes)
             option value="custom" selected=(duration_preset == 'custom') = t('app.teachers.custom_duration')
         label.teachers-page__field data-teachers-target="customDuration" hidden=(duration_preset == 'custom' ? nil : true)
-          span = t('app.teachers.custom_duration_minutes')
-          input type="number" name="custom_duration" min="1" step="1" placeholder="75" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : nil) data-teachers-target="customMinutes" data-action="input->teachers#syncCustomMinutes"
+          span
+            = t('app.teachers.custom_duration_minutes')
+            span.teachers-page__req *
+          input type="number" name="custom_duration" min="1" step="1" placeholder="75" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : nil) data-teachers-target="customMinutes" data-action="input->teachers#syncCustomMinutes blur->teachers#markTouched"
+          p.teachers-page__field-error hidden="hidden" data-error-for="customDuration"
         label.teachers-page__field.teachers-page__field--full
           span = t('app.teachers.lesson_formats')
           .teachers-page__chips
@@ -201,15 +196,18 @@
       p.teachers-page__section-sub = t('app.teachers.internal_notes_sub')
       label.teachers-page__field.teachers-page__field--full
         span = t('app.teachers.notes')
-        textarea name="notes" rows="4" maxlength="500" placeholder=t('app.teachers.notes_placeholder') data-teachers-target="notes" data-action="input->teachers#updateNotesCount" = teacher[:notes]
+        textarea name="notes" rows="4" maxlength="500" placeholder=t('app.teachers.notes_placeholder') data-teachers-target="notes" data-action="input->teachers#updateNotesCount blur->teachers#markTouched" = teacher[:notes]
+        p.teachers-page__field-error hidden="hidden" data-error-for="notes"
       .teachers-page__notes-meta
         p
           = icon_tag 'lock', size: 14
           span = t('app.teachers.notes_visible')
         p data-teachers-target="notesCount" 0/500
 
-    .teachers-page__form-actions
-      = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
-      button.teachers-page__primary-btn type="submit" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
+    p.teachers-page__form-alert hidden="hidden" data-teachers-target="formAlert" = editing ? t('app.teachers.fix_fields_save') : t('app.teachers.fix_fields')
+
+    .teachers-page__form-actions.teachers-page__form-actions--sticky
+      = link_to t('app.common.cancel'), cancel_path, class: 'teachers-page__secondary-btn', data: { action: 'teachers#confirmLeave' }
+      button.teachers-page__primary-btn type="submit" data-teachers-target="submitBtn" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
 
   = render 'lesson_types/dialogs'

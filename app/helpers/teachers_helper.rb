@@ -5,14 +5,16 @@ module TeachersHelper
     'active' => 'Active',
     'invited' => 'Invited',
     'on_leave' => 'On leave',
-    'inactive' => 'Inactive'
+    'inactive' => 'Inactive',
+    'archived' => 'Archived'
   }.freeze
 
   STATUS_TONES = {
     'active' => 'olive',
     'invited' => 'amber',
     'on_leave' => 'neutral',
-    'inactive' => 'rose'
+    'inactive' => 'rose',
+    'archived' => 'rose'
   }.freeze
 
   ROLE_I18N = {
@@ -114,6 +116,43 @@ module TeachersHelper
     created && created >= Time.zone.now.beginning_of_month
   rescue ArgumentError, TypeError
     false
+  end
+
+  def teacher_timezone_label(zone)
+    readable = zone.to_s.tr('_', ' ')
+    seconds = Time.current.in_time_zone(zone).utc_offset
+    hours, remainder = seconds.abs.divmod(3600)
+    minutes = remainder / 60
+    sign = seconds.negative? ? '-' : '+'
+    gmt = if seconds.zero?
+            'GMT'
+          elsif minutes.zero?
+            "GMT#{sign}#{hours}"
+          else
+            "GMT#{sign}#{hours}:#{format('%02d', minutes)}"
+          end
+    "#{readable} (#{gmt})"
+  rescue ArgumentError, TZInfo::InvalidTimezoneIdentifier
+    readable
+  end
+
+  def teacher_delete_dialog_path(teacher)
+    delete_dialog_teachers_path(teacher_id: teacher.with_indifferent_access[:id])
+  end
+
+  def teacher_assign_dialog_path(teacher)
+    assign_dialog_teachers_path(teacher_id: teacher.with_indifferent_access[:id])
+  end
+
+  def teacher_unassign_dialog_path(teacher, student)
+    unassign_dialog_teachers_path(
+      teacher_id: teacher.with_indifferent_access[:id],
+      student_id: student.with_indifferent_access[:id]
+    )
+  end
+
+  def teacher_dialog_turbo_data(frame)
+    { turbo: true, turbo_frame: frame }
   end
 
   def teacher_has_students?(teacher, students)

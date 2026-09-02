@@ -1,0 +1,10 @@
+.teachers-page__dialog role="presentation"
+  a.teachers-page__dialog-backdrop href=unassign_dialog_teachers_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="unassign_dialog"
+  .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="remove-from-teacher"
+    h2#remove-from-teacher = t('app.teachers.remove_confirm_title')
+    p = t('app.teachers.remove_confirm_text')
+    = form_with url: unassign_student_path(@student_record), method: :delete, html: { data: { turbo: false } } do
+      input type="hidden" name="return_to" value=teacher_path(@teacher_record)
+      .teachers-page__dialog-actions
+        a.teachers-page__secondary-btn href=unassign_dialog_teachers_path() data-turbo="true" data-turbo-frame="unassign_dialog" = t('app.common.cancel')
+        button.teachers-page__danger-btn type="submit" = t('app.teachers.remove')
