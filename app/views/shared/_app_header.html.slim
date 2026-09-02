@@ -28,7 +28,7 @@ header.app-header
                 li class=("is-unread" unless item[:read])
                   p = item[:title]
                   span = item[:body]
-      button.app-header__user type="button"
+      = link_to profile_path, class: 'app-header__user'
         span.app-header__avatar = current_user_initials
         span.app-header__user-meta
           span.app-header__user-name = current_user_display_name

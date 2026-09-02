@@ -1,0 +1,52 @@
+- if progress.blank?
+  section.students-page__profile-panel
+    .students-page__profile-panel-head
+      h2 = t('app.students.tab_progress')
+    .students-page__empty-card
+      .students-page__empty-icon
+        = icon_tag 'chart-line', size: 20
+      div
+        p.students-page__empty-title = t('app.students.progress_empty_title')
+        p.students-page__empty-text = t('app.students.progress_empty_hint')
+- else
+  .students-page__progress-split
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.overall_progress')
+      .students-page__progress-head
+        div
+          p.students-page__meta = t('app.students.course_progress')
+          p.students-page__progress-value style="font-size: 32px" = "#{progress[:overallPercent]}%"
+        p.students-page__note-foot = t('app.students.updated_on', date: student_profile_date_label(progress[:updatedAt]))
+      .students-page__progress-bar.students-page__progress-bar--lg role="progressbar" aria-valuenow=progress[:overallPercent] aria-valuemin="0" aria-valuemax="100" aria-label=t('app.students.overall_progress')
+        span style="width: #{progress[:overallPercent]}%"
+      p
+        strong = t('app.students.learning_goal')
+        =< ':'
+        =< progress[:goal]
+      p.students-page__meta
+        strong = t('app.students.current_focus')
+        =< progress[:focus]
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.skills')
+      - Array(progress[:skills]).each do |skill|
+        .students-page__skill
+          .students-page__skill-row
+            span = skill[:name]
+            span = "#{skill[:percent]}%"
+          .students-page__progress-bar.students-page__progress-bar--sm
+            span style="width: #{skill[:percent]}%"
+
+  section.students-page__profile-panel
+    .students-page__profile-panel-head
+      h2 = t('app.students.recent_milestones')
+    - if Array(progress[:milestones]).blank?
+      p.students-page__meta = t('app.students.no_milestones')
+    - else
+      ul.students-page__milestone-list
+        - Array(progress[:milestones]).each do |milestone|
+          li
+            p = milestone[:title]
+            span = student_profile_date_label(milestone[:date])

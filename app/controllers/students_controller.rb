@@ -2,8 +2,9 @@
 
 class StudentsController < AppController
   helper LessonsHelper
-  before_action :require_workspace!, only: %i[new create edit update]
-  before_action :set_student_record, only: %i[show edit update]
+  helper FinanceHelper
+  before_action :require_workspace!, only: %i[new create edit update destroy]
+  before_action :set_student_record, only: %i[show edit update destroy]
 
   def index
     @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
@@ -16,15 +17,25 @@ class StudentsController < AppController
     @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @teacher = @student_record&.teacher_profile&.as_catalog
     @catalog_student = Demo::Catalog.match_student(@student) if @student
-    @finance = Demo::Finance.portal_finance(@catalog_student[:id]) if @catalog_student
     student_name = @student ? [@student[:preferredName].presence || @student[:firstName], @student[:lastName]].compact_blank.join(' ') : nil
-    @student_lessons = Demo::Timeline.lessons.select { |lesson| lesson[:student].to_s == student_name }
-    return unless @catalog_student
-
-    @student_homework = Demo::Portal.homework_for(@catalog_student[:id])
-    @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
-    @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
-    @next_lesson = Demo::Finance.next_lesson_for_student(@catalog_student)
+    @student_homework = []
+    @student_notes = []
+    @student_progress = nil
+    @finance = nil
+    @pricing = nil
+    @balance_cents = 0
+    if @catalog_student
+      @finance = Demo::Finance.portal_finance(@catalog_student[:id])
+      @pricing = Demo::Finance.pricing_for(@catalog_student[:id])
+      @balance_cents = Demo::Finance.balance_cents(@catalog_student[:id])
+      @student_lessons = Demo::Portal.lessons_for_student(@catalog_student)
+      @student_homework = Demo::Portal.homework_for(@catalog_student[:id])
+      @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
+      @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
+    else
+      @student_lessons = Demo::Timeline.lessons.select { |lesson| lesson[:student].to_s == student_name }
+    end
+    @profile_tab = student_profile_tab
   end
 
   def new
@@ -72,6 +83,17 @@ class StudentsController < AppController
     end
   end
 
+  def destroy
+    if @student_record.blank?
+      redirect_to students_path, alert: I18n.t('app.students.not_found_text')
+      return
+    end
+
+    name = @student_record.display_label
+    Students::Destroy.new(student_profile: @student_record).call
+    redirect_to students_path, notice: I18n.t('app.students.deleted', name:)
+  end
+
   private
 
   def student_params
@@ -80,7 +102,7 @@ class StudentsController < AppController
       :teacher_id, :email, :phone, :address, :parent_name, :relationship, :parent_email,
       :parent_phone, :grade, :student_code, :enrollment_date, :academic_year, :level,
       :location_preference, :preferred_time_notes, :emergency_name, :emergency_relationship,
-      :emergency_phone, :notes, subjects: [], preferred_days: []
+      :emergency_phone, :notes, :photo, :remove_photo, subjects: [], preferred_days: []
     )
     permitted.delete(:teacher_id) unless can_assign_teacher?
     permitted
@@ -146,5 +168,12 @@ class StudentsController < AppController
     created && created >= start_time && created < end_time
   rescue ArgumentError, TypeError
     false
+  end
+
+  def student_profile_tab
+    allowed = %w[overview lessons homework progress notes]
+    allowed.insert(4, 'payments') if can_view_finance?
+    tab = params[:tab].to_s
+    allowed.include?(tab) ? tab : 'overview'
   end
 end

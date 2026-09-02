@@ -1,0 +1,11 @@
+- content_for :title, "#{t('app.lesson_types.title')} | danlio"
+
+.settings-page data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value="UAH"
+  nav.settings-page__crumb aria-label="Breadcrumb"
+    = link_to t('app.settings.title'), settings_path
+    = icon_tag 'chevron-right', size: 16
+    = link_to t('app.settings.lessons_title'), settings_lessons_path
+    = icon_tag 'chevron-right', size: 16
+    span = t('app.lesson_types.title')
+  = render 'lesson_types/manager', heading: :h1, title: t('app.lesson_types.title'), description: (@solo ? t('app.lesson_types.solo_text') : t('app.lesson_types.school_text'))
+  = render 'lesson_types/dialogs'

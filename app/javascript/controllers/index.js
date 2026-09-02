@@ -45,3 +45,6 @@ application.register("profile-tabs", ProfileTabsController)
 
 import NotificationsController from "./notifications_controller"
 application.register("notifications", NotificationsController)
+
+import LessonTypesController from "./lesson_types_controller"
+application.register("lesson-types", LessonTypesController)

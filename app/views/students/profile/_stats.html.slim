@@ -1,0 +1,9 @@
+.students-page__profile-stats
+  - student_profile_stat_cards(stats).each do |card|
+    .students-page__profile-stat
+      span.students-page__profile-stat-icon
+        = icon_tag card[:icon], size: 22
+      span
+        span.students-page__profile-stat-label = card[:label]
+        span.students-page__profile-stat-value = card[:value]
+        span.students-page__profile-stat-support = card[:support]

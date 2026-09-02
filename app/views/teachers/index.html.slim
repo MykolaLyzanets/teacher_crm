@@ -1,6 +1,7 @@
 - content_for :title, "#{t('app.teachers.title')} | danlio"
 
 .teachers-page data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common')
+  p.teachers-page__toast hidden="hidden" role="status" data-teachers-target="toast"
   .teachers-page__header
     div
       h1.teachers-page__title = t('app.teachers.title')
@@ -48,3 +49,13 @@
       ul.teachers-page__list
         - @teachers.each do |teacher|
           = render 'teacher_row', teacher: teacher, students: @students
+
+  .teachers-page__dialog[hidden] data-teachers-target="deleteDialog"
+    .teachers-page__dialog-backdrop data-action="click->teachers#closeDelete"
+    .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-teacher-title"
+      h2#delete-teacher-title = t('app.teachers.delete_title')
+      p = t('app.teachers.delete_text')
+      p.sr-only data-teachers-target="deleteName"
+      .teachers-page__dialog-actions
+        button.teachers-page__secondary-btn type="button" data-action="teachers#closeDelete" = t('app.common.cancel')
+        button.teachers-page__danger-btn type="button" data-action="teachers#confirmDelete" = t('app.teachers.delete_confirm')

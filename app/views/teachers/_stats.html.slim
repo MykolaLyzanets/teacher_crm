@@ -3,7 +3,7 @@
 .teachers-page__stats data-teachers-target="stats"
   button.teachers-page__stat type="button" data-filter="all" data-action="teachers#statsFilter" data-teachers-target="stat" aria-pressed="true" aria-label=t('app.teachers.stats_total')
     span.teachers-page__stat-icon
-      = icon_tag 'teachers', size: 26
+      = icon_tag 'users-group', size: 26
     span.teachers-page__stat-body
       span.teachers-page__stat-label = t('app.teachers.stats_total')
       span.teachers-page__stat-value = stats[:totalTeachers]
@@ -11,7 +11,7 @@
 
   button.teachers-page__stat type="button" data-filter="active" data-action="teachers#statsFilter" data-teachers-target="stat" aria-pressed="false" aria-label=t('app.teachers.stats_active')
     span.teachers-page__stat-icon
-      = icon_tag 'check-circle', size: 26
+      = icon_tag 'user-check', size: 26
     span.teachers-page__stat-body
       span.teachers-page__stat-label = t('app.teachers.stats_active')
       span.teachers-page__stat-value = stats[:activeTeachers]
@@ -19,7 +19,7 @@
 
   button.teachers-page__stat type="button" data-filter="withStudents" data-action="teachers#statsFilter" data-teachers-target="stat" aria-pressed="false" aria-label=t('app.teachers.stats_with_students')
     span.teachers-page__stat-icon
-      = icon_tag 'school', size: 26
+      = icon_tag 'grad', size: 26
     span.teachers-page__stat-body
       span.teachers-page__stat-label = t('app.teachers.stats_with_students')
       span.teachers-page__stat-value = stats[:teachersWithStudents]
@@ -35,7 +35,7 @@
 
   button.teachers-page__stat type="button" data-filter="newThisMonth" data-action="teachers#statsFilter" data-teachers-target="stat" aria-pressed="false" aria-label=t('app.teachers.stats_new')
     span.teachers-page__stat-icon
-      = icon_tag 'chart-bars', size: 26
+      = icon_tag 'chart-pie', size: 26
     span.teachers-page__stat-body
       span.teachers-page__stat-label = t('app.teachers.stats_new')
       span.teachers-page__stat-value = stats[:newThisMonth]

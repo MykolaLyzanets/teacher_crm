@@ -1,0 +1,19 @@
+- content_for :title, "#{t('app.settings.lessons_title')} | danlio"
+
+.settings-page
+  nav.settings-page__crumb aria-label="Breadcrumb"
+    = link_to t('app.settings.title'), settings_path
+    = icon_tag 'chevron-right', size: 16
+    span = t('app.settings.lessons_title')
+
+  .settings-page__header
+    h1.settings-page__title = t('app.settings.lessons_title')
+    p.settings-page__subtitle = t('app.settings.lessons_subtitle')
+
+  = link_to settings_lesson_types_path, class: 'settings-page__link-card'
+    .settings-page__link-icon
+      = icon_tag 'book', size: 22
+    div
+      p.settings-page__link-title = t('app.lesson_types.title')
+      p.settings-page__link-text = t('app.lesson_types.card_text')
+    = icon_tag 'chevron-right', size: 20

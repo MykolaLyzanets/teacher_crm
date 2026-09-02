@@ -1,0 +1,9 @@
+- extra = local_assigns[:mobile] ? ' teachers-page__icon-actions--mobile' : ''
+
+div class="teachers-page__icon-actions#{extra}"
+  = link_to teacher_path(teacher[:id]), class: 'teachers-page__icon-btn', title: t('app.common.view'), aria: { label: t('app.teachers.view_aria', name: name) } do
+    = icon_tag 'eye', size: 20
+  = link_to edit_teacher_path(teacher[:id]), class: 'teachers-page__icon-btn', title: t('app.common.edit'), aria: { label: t('app.teachers.edit_aria', name: name) } do
+    = icon_tag 'pencil', size: 20
+  button.teachers-page__icon-btn.teachers-page__icon-btn--danger type="button" title=t('app.teachers.delete') aria-label=t('app.teachers.delete_aria', name: name) data-action="teachers#askDelete" data-id=teacher[:id] data-name=name
+    = icon_tag 'trash', size: 20

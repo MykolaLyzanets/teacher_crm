@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.calendar.title')} | danlio"
 
-.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teachers-value=@teachers.to_json data-calendar-students-value=@students.to_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s)
+.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teachers-value=@teachers.to_json data-calendar-students-value=@students.to_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s) data-calendar-lesson-types-seed-value=lesson_types_seed_json
   p.calendar-page__toast hidden=true role="status" data-calendar-target="toast"
   .calendar-page__header
     div
@@ -53,13 +53,15 @@
             - @student_names.each do |name|
               option value=name = name
         label
-          span = t('app.calendar.lesson_type')
+          span = t('app.calendar.format')
           select data-calendar-target="filterType"
-            option value="" = t('app.calendar.all_types')
+            option value="" = t('app.calendar.all_formats')
             option value="individual" = t('app.calendar.individual')
             option value="group" = t('app.calendar.group')
-            option value="trial" = t('app.calendar.trial')
-            option value="consultation" = t('app.calendar.consultation')
+        label
+          span = t('app.calendar.lesson_type')
+          select data-calendar-target="filterLessonType"
+            option value="" = t('app.calendar.all_types')
         label
           span = t('app.calendar.status')
           select data-calendar-target="filterStatus"
@@ -119,11 +121,14 @@
       input type="hidden" value="individual" data-calendar-target="draftType"
       input type="hidden" value="online" data-calendar-target="draftLocation"
 
-      .calendar-page__stack
-        p.calendar-page__label = t('app.calendar.lesson_type')
-        div.calendar-page__segment role="radiogroup" aria-label=t('app.calendar.lesson_type')
-          button.calendar-page__segment-btn type="button" role="radio" aria-checked="true" data-type="individual" data-calendar-target="typeBtn" data-action="calendar#setLessonType" = t('app.calendar.individual')
-          button.calendar-page__segment-btn type="button" role="radio" aria-checked="false" data-type="group" data-calendar-target="typeBtn" data-action="calendar#setLessonType" = t('app.calendar.group')
+      label.calendar-page__field data-calendar-target="lessonTypeField"
+        span
+          = t('app.calendar.lesson_type')
+          abbr.calendar-page__req title="required" *
+        select data-calendar-target="draftLessonType" data-action="change->calendar#onLessonTypeChange"
+          option value="" = t('app.calendar.select_lesson_type')
+        p.calendar-page__hint data-calendar-target="lessonTypeHint" = t('app.calendar.lesson_type_need_teacher')
+        p.calendar-page__hint.calendar-page__hint--warn hidden="hidden" data-calendar-target="lessonTypeEmpty" = t('app.calendar.lesson_type_empty')
 
       label.calendar-page__field
         span
@@ -133,7 +138,7 @@
           option value="" = t('app.calendar.select_teacher')
           - @teachers.each do |teacher|
             - teacher = teacher.with_indifferent_access
-            option value=teacher[:id] = teacher_display_name(teacher)
+            option value=teacher[:id] data-email=teacher[:email] = teacher_display_name(teacher)
 
       .calendar-page__stack data-calendar-target="studentWrap"
         label.calendar-page__field
@@ -195,9 +200,11 @@
         .calendar-page__price
           input type="text" inputmode="decimal" placeholder="25" data-calendar-target="draftPrice" data-action="input->calendar#onPriceChange"
           select aria-label=t('app.calendar.currency') data-calendar-target="draftCurrency" data-action="change->calendar#onPriceChange"
+            option value="UAH" = "UAH"
             option value="EUR" = "EUR"
             option value="USD" = "USD"
-            option value="UAH" = "UAH"
+            option value="GBP" = "GBP"
+            option value="PLN" = "PLN"
         p.calendar-page__hint = t('app.calendar.price_hint')
 
       .calendar-page__stack
@@ -255,6 +262,9 @@
           = icon_tag 'x', size: 20
       .calendar-page__modal-body
         p.calendar-page__details-tone data-calendar-target="detailsTone"
+        .calendar-page__detail
+          span = t('app.calendar.lesson_type')
+          strong data-calendar-target="detailsType"
         .calendar-page__detail
           span = t('app.calendar.student')
           strong data-calendar-target="detailsStudent"

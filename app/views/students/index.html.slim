@@ -77,3 +77,14 @@
         .students-page__dialog-actions
           button.students-page__secondary-btn type="button" data-action="students#closeAssign" = t('app.common.cancel')
           button.students-page__primary-btn type="button" data-action="students#confirmAssign" = t('app.common.confirm')
+
+  .students-page__dialog[hidden] data-students-target="deleteDialog"
+    .students-page__dialog-backdrop data-action="click->students#closeDelete"
+    .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-student-title"
+      h2#delete-student-title = t('app.students.delete_title')
+      p = t('app.students.delete_text')
+      p.sr-only data-students-target="deleteName"
+      = form_with url: students_path, method: :delete, html: { hidden: true, data: { students_target: 'deleteForm' } }
+      .students-page__dialog-actions
+        button.students-page__secondary-btn type="button" data-action="students#closeDelete" = t('app.common.cancel')
+        button.students-page__danger-btn type="button" data-action="students#confirmDelete" = t('app.students.delete_confirm')

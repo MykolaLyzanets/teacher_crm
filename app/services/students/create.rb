@@ -2,6 +2,7 @@
 
 module Students
   class Create
+    include Photo
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
@@ -58,12 +59,14 @@ module Students
       student_profile.errors.add(:first_name, :blank) if student_profile.first_name.blank?
       student_profile.errors.add(:last_name, :blank) if student_profile.last_name.blank?
       resolve_teacher
+      validate_photo!
     end
 
     def persist
       User.transaction do
         user.save!
         assign_teacher if @assigned_teacher
+        persist_photo
         student_profile.save!
       end
     end

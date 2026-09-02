@@ -61,6 +61,10 @@ ua:
       confirmed: Підтверджено
       pending: Очікує
       cancelled: Скасовано
+      completed: Завершено
+      no_show: Не зʼявився
+      cancelled_charged: Скасовано · Списано
+      cancelled_not_charged: Скасовано · Без списання
     students:
       title: Учні
       subtitle: Керуйте профілями учнів, контактами та деталями навчання.
@@ -87,6 +91,14 @@ ua:
       col_teacher: Викладач
       col_status: Статус
       col_actions: Дії
+      view_aria: "Переглянути %{name}"
+      edit_aria: "Редагувати %{name}"
+      delete: Видалити учня
+      delete_aria: "Видалити %{name}"
+      delete_title: Видалити учня?
+      delete_text: Видалити цього учня? Цю дію не можна скасувати.
+      delete_confirm: Видалити учня
+      deleted_toast: Учня видалено.
       select_all: Вибрати всіх видимих учнів
       select_one: "Вибрати %{name}"
       not_found_title: Учня не знайдено
@@ -109,20 +121,20 @@ ua:
       view_teacher: Переглянути викладача
       create_title: Створити учня
       edit_title: Редагувати учня
-      edit_subtitle: Оновіть профіль учня, контакти та навчальні дані.
+      edit_subtitle: Оновіть контакти, навчання та вподобання щодо уроків цього учня.
       create_student: Створити учня
-      save_student: Зберегти учня
-      create_subtitle: Додайте профіль учня, контакти та вподобання щодо навчання.
+      save_student: Зберегти зміни
+      create_subtitle: Додайте учня й зберіть контакти, навчання та вподобання щодо уроків в одному місці.
       basic_info: Основна інформація
-      basic_info_sub: Основні дані профілю учня.
+      basic_info_sub: Додайте основні дані профілю учня.
       first_name: Імʼя
       last_name: Прізвище
       preferred_name: Бажане імʼя
-      preferred_name_hint: Відображається в робочому просторі
+      preferred_name_hint: Показується в уроках і повідомленнях, якщо вказано.
       status: Статус
       contact: Контакти
       contact_sub: Як звʼязатися з учнем.
-      learning_sub: Предмети та вподобання щодо уроків.
+      learning_sub: Академічний контекст цього учня.
       level: Рівень
       location_preference: Формат занять
       guardian_sub: Контакти батьків або опікуна.
@@ -140,6 +152,7 @@ ua:
       stats_new_aria: Фільтр учнів, створених цього місяця
       created: "%{name} успішно створено."
       updated: "%{name} успішно оновлено."
+      deleted: "%{name} успішно видалено."
       profile_fallback: Профіль учня
       photo: Фото профілю
       photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
@@ -212,6 +225,20 @@ ua:
         - Дорослий
       choose_file: Обрати файл
       replace_photo: Замінити фото
+      first_name_placeholder: Введіть імʼя
+      last_name_placeholder: Введіть прізвище
+      preferred_name_placeholder: Необовʼязкове бажане імʼя
+      email_address: Email-адреса
+      email_placeholder: Введіть email-адресу
+      phone_number: Номер телефону
+      phone_placeholder: Введіть номер телефону
+      address_placeholder: Введіть домашню адресу
+      parent_name_placeholder: Введіть повне імʼя
+      student_id_placeholder: Необовʼязковий ID учня
+      learning_details: Деталі навчання
+      grade_class: Клас
+      saving: Збереження…
+      fix_fields_save: Виправте підсвічені поля, перш ніж зберегти учня.
       photo_type_error: Використайте зображення JPG, PNG або WEBP.
       photo_size_error: Розмір фото має бути до 2 МБ.
       select_gender: Оберіть стать
@@ -239,6 +266,125 @@ ua:
       assigned_to_toast: "Учня призначено до %{name}."
       assignment_assigned: Призначено
       assignment_unassigned: Без викладача
+      edit_student: Редагувати учня
+      create_lesson: Створити урок
+      more_actions: Інші дії з учнем
+      share_material: Поділитися матеріалом
+      share_material_toast: Поділитися матеріалом у цій демоверсії ще не можна.
+      open_calendar: Відкрити календар
+      stats_lessons_completed: Завершені уроки
+      stats_lessons_month: "%{count} цього місяця"
+      stats_upcoming_lessons: Майбутні уроки
+      stats_next_on: "Наступний %{date}"
+      stats_no_upcoming: Немає майбутніх уроків
+      stats_homework_completed: Виконані домашні
+      stats_homework_of: "%{done} з %{total} завдань"
+      stats_homework_none: Ще немає завдань
+      stats_current_progress: Поточний прогрес
+      stats_on_track: У межах плану
+      stats_needs_attention: Потребує уваги
+      stats_no_progress: Прогресу ще немає
+      learning_information: Навчальна інформація
+      subject: Предмет
+      current_level: Поточний рівень
+      learning_goal: Навчальна ціль
+      preferred_format: Бажаний формат
+      start_date: Дата початку
+      tags: Теги
+      minutes: "%{count} хв"
+      upcoming_lessons: Майбутні уроки
+      schedule_next_hint: Заплануйте наступний урок для цього учня.
+      create_next_hint: Створіть наступний урок для цього учня.
+      recent_activity: Остання активність
+      no_activity: Поки що немає активності.
+      today: Сьогодні
+      view_progress_details: Переглянути прогрес
+      course_progress: Прогрес курсу
+      current_focus: "Поточний фокус:"
+      updated_on: "Оновлено %{date}"
+      no_progress_records: Записів про прогрес ще немає.
+      lesson_pricing: Ціна уроку
+      default_price: Базова ціна
+      per_lesson: "%{price} / урок"
+      duration: Тривалість
+      payment_status: Статус оплати
+      payment_credit: Кредит
+      payment_due: До сплати
+      payment_balanced: Збалансовано
+      balance_credit: "%{amount} кредит"
+      balance_due: "%{amount} до сплати"
+      balance_zero: "%{amount} баланс"
+      edit_pricing: Змінити ціну
+      preferred_contact: Бажаний контакт
+      preferred_contact_email: Email
+      parent_or_guardian: Батьки або опікун
+      no_guardian: Опікуна не вказано
+      add_guardian: Додати опікуна
+      no_teacher_title: Викладача не призначено
+      view_in_calendar: Відкрити в календарі
+      open_lesson: Відкрити урок
+      online_lesson: Онлайн-урок
+      in_person_lesson: Урок очно
+      with_teacher: "З %{name}"
+      all_lessons: Усі уроки
+      filter_lessons: Фільтр уроків
+      filter_upcoming: Майбутні
+      filter_completed: Завершені
+      filter_cancelled: Скасовані
+      no_lessons_found: Уроків не знайдено
+      no_lessons_hint: Змініть фільтр або створіть новий урок.
+      col_date: Дата
+      col_time: Час
+      col_lesson: Урок
+      col_type: Тип
+      col_attendance: Відвідуваність
+      attendance_none: Не записано
+      attendance:
+        attended: Присутній
+        absent: Відсутній
+        late: Запізнився
+        excused: Поважна причина
+        pending: Не записано
+      open_homework: Відкрити завдання
+      col_homework: Домашнє
+      col_assigned: Призначено
+      col_due: Дедлайн
+      col_score: Оцінка / відгук
+      homework_empty_title: Домашніх ще немає
+      homework_empty_hint: Призначені завдання зʼявляться тут.
+      overall_progress: Загальний прогрес
+      skills: Навички
+      recent_milestones: Останні віхи
+      no_milestones: Віх ще не записано.
+      progress_empty_title: Немає записів про прогрес
+      progress_empty_hint: Оцінки викладача та віхи зʼявляться тут.
+      notes_empty_title: Нотаток ще немає
+      notes_empty_hint: Нотатки викладача та адміністрації зʼявляться тут.
+      note_admin: Лише для адміністратора
+      note_student: Видно учню
+      note_teacher: Видно викладачу
+      restricted: Обмежено
+      payments_intro: Поточний баланс рахується з оплат, списань за уроки, повернень і коригувань.
+      available_credit: Доступний кредит
+      confirmed_payments: Підтверджені оплати
+      amount_due: Сума до сплати
+      nothing_due: Немає боргу
+      default_per_lesson: "Базова %{price} / урок"
+      completed_lessons_only: Лише завершені уроки
+      transaction_history: Історія транзакцій
+      transaction_history_hint: Тут фіксується кожна зміна балансу. Завершені уроки створюють списання; заплановані майбутні уроки — ні.
+      no_transactions: Транзакцій ще немає
+      no_transactions_hint: Оплати, списання, повернення та коригування зʼявляться тут.
+      col_amount: Сума
+      col_balance_after: Баланс після
+      col_method: Спосіб
+      col_recorded_by: Записав
+      pending_payments_notice: "%{count} оплат очікують підтвердження — перегляньте їх у таблиці нижче."
+      pending_payment_notice: 1 оплата очікує підтвердження — перегляньте її в таблиці нижче.
+      balance_negative_notice: "Баланс відʼємний. %{amount} до сплати. Записувати уроки все одно можна, якщо політика простору цього не блокує."
+      activity_homework: "Виконано домашнє «%{title}»"
+      activity_lesson: "Відвідано %{title}"
+      activity_progress: "Прогрес оновлено до %{percent}%"
       enter_first_name: Введіть імʼя.
       enter_last_name: Введіть прізвище.
       enter_email: Введіть коректну email-адресу.
@@ -269,6 +415,14 @@ ua:
       empty_filtered_text: Спробуйте інший пошук або очистіть активні фільтри.
       empty_title: Ще немає викладачів
       empty_text: Додайте першого викладача, щоб призначати уроки та керувати доступом.
+      view_aria: "Переглянути %{name}"
+      edit_aria: "Редагувати %{name}"
+      delete: Видалити викладача
+      delete_aria: "Видалити %{name}"
+      delete_title: Видалити викладача?
+      delete_text: Видалити цього викладача? Цю дію не можна скасувати.
+      delete_confirm: Видалити викладача
+      deleted_toast: Викладача видалено.
       not_found_title: Викладача не знайдено
       not_found_text: Цього викладача могло бути видалено або він недоступний у поточній сесії.
       back: До списку викладачів
@@ -346,6 +500,8 @@ ua:
       remove_subject: Прибрати предмет
       default_price: Ціна уроку за замовчуванням
       default_price_hint: Використовується як ціна за замовчуванням під час створення уроку.
+      lesson_types: Типи уроків і ціни
+      lesson_types_hint: Додайте типи уроків, які викладає цей викладач, з форматом, тривалістю та ціною.
       currency: Валюта
       optional: · Необовʼязково
       years: років
@@ -450,11 +606,13 @@ ua:
       teacher: Викладач
       student: Учень
       lesson_type: Тип уроку
+      format: Формат
       status: Статус
       location: Формат
       all_teachers: Усі викладачі
       all_students: Усі учні
-      all_types: Усі типи
+      all_types: Усі типи уроків
+      all_formats: Усі формати
       all_statuses: Усі статуси
       all_locations: Усі формати
       individual: Індивідуальний
@@ -493,7 +651,11 @@ ua:
       remove_participant: Прибрати учня
       lesson_price: Ціна уроку
       currency: Валюта
-      price_hint: Підставляється з типової ціни викладача. Зміна стосується лише цього уроку.
+      price_hint: Підставляється з вибраного типу уроку. Зміна стосується лише цього уроку.
+      select_lesson_type: Оберіть тип уроку
+      lesson_type_need_teacher: Спочатку оберіть викладача, щоб вибрати тип уроку.
+      lesson_type_empty: У цього викладача немає активних типів уроків. Додайте тип, перш ніж створювати урок.
+      min: хв
       lesson_format: Формат уроку
       optional: необовʼязково
       lesson_notes: Нотатки
@@ -731,6 +893,75 @@ ua:
       settings:
         title: Налаштування
         description: Налаштуйте параметри робочого простору.
+    settings:
+      title: Налаштування
+      subtitle: Конфігурація всього робочого простору.
+      lessons_card: Уроки
+      lessons_card_text: Типи уроків і ціни за замовчуванням
+      lessons_title: Уроки
+      lessons_subtitle: Як бронюються та тарифікуються уроки.
+    profile:
+      title: Мій профіль
+      subtitle: "Особисті дані та типи уроків — %{name}."
+      personal: Особиста інформація
+      personal_sub: Імʼя, фото та контакти.
+      teaching: Налаштування викладання
+      teaching_sub: Часовий пояс і валюта для типів уроків.
+      default_currency: Валюта за замовчуванням
+      default_currency_hint: Підставляється, коли ви додаєте новий тип уроку.
+      lesson_types_text: Формати уроків із тривалістю та ціною. Їх використовують, щоб заповнити новий урок у календарі.
+      save: Зберегти зміни
+    lesson_types:
+      title: Типи уроків
+      card_text: Індивідуальні, групові та інші формати — тривалість і ціна
+      school_text: Визначте формати уроків для викладачів із типовою тривалістю та ціною. Індивідуальну ціну викладача задайте в його профілі.
+      solo_text: Визначте формати уроків, які ви пропонуєте, і їхню типову ціну.
+      add: Додати тип уроку
+      add_title: Додати тип уроку
+      edit_title: Редагувати тип уроку
+      save: Зберегти
+      empty_title: Типів уроків ще немає
+      empty_text: Додайте перший тип — наприклад «Індивідуальний урок» або «Груповий урок».
+      none_yet: Типів уроків ще немає — додайте перший нижче.
+      name: Назва типу
+      name_placeholder: Індивідуальний урок
+      format: Формат
+      individual: Індивідуальний
+      group: Груповий
+      price_type: Тип ціни
+      per_lesson: За урок
+      per_student: За учня
+      duration: Тривалість за замовчуванням
+      price: Ціна
+      description: Опис
+      description_placeholder: Що охоплює цей тип або для кого він…
+      active_label: Активний — доступний для нових уроків
+      active: Активний
+      inactive: Неактивний
+      min: хв
+      edit: Редагувати
+      delete: Видалити
+      reactivate: Відновити
+      enabled: Увімкнено
+      disabled: Вимкнено
+      price_override: Ціна викладача
+      price_override_hint: Залиште порожнім, щоб використати типову ціну
+      manage: Керувати типами уроків
+      delete_title: Видалити тип уроку?
+      delete_text: більше не буде доступний для нових уроків. Якщо його ще не використовували — його буде видалено; якщо використовували — деактивовано, щоб зберегти історію.
+      delete_confirm: Видалити тип уроку
+      name_blank: Введіть назву типу уроку.
+      duration_invalid: Вкажіть тривалість більше нуля.
+      price_invalid: Введіть нуль або додатну ціну.
+      duplicate: Тип уроку з такою назвою уже існує.
+      invalid: Перевірте позначені поля.
+      added: Тип уроку додано.
+      updated: Тип уроку оновлено.
+      deleted: Тип уроку видалено.
+      deactivated: Цей тип уже використовувався на уроках, тому його деактивовано замість видалення.
+      reactivated: Тип уроку відновлено.
+      need_one: Увімкніть принаймні один тип уроку для активного викладача.
+      profile_saved: Профіль збережено.
     payments:
       title: Оплати
       subtitle: Баланси учнів, списання за уроки, нарахування та виплати викладачам.

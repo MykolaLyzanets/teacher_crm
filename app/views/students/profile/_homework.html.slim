@@ -1,0 +1,36 @@
+- if homework.blank?
+  section.students-page__profile-panel
+    .students-page__profile-panel-head
+      h2 = t('app.students.tab_homework')
+    .students-page__empty-card
+      .students-page__empty-icon
+        = icon_tag 'clipboard-text', size: 20
+      div
+        p.students-page__empty-title = t('app.students.homework_empty_title')
+        p.students-page__empty-text = t('app.students.homework_empty_hint')
+- else
+  section.students-page__table-card
+    .students-page__table-wrap
+      table.students-page__data-table
+        thead
+          tr
+            th = t('app.students.col_homework')
+            th = t('app.students.col_assigned')
+            th = t('app.students.col_due')
+            th = t('app.students.col_teacher')
+            th = t('app.students.col_status')
+            th = t('app.students.col_score')
+            th = t('app.students.col_actions')
+        tbody
+          - homework.each do |item|
+            - facing = Demo::Portal.facing_status(item)
+            tr
+              td = item[:title]
+              td = student_profile_date_label(item[:assignedDate])
+              td = student_profile_date_label(item[:dueDate])
+              td = item[:teacher]
+              td
+                span class="status-badge status-badge--#{student_homework_tone(facing)}" = t("app.student_portal.homework.statuses.#{facing}", default: facing.to_s.humanize)
+              td = item[:score].presence || item[:feedback].presence || '—'
+              td
+                = link_to t('app.students.open_homework'), homework_path, class: 'students-page__text-link students-page__text-link--lg'

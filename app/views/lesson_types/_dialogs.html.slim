@@ -1,0 +1,74 @@
+.lt-modal hidden="hidden" data-lesson-types-target="dialog"
+  button.lt-modal__backdrop type="button" aria-label=t('app.common.close') data-action="lesson-types#closeDialog"
+  .lt-modal__card role="dialog" aria-modal="true" aria-labelledby="lesson-type-dialog-title"
+    .lt-modal__head
+      h2#lesson-type-dialog-title data-lesson-types-target="dialogTitle" = t('app.lesson_types.add_title')
+      button.lt-icon-btn type="button" aria-label=t('app.common.close') data-action="lesson-types#closeDialog"
+        = icon_tag 'x', size: 20
+    form.lt-modal__body data-action="submit->lesson-types#submitDialog"
+      p.lt-field-error hidden="hidden" data-lesson-types-target="formError"
+      label.lt-field
+        span
+          = t('app.lesson_types.name')
+          abbr.lt-req *
+        input type="text" placeholder=t('app.lesson_types.name_placeholder') data-lesson-types-target="name"
+        p.lt-field-error hidden="hidden" data-lesson-types-target="nameError"
+      .lt-grid
+        label.lt-field
+          span
+            = t('app.lesson_types.format')
+            abbr.lt-req *
+          select data-lesson-types-target="mode" data-action="change->lesson-types#onModeChange"
+            option value="individual" = t('app.lesson_types.individual')
+            option value="group" = t('app.lesson_types.group')
+        label.lt-field data-lesson-types-target="priceTypeWrap" hidden="hidden"
+          span
+            = t('app.lesson_types.price_type')
+            abbr.lt-req *
+          select data-lesson-types-target="priceType"
+            option value="per_lesson" = t('app.lesson_types.per_lesson')
+            option value="per_student" = t('app.lesson_types.per_student')
+      .lt-grid
+        label.lt-field
+          span
+            = t('app.lesson_types.duration')
+            abbr.lt-req *
+          input type="number" min="1" step="1" list="lesson-type-durations" data-lesson-types-target="duration"
+          datalist#lesson-type-durations
+            - [30, 45, 60, 90, 120].each do |minutes|
+              option value=minutes
+          p.lt-field-error hidden="hidden" data-lesson-types-target="durationError"
+        label.lt-field
+          span
+            = t('app.lesson_types.price')
+            abbr.lt-req *
+          .lt-price
+            input type="text" inputmode="decimal" placeholder="500" data-lesson-types-target="price"
+            select aria-label=t('app.teachers.currency') data-lesson-types-target="currency"
+              - %w[UAH EUR USD GBP PLN].each do |code|
+                option value=code = code
+          p.lt-field-error hidden="hidden" data-lesson-types-target="priceError"
+      label.lt-field
+        span = t('app.lesson_types.description')
+        textarea rows="3" placeholder=t('app.lesson_types.description_placeholder') data-lesson-types-target="description"
+      label.lt-check
+        input type="checkbox" checked="checked" data-lesson-types-target="active"
+        span = t('app.lesson_types.active_label')
+      .lt-modal__foot
+        button.settings-page__secondary-btn type="button" data-action="lesson-types#closeDialog" = t('app.common.cancel')
+        button.settings-page__primary-btn type="submit" = t('app.lesson_types.save') 
+
+.lt-modal hidden="hidden" data-lesson-types-target="deleteDialog"
+  button.lt-modal__backdrop type="button" aria-label=t('app.common.close') data-action="lesson-types#closeDelete"
+  .lt-modal__card.lt-modal__card--sm role="dialog" aria-modal="true" aria-labelledby="delete-lesson-type-title"
+    .lt-modal__head
+      h2#delete-lesson-type-title = t('app.lesson_types.delete_title')
+      button.lt-icon-btn type="button" aria-label=t('app.common.close') data-action="lesson-types#closeDelete"
+        = icon_tag 'x', size: 20
+    p.lt-modal__copy
+      = t('app.lesson_types.delete_text')
+      '
+      span data-lesson-types-target="deleteName"
+    .lt-modal__foot
+      button.settings-page__secondary-btn type="button" data-action="lesson-types#closeDelete" = t('app.common.cancel')
+      button.lt-danger-btn type="button" data-action="lesson-types#confirmDelete" = t('app.lesson_types.delete_confirm')

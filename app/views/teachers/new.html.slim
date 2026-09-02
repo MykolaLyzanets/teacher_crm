@@ -7,7 +7,8 @@
 - form_method = editing ? :patch : :post
 - content_for :title, "#{editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')} | danlio"
 
-.teachers-page.teachers-page--form data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common')
+.teachers-page.teachers-page--form data-controller="teachers lesson-types" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-lesson-types-mode-value="teacher" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s != 'inactive') data-lesson-types-default-currency-value="UAH"
+  p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
   nav.teachers-page__breadcrumb aria-label="Breadcrumb"
     = link_to t('app.teachers.title'), teachers_path
     = icon_tag 'chevron-right', size: 16
@@ -24,7 +25,7 @@
       = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
       button.teachers-page__primary-btn type="submit" form="teacher-form" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
 
-  = form_with url: form_url, method: form_method, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateHours' } } do
+  = form_with url: form_url, method: form_method, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateHours submit->lesson-types#validateAccess' } } do
     section.teachers-page__card
       h2 = t('app.teachers.basic_info')
       p.teachers-page__section-sub = t('app.teachers.basic_info_sub')
@@ -121,17 +122,15 @@
           input type="text" placeholder=t('app.teachers.subject_placeholder') data-teachers-target="subjectDraft" data-action="keydown.enter->teachers#addSubject"
           button.teachers-page__link-btn type="button" data-action="teachers#addSubject" = t('app.common.add')
           p.teachers-page__field-error hidden="hidden" data-teachers-target="subjectError"
+      .teachers-page__lesson-types
+        p.teachers-page__chips-label = t('app.teachers.lesson_types')
+        p.teachers-page__hint = t('app.teachers.lesson_types_hint')
+        p.lt-field-error hidden="hidden" data-lesson-types-target="listError"
+        .lt-access-list data-lesson-types-target="accessList"
+        button.teachers-page__secondary-btn type="button" data-action="lesson-types#openNew"
+          = icon_tag 'plus', size: 16
+          span = t('app.lesson_types.add')
       .teachers-page__fields
-        .teachers-page__field
-          p.teachers-page__chips-label
-            = t('app.teachers.default_price')
-            span.teachers-page__optional = t('app.teachers.optional')
-          .teachers-page__price-row
-            input type="text" inputmode="decimal" name="default_lesson_price" placeholder="500" aria-label=t('app.teachers.default_price')
-            select name="default_lesson_currency" aria-label=t('app.teachers.currency')
-              - %w[EUR USD UAH GBP PLN].each do |code|
-                option value=code selected=(code == 'EUR') = code
-          p.teachers-page__hint = t('app.teachers.default_price_hint')
         .teachers-page__field
           p.teachers-page__chips-label
             = t('app.teachers.experience')
@@ -212,3 +211,5 @@
     .teachers-page__form-actions
       = link_to t('app.common.cancel'), teachers_path, class: 'teachers-page__secondary-btn'
       button.teachers-page__primary-btn type="submit" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
+
+  = render 'lesson_types/dialogs'

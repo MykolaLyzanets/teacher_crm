@@ -1,0 +1,39 @@
+section.students-page__table-card
+  .students-page__table-toolbar
+    .students-page__table-filter
+      = icon_tag 'filter', size: 18
+      select aria-label=t('app.students.filter_lessons') data-action="students#filterLessons"
+        option value="all" = t('app.students.all_lessons')
+        option value="upcoming" = t('app.students.filter_upcoming')
+        option value="completed" = t('app.students.filter_completed')
+        option value="cancelled" = t('app.students.filter_cancelled')
+    = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+      = icon_tag 'calendar-plus', size: 18
+      span = t('app.students.create_lesson')
+
+  .students-page__table-empty data-students-target="lessonsEmpty" hidden=(lessons.present? ? true : nil)
+    p = t('app.students.no_lessons_found')
+    span = t('app.students.no_lessons_hint')
+
+  .students-page__table-wrap data-students-target="lessonsTable" hidden=(lessons.blank? ? true : nil)
+    table.students-page__data-table
+      thead
+        tr
+          th = t('app.students.col_date')
+          th = t('app.students.col_time')
+          th = t('app.students.col_lesson')
+          th = t('app.students.col_teacher')
+          th = t('app.students.col_type')
+          th = t('app.students.col_status')
+          th = t('app.students.col_attendance')
+      tbody
+        - lessons.each do |lesson|
+          tr data-students-target="lessonRow" data-status=lesson[:status] data-upcoming=(student_lesson_upcoming?(lesson) ? '1' : '0') data-cancelled=(student_lesson_cancelled?(lesson) ? '1' : '0')
+            td = student_profile_date_label(lesson[:date])
+            td = format_lesson_time_range(lesson[:startTime], lesson[:endTime])
+            td = lesson[:title].presence || lesson[:subject]
+            td = lesson[:teacher]
+            td = lesson_type_label(lesson)
+            td
+              span class="status-badge status-badge--#{student_lesson_status_tone(lesson[:status])}" = student_lesson_status_label(lesson[:status])
+            td = student_attendance_label(lesson)

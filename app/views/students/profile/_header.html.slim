@@ -1,0 +1,32 @@
+section.students-page__hero
+  .students-page__hero-main
+    .students-page__hero-identity
+      = student_avatar(student, size: :lg)
+      div
+        .students-page__hero-title
+          h1 = name
+          span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
+        - if student[:email].present?
+          p.students-page__hero-email = student[:email]
+        p.students-page__hero-course = student_subject_line(student)
+    .students-page__hero-actions
+      = link_to edit_student_path(student[:id]), class: 'students-page__ghost-btn' do
+        = icon_tag 'pencil', size: 18
+        span = t('app.students.edit_student')
+      = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+        = icon_tag 'calendar-plus', size: 18
+        span = t('app.students.create_lesson')
+      .students-page__menu
+        button.students-page__icon-action type="button" aria-label=t('app.students.more_actions') aria-expanded="false" data-students-target="menuButton" data-action="click->students#toggleMenu:stop"
+          = icon_tag 'dots', size: 18
+        .students-page__menu-panel hidden="hidden" data-students-target="menu" data-action="click->students#closeMenu:stop"
+          button.students-page__menu-item type="button" data-action="students#shareMaterial"
+            = icon_tag 'folder-plus', size: 16
+            span = t('app.students.share_material')
+          = link_to calendar_path(studentId: student[:id]), class: 'students-page__menu-item' do
+            = t('app.students.open_calendar')
+          = link_to students_path, class: 'students-page__menu-item' do
+            = t('app.students.back')
+          button.students-page__menu-item type="button" data-action="students#askDelete" data-id=student[:id] data-name=name data-url=student_path(student[:id])
+            = icon_tag 'trash', size: 16
+            span = t('app.students.delete')

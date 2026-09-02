@@ -1,0 +1,25 @@
+section.students-page__profile-panel
+  .students-page__profile-panel-head
+    h2 = t('app.students.tab_notes')
+  - if notes.blank?
+    .students-page__empty-card
+      .students-page__empty-icon
+        = icon_tag 'notes', size: 20
+      div
+        p.students-page__empty-title = t('app.students.notes_empty_title')
+        p.students-page__empty-text = t('app.students.notes_empty_hint')
+  - else
+    - notes.each do |note|
+      - next if !can_view_finance? && (note[:visibility].to_s == 'admin' || note[:financial])
+      .students-page__note-card
+        .students-page__note-meta
+          span = student_note_visibility_label(note[:visibility])
+          - if note[:visibility].to_s == 'admin' || note[:financial]
+            span.students-page__admin-chip
+              = icon_tag 'lock', size: 12
+              = t('app.students.restricted')
+        p.students-page__note-body = note[:body]
+        p.students-page__note-foot
+          = note[:author]
+          =< '·'
+          =< student_profile_date_label(note[:createdAt])

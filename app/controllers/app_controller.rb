@@ -21,7 +21,9 @@ class AppController < ApplicationController
       'dashboard' => 'dashboard',
       'lessons' => 'lessons',
       'payments' => 'payments',
-      'pages' => 'placeholder'
+      'pages' => 'placeholder',
+      'settings' => 'settings',
+      'profiles' => 'settings'
     }[controller_name]
   end
 

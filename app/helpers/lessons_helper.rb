@@ -60,7 +60,7 @@ module LessonsHelper
   end
 
   def lesson_type_label(lesson)
-    t("app.lessons.types.#{lesson[:type]}", default: lesson[:type].to_s.humanize)
+    lesson[:lessonTypeName].presence || t("app.lessons.types.#{lesson[:type]}", default: lesson[:type].to_s.humanize)
   end
 
   def lesson_badge_tone(status)
@@ -103,7 +103,7 @@ module LessonsHelper
     {
       id: lesson[:id],
       subject: lesson_subject_label(lesson),
-      typeLabel: lesson[:type].to_s == 'group' ? t('app.lessons.group_subtitle') : lesson_type_label(lesson),
+      typeLabel: lesson_type_label(lesson),
       dateLong: format_lesson_day_long(lesson[:date]),
       timeRange: format_lesson_time_range(lesson[:startTime], lesson[:endTime]),
       teacher: lesson[:teacher],

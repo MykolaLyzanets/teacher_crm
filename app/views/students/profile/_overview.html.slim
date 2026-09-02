@@ -1,0 +1,180 @@
+.students-page__profile-grid
+  .students-page__profile-col
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.next_lesson')
+      - if next_lesson
+        .students-page__next-lesson
+          div
+            p.students-page__next-date = student_profile_date_label(next_lesson[:date])
+            p.students-page__next-time = format_lesson_time_range(next_lesson[:startTime], next_lesson[:endTime])
+            p.students-page__next-title = next_lesson[:title].presence || next_lesson[:subject]
+            p.students-page__meta = t('app.students.with_teacher', name: next_lesson[:teacher])
+            p.students-page__meta
+              = next_lesson[:location].to_s == 'online' ? t('app.students.online_lesson') : t('app.students.in_person_lesson')
+              =< '·'
+              =< lesson_type_label(next_lesson)
+          .students-page__hero-actions
+            = link_to t('app.students.view_in_calendar'), calendar_path, class: 'students-page__ghost-btn'
+            = link_to t('app.students.open_lesson'), calendar_path(studentId: student[:id], lessonId: next_lesson[:id]), class: 'students-page__create-btn'
+      - else
+        .students-page__empty-card
+          .students-page__empty-icon
+            = icon_tag 'calendar-event', size: 20
+          div
+            p.students-page__empty-title = t('app.students.stats_no_upcoming')
+            p.students-page__empty-text = t('app.students.create_next_hint')
+          = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+            = t('app.students.create_lesson')
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.learning_information')
+      .students-page__info
+        span = t('app.students.subject')
+        span.students-page__info-value = Array(student[:subjects]).compact_blank.join(', ').presence || '—'
+      .students-page__info
+        span = t('app.students.current_level')
+        span.students-page__info-value = student_level_label(student[:level]).presence || '—'
+      .students-page__info
+        span = t('app.students.learning_goal')
+        span.students-page__info-value = progress&.dig(:goal).presence || student[:notes].presence || '—'
+      .students-page__info
+        span = t('app.students.preferred_format')
+        span.students-page__info-value = student_format_label(student, pricing: pricing).presence || '—'
+      .students-page__info
+        span = t('app.students.start_date')
+        span.students-page__info-value = student_profile_date_label(student[:enrollmentDate]).presence || '—'
+      .students-page__info
+        span = t('app.students.tags')
+        span.students-page__info-value = student_tag_line(student) || '—'
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.upcoming_lessons')
+      - if upcoming.blank?
+        .students-page__empty-card
+          .students-page__empty-icon
+            = icon_tag 'calendar-event', size: 20
+          div
+            p.students-page__empty-title = t('app.students.stats_no_upcoming')
+            p.students-page__empty-text = t('app.students.schedule_next_hint')
+          = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+            = t('app.students.create_lesson')
+      - else
+        ul.students-page__upcoming-list
+          - upcoming.first(4).each do |lesson|
+            li
+              = link_to calendar_path(studentId: student[:id], lessonId: lesson[:id]), class: 'students-page__upcoming-btn' do
+                div
+                  p.students-page__upcoming-title = lesson[:title].presence || lesson[:subject]
+                  p.students-page__upcoming-meta
+                    = student_profile_date_label(lesson[:date])
+                    =< '·'
+                    =< format_lesson_time_range(lesson[:startTime], lesson[:endTime])
+                    =< '·'
+                    =< lesson[:teacher]
+                span.students-page__upcoming-loc = lesson[:location].to_s == 'online' ? t('app.common.online') : t('app.common.in_person')
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.recent_activity')
+      - if activity.blank?
+        p.students-page__meta = t('app.students.no_activity')
+      - else
+        ul.students-page__activity-list
+          - activity.each do |item|
+            li
+              p = item[:title]
+              span = student_activity_date_label(item[:date])
+
+  .students-page__profile-col
+    = render 'students/profile/teacher', student: student
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.tab_progress')
+        = link_to t('app.students.view_progress_details'), student_profile_tab_path(student, 'progress'), class: 'students-page__text-link', data: { action: 'click->profile-tabs#openTab', tab: 'progress' }
+      - if progress
+        .students-page__progress-head
+          p.students-page__meta = t('app.students.course_progress')
+          p.students-page__progress-value = "#{progress[:overallPercent]}%"
+        .students-page__progress-bar role="progressbar" aria-valuenow=progress[:overallPercent] aria-valuemin="0" aria-valuemax="100" aria-label=t('app.students.course_progress')
+          span style="width: #{progress[:overallPercent]}%"
+        p.students-page__meta
+          = t('app.students.current_focus')
+          =< progress[:focus]
+        p.students-page__note-foot = t('app.students.updated_on', date: student_profile_date_label(progress[:updatedAt]))
+      - else
+        p.students-page__meta = t('app.students.no_progress_records')
+
+    - if can_view_finance? && pricing
+      section.students-page__profile-panel
+        .students-page__profile-panel-head
+          h2 = t('app.students.lesson_pricing')
+          - if can_manage_payments?
+            button.students-page__text-link.students-page__text-link--lg type="button" data-action="students#toastMessage" data-message=t('app.payments.payment_added') = t('app.students.add_payment')
+        span.students-page__admin-chip
+          = icon_tag 'lock', size: 14
+          = t('app.students.payments_admin_only')
+        .students-page__info
+          span = t('app.students.default_price')
+          span.students-page__info-value = t('app.students.per_lesson', price: money_label(pricing[:defaultPriceCents], pricing[:currency]))
+        .students-page__info
+          span = t('app.students.duration')
+          span.students-page__info-value = t('app.students.minutes', count: pricing[:defaultDurationMinutes] || 60)
+        .students-page__info
+          span = t('app.students.current_balance')
+          span.students-page__info-value class=("students-page__balance-due" if balance_cents.to_i.negative?) = student_balance_label(balance_cents, pricing[:currency] || finance&.dig(:currency) || 'EUR')
+        .students-page__info
+          span = t('app.students.payment_status')
+          span.students-page__info-value = student_payment_status_label(balance_cents)
+        = link_to t('app.students.edit_pricing'), edit_student_path(student[:id]), class: 'students-page__text-link students-page__text-link--lg'
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.contact_info')
+      .students-page__info
+        span = t('app.students.email')
+        span.students-page__info-value
+          - if student[:email].present?
+            span.students-page__info-inline
+              = icon_tag 'mail', size: 14
+              = student[:email]
+          - else
+            | —
+      .students-page__info
+        span = t('app.students.phone')
+        span.students-page__info-value
+          - if student[:phone].present?
+            span.students-page__info-inline
+              = icon_tag 'phone', size: 14
+              = student[:phone]
+          - else
+            | —
+      .students-page__info
+        span = t('app.students.preferred_contact')
+        span.students-page__info-value = t('app.students.preferred_contact_email')
+
+    section.students-page__profile-panel
+      .students-page__profile-panel-head
+        h2 = t('app.students.parent_or_guardian')
+      - if student[:parentName].present?
+        .students-page__info
+          span = t('app.students.name')
+          span.students-page__info-value = student[:parentName]
+        .students-page__info
+          span = t('app.students.relationship')
+          span.students-page__info-value = student_relationship_label(student[:relationship]).presence || '—'
+        .students-page__info
+          span = t('app.students.email')
+          span.students-page__info-value = student[:parentEmail].presence || '—'
+        .students-page__info
+          span = t('app.students.phone')
+          span.students-page__info-value = student[:parentPhone].presence || '—'
+      - else
+        .students-page__empty-card
+          .students-page__empty-icon
+            = icon_tag 'user-plus', size: 22
+          p.students-page__empty-title = t('app.students.no_guardian')
+          = link_to t('app.students.add_guardian'), edit_student_path(student[:id]), class: 'students-page__text-link students-page__text-link--lg'

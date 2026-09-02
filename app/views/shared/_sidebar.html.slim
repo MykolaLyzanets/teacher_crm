@@ -15,7 +15,7 @@
         span = item[:label]
 
   .app-sidebar__footer
-    - settings_active = controller_name == 'pages' && params[:page].to_s == 'settings'
+    - settings_active = controller_name == 'settings'
     = link_to settings_path, class: "app-sidebar__link#{" is-active" if settings_active}", data: (mobile ? { action: 'app-shell#close' } : {}) do
       span.app-sidebar__icon
         = icon_tag 'settings', size: 20

@@ -31,6 +31,7 @@ export default class extends Controller {
     "photoPick",
     "photoRemove",
     "photoError",
+    "removePhotoInput",
     "email",
     "formStatus",
     "grade",
@@ -47,16 +48,24 @@ export default class extends Controller {
     "assignedBlock",
     "unassignedBlock",
     "assignBadge",
-    "unassignBadge",
     "teacherAvatar",
     "teacherName",
     "teacherMeta",
     "teacherLink",
-    "removeDialog"
+    "removeDialog",
+    "deleteDialog",
+    "deleteName",
+    "deleteForm",
+    "menu",
+    "menuButton",
+    "lessonRow",
+    "lessonsEmpty",
+    "lessonsTable"
   ]
 
   static values = {
-    i18n: Object
+    i18n: Object,
+    editing: Boolean
   }
 
   connect() {
@@ -64,9 +73,16 @@ export default class extends Controller {
     this.assignIds = []
     this.touched = new Set()
     this.photoUrl = ""
+    this.boundCloseMenu = this.closeMenu.bind(this)
+    document.addEventListener("click", this.boundCloseMenu)
     if (this.hasRowTarget) this.filter()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
     if (this.hasNotesTarget) this.updateNotesCount()
+  }
+
+  disconnect() {
+    document.removeEventListener("click", this.boundCloseMenu)
+    window.clearTimeout(this.toastTimer)
   }
 
   t(group, key, vars = {}) {
@@ -79,7 +95,14 @@ export default class extends Controller {
   }
 
   filter() {
-    if (!this.hasRowTarget) return
+    if (!this.hasRowTarget) {
+      if (this.hasEmptyTarget) this.emptyTarget.classList.remove("students-page__empty--hidden")
+      if (this.hasTableTarget) this.tableTarget.hidden = true
+      if (this.hasEmptyTitleTarget) this.emptyTitleTarget.textContent = this.t("students", "empty_title")
+      if (this.hasEmptyTextTarget) this.emptyTextTarget.textContent = this.t("students", "empty_text")
+      if (this.hasAddBtnTarget) this.addBtnTarget.classList.remove("students-page__empty-add--hidden")
+      return
+    }
 
     const query = this.hasSearchTarget ? this.searchTarget.value.trim().toLowerCase() : ""
     const status = this.hasStatusTarget ? this.statusTarget.value : ""
@@ -226,7 +249,7 @@ export default class extends Controller {
 
     const option = this.assignSelectTarget.selectedOptions[0]
     const teacherName = option?.textContent?.trim() || "Teacher"
-    const hadTeacher = this.hasAssignedBlockTarget && !this.assignedBlockTarget.hidden
+    const hadTeacher = this.hasAssignedBlockTarget && !this.assignedBlockTarget.classList.contains("students-page__is-hidden") && !this.assignedBlockTarget.hidden
 
     if (this.hasAssignedBlockTarget) {
       this.applyProfileAssignment(option, teacherName)
@@ -260,17 +283,66 @@ export default class extends Controller {
     const job = option?.dataset.job || this.t("common", "teacher")
     const path = option?.dataset.path || "#"
 
-    if (this.hasAssignedBlockTarget) this.assignedBlockTarget.hidden = false
-    if (this.hasUnassignedBlockTarget) this.unassignedBlockTarget.hidden = true
-    if (this.hasAssignBadgeTarget) this.assignBadgeTarget.hidden = false
-    if (this.hasUnassignBadgeTarget) this.unassignBadgeTarget.hidden = true
+    this.setAssignmentState(true)
     if (this.hasTeacherAvatarTarget) this.teacherAvatarTarget.textContent = initials
-    if (this.hasTeacherNameTarget) {
-      this.teacherNameTarget.textContent = teacherName
-      this.teacherNameTarget.setAttribute("href", path)
-    }
+    if (this.hasTeacherNameTarget) this.teacherNameTarget.textContent = teacherName
     if (this.hasTeacherMetaTarget) this.teacherMetaTarget.textContent = job
     if (this.hasTeacherLinkTarget) this.teacherLinkTarget.setAttribute("href", path)
+  }
+
+  setAssignmentState(assigned) {
+    if (this.hasAssignedBlockTarget) {
+      this.assignedBlockTarget.classList.toggle("students-page__is-hidden", !assigned)
+      this.assignedBlockTarget.hidden = !assigned
+    }
+    if (this.hasUnassignedBlockTarget) {
+      this.unassignedBlockTarget.classList.toggle("students-page__is-hidden", assigned)
+      this.unassignedBlockTarget.hidden = assigned
+    }
+    if (this.hasAssignBadgeTarget) {
+      this.assignBadgeTarget.textContent = this.t("students", assigned ? "assignment_assigned" : "assignment_unassigned")
+      this.assignBadgeTarget.className = `status-badge status-badge--${assigned ? "olive" : "neutral"}`
+    }
+  }
+
+  toggleMenu(event) {
+    event.stopPropagation()
+    if (!this.hasMenuTarget) return
+    const open = this.menuTarget.hidden
+    this.menuTarget.hidden = !open
+    if (this.hasMenuButtonTarget) {
+      this.menuButtonTarget.setAttribute("aria-expanded", String(open))
+    }
+  }
+
+  closeMenu() {
+    if (this.hasMenuTarget) this.menuTarget.hidden = true
+    if (this.hasMenuButtonTarget) this.menuButtonTarget.setAttribute("aria-expanded", "false")
+  }
+
+  shareMaterial(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    this.closeMenu()
+    this.showToast(this.t("students", "share_material_toast"))
+  }
+
+  filterLessons(event) {
+    const filter = event.currentTarget.value
+    const rows = this.hasLessonRowTarget ? this.lessonRowTargets : []
+    rows.forEach((row) => {
+      const upcoming = row.dataset.upcoming === "1"
+      const completed = row.dataset.status === "completed"
+      const cancelled = row.dataset.cancelled === "1"
+      let show = true
+      if (filter === "upcoming") show = upcoming
+      else if (filter === "completed") show = completed
+      else if (filter === "cancelled") show = cancelled
+      row.hidden = !show
+    })
+    const visible = rows.some((row) => !row.hidden)
+    if (this.hasLessonsEmptyTarget) this.lessonsEmptyTarget.hidden = visible
+    if (this.hasLessonsTableTarget) this.lessonsTableTarget.hidden = !visible
   }
 
   openRemove() {
@@ -282,12 +354,31 @@ export default class extends Controller {
   }
 
   confirmRemove() {
-    if (this.hasAssignedBlockTarget) this.assignedBlockTarget.hidden = true
-    if (this.hasUnassignedBlockTarget) this.unassignedBlockTarget.hidden = false
-    if (this.hasAssignBadgeTarget) this.assignBadgeTarget.hidden = true
-    if (this.hasUnassignBadgeTarget) this.unassignBadgeTarget.hidden = false
+    this.setAssignmentState(false)
     this.closeRemove()
     this.showToast(this.t("students", "removed_toast"))
+  }
+
+  askDelete(event) {
+    this.closeMenu()
+    this.deleteId = event.currentTarget.dataset.id
+    this.deleteUrl = event.currentTarget.dataset.url
+    this.deleteName = event.currentTarget.dataset.name || ""
+    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = this.deleteName
+    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = false
+  }
+
+  closeDelete() {
+    this.deleteId = null
+    this.deleteUrl = ""
+    this.deleteName = ""
+    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = true
+  }
+
+  confirmDelete() {
+    if (!this.deleteUrl || !this.hasDeleteFormTarget) return
+    this.deleteFormTarget.setAttribute("action", this.deleteUrl)
+    this.deleteFormTarget.requestSubmit()
   }
 
   pickPhoto() {
@@ -323,11 +414,13 @@ export default class extends Controller {
       const label = this.photoPickTarget.querySelector("span")
       if (label) label.textContent = this.t("students", "replace_photo")
     }
+    if (this.hasRemovePhotoInputTarget) this.removePhotoInputTarget.value = "0"
   }
 
   removePhoto() {
     this.clearPhoto()
     if (this.hasPhotoInputTarget) this.photoInputTarget.value = ""
+    if (this.hasRemovePhotoInputTarget) this.removePhotoInputTarget.value = "1"
   }
 
   clearPhoto() {
@@ -393,7 +486,7 @@ export default class extends Controller {
   validateSubmit(event) {
     this.touched = new Set([
       "firstName", "lastName", "email", "status", "grade",
-      "enrollmentDate", "academicYear", "parentEmail", "notes"
+      "enrollmentDate", "academicYear", "parentName", "parentEmail", "parentPhone", "notes"
     ])
     const errors = this.validate()
     this.renderErrors(errors)
@@ -404,7 +497,7 @@ export default class extends Controller {
     }
     if (this.hasFormAlertTarget) this.formAlertTarget.hidden = true
     this.submitBtnTargets.forEach((btn) => {
-      btn.textContent = this.t("students", "creating")
+      btn.textContent = this.t("students", this.editingValue ? "saving" : "creating")
       btn.disabled = true
     })
   }
@@ -418,7 +511,9 @@ export default class extends Controller {
     const grade = this.hasGradeTarget ? this.gradeTarget.value.trim() : ""
     const enrollment = this.hasEnrollmentDateTarget ? this.enrollmentDateTarget.value : ""
     const year = this.hasAcademicYearTarget ? this.academicYearTarget.value : ""
+    const parentName = this.hasParentNameTarget ? this.parentNameTarget.value.trim() : ""
     const parentEmail = this.hasParentEmailTarget ? this.parentEmailTarget.value.trim() : ""
+    const parentPhone = this.hasParentPhoneTarget ? this.parentPhoneTarget.value.trim() : ""
     const notes = this.hasNotesTarget ? this.notesTarget.value : ""
 
     if (!first) errors.firstName = this.t("students", "enter_first_name")
@@ -428,7 +523,10 @@ export default class extends Controller {
     if (!grade) errors.grade = this.t("students", "select_grade_error")
     if (!enrollment) errors.enrollmentDate = this.t("students", "choose_enrollment")
     if (!year) errors.academicYear = this.t("students", "select_year")
-    if (parentEmail && !EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
+    if (!parentName) errors.parentName = this.t("students", "enter_parent_name")
+    if (!parentEmail) errors.parentEmail = this.t("students", "enter_parent_email")
+    else if (!EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
+    if (!parentPhone) errors.parentPhone = this.t("students", "enter_parent_phone")
     if (notes.length > 300) errors.notes = this.t("students", "notes_too_long")
     return errors
   }

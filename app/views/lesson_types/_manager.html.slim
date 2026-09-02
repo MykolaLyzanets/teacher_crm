@@ -1,0 +1,31 @@
+- heading = local_assigns.fetch(:heading, :h2)
+- title = local_assigns[:title]
+- description = local_assigns[:description]
+- show_toast = local_assigns.fetch(:show_toast, true)
+
+- if show_toast
+  p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
+
+.lt-manager__head
+  div
+    - if title.present?
+      - if heading == :h1
+        h1.settings-page__title = title
+      - else
+        h2.lt-manager__title = title
+    - if description.present?
+      p.settings-page__subtitle = description
+  button.settings-page__primary-btn type="button" data-action="lesson-types#openNew"
+    = icon_tag 'plus', size: 20
+    span = t('app.lesson_types.add')
+
+.lt-empty hidden="hidden" data-lesson-types-target="empty"
+  .lt-empty__icon
+    = icon_tag 'book', size: 24
+  h3 = t('app.lesson_types.empty_title')
+  p = t('app.lesson_types.empty_text')
+  button.settings-page__primary-btn type="button" data-action="lesson-types#openNew"
+    = icon_tag 'plus', size: 20
+    span = t('app.lesson_types.add')
+
+.lt-list data-lesson-types-target="list"

@@ -1,0 +1,41 @@
+- assigned = @teacher.present?
+section.students-page__profile-panel.students-page__teacher-panel
+  .students-page__profile-panel-head
+    h2 = t('app.students.assigned_teacher')
+    span.status-badge class="status-badge--#{assigned ? 'olive' : 'neutral'}" data-students-target="assignBadge"
+      = assigned ? t('app.students.assignment_assigned') : t('app.students.assignment_unassigned')
+
+  .students-page__assign-body data-students-target="assignedBlock" class=(assigned ? nil : 'students-page__is-hidden') hidden=(!assigned || nil)
+    .students-page__assign-identity
+      span.students-page__avatar.students-page__avatar--md data-students-target="teacherAvatar"
+        - if @teacher
+          = [@teacher[:firstName].to_s[0], @teacher[:lastName].to_s[0]].join
+      div
+        p.students-page__name data-students-target="teacherName"
+          - if @teacher
+            = @teacher[:displayName].presence || "#{@teacher[:firstName]} #{@teacher[:lastName]}"
+        p.students-page__meta data-students-target="teacherMeta"
+          - if @teacher
+            = [@teacher[:jobTitle].presence || Array(@teacher[:subjects]).first(2).join(', ').presence || t('app.common.teacher'), t("app.statuses.#{@teacher[:status]}", default: @teacher[:status].to_s.humanize)].compact_blank.join(' · ')
+    .students-page__teacher-actions
+      - if can_manage_teachers?
+        a.students-page__ghost-btn href=(@teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherLink" = t('app.students.view_profile')
+      - if can_assign_teacher?
+        button.students-page__olive-btn type="button" data-action="students#openAssign" data-id=student[:id]
+          = icon_tag 'user-switch', size: 16
+          span = t('app.students.change_teacher')
+        button.students-page__danger-btn type="button" data-action="students#openRemove"
+          = icon_tag 'user-minus', size: 16
+          span = t('app.students.remove_assignment')
+
+  .students-page__assign-body data-students-target="unassignedBlock" class=(assigned ? 'students-page__is-hidden' : nil) hidden=(assigned || nil)
+    .students-page__assign-empty
+      span.students-page__assign-empty-icon
+        = icon_tag 'user-plus', size: 22
+      div
+        p.students-page__empty-title = t('app.students.no_teacher_title')
+        p.students-page__empty-text = t('app.students.no_teacher_hint')
+    - if can_assign_teacher?
+      button.students-page__create-btn type="button" data-action="students#openAssign" data-id=student[:id]
+        = icon_tag 'user-check', size: 18
+        span = t('app.students.assign_teacher_cta')

@@ -3,59 +3,71 @@
 - enrollment_default = student[:enrollmentDate].presence || Date.current.iso8601
 - form_url = editing ? student_path(student[:id]) : students_path
 - form_method = editing ? :patch : :post
+- cancel_path = editing ? student_path(student[:id]) : students_path
+- has_photo = student[:photo].present?
+- auto_teacher = !editing && can_assign_teacher? && @teachers.size == 1
 - content_for :title, "#{editing ? t('app.students.edit_title') : t('app.students.create_title')} | danlio"
 
-.students-page.students-page--form data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
+.students-page.students-page--form data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-editing-value=editing
   nav.students-page__breadcrumb aria-label="Breadcrumb"
     = link_to t('app.students.title'), students_path
     = icon_tag 'chevron-right', size: 16
+    - if editing
+      = link_to student_display_name(student), student_path(student[:id])
+      = icon_tag 'chevron-right', size: 16
     span = editing ? t('app.students.edit_title') : t('app.students.create_title')
 
   .students-page__form-header
     .students-page__form-intro
       .students-page__empty-icon
-        = icon_tag 'user-plus', size: 24
+        = icon_tag editing ? 'pencil' : 'user-plus', size: 24
       div
         h1.students-page__title = editing ? t('app.students.edit_title') : t('app.students.create_title')
         p.students-page__subtitle = editing ? t('app.students.edit_subtitle') : t('app.students.create_subtitle')
     .students-page__form-actions.students-page__form-actions--top
-      = link_to t('app.common.cancel'), students_path, class: 'students-page__secondary-btn'
+      = link_to t('app.common.cancel'), cancel_path, class: 'students-page__secondary-btn'
       button.students-page__primary-btn type="submit" form="student-form" data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')
 
-  = form_with url: form_url, method: form_method, html: { id: 'student-form', class: 'students-page__form', novalidate: true, data: { action: 'submit->students#validateSubmit' } } do
+  = form_with url: form_url, method: form_method, multipart: true, html: { id: 'student-form', class: 'students-page__form', novalidate: true, data: { action: 'submit->students#validateSubmit' } } do
     section.students-page__card
       h2 = t('app.students.basic_info')
       p.students-page__section-sub = t('app.students.basic_info_sub')
       .students-page__photo
-        .students-page__photo-avatar
-          span data-students-target="initialsPreview" = student_initials(student)
-          img.students-page__photo-img alt="" hidden="hidden" data-students-target="photoImage"
+        .students-page__photo-frame
+          .students-page__photo-avatar
+            span data-students-target="initialsPreview" hidden=(has_photo || nil) = student_initials(student)
+            img.students-page__photo-img alt="" hidden=(has_photo ? nil : true) data-students-target="photoImage" src=student[:photo].presence
           span.students-page__photo-badge
-            = icon_tag 'user', size: 16
+            = icon_tag 'camera', size: 16
         .students-page__photo-copy
           p.students-page__photo-title = t('app.students.photo')
           p.students-page__photo-hint = t('app.students.photo_hint')
           .students-page__photo-actions
             button.students-page__olive-btn type="button" data-action="students#pickPhoto" data-students-target="photoPick"
-              = icon_tag 'file', size: 18
-              span = t('app.students.choose_file')
-            button.students-page__secondary-btn.students-page__photo-remove type="button" hidden="hidden" data-action="students#removePhoto" data-students-target="photoRemove"
-              = icon_tag 'x', size: 18
+              = icon_tag 'upload', size: 18
+              span = has_photo ? t('app.students.replace_photo') : t('app.students.choose_file')
+            button.students-page__secondary-btn.students-page__photo-remove type="button" hidden=(has_photo ? nil : true) data-action="students#removePhoto" data-students-target="photoRemove"
+              = icon_tag 'trash', size: 18
               span = t('app.students.remove_photo')
           p.students-page__field-error hidden="hidden" data-students-target="photoError"
-          input.sr-only type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-students-target="photoInput" data-action="change->students#previewPhoto"
+          input type="hidden" name="remove_photo" value="0" data-students-target="removePhotoInput"
+          input.sr-only type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-students-target="photoInput" data-action="change->students#previewPhoto"
       .students-page__fields
         label.students-page__field
-          span = t('app.students.first_name') + ' *'
-          input type="text" name="first_name" required=true autocomplete="given-name" value=student[:firstName] data-students-target="firstName" data-action="input->students#updateInitials blur->students#markTouched"
+          span
+            = t('app.students.first_name')
+            span.students-page__req *
+          input type="text" name="first_name" required=true autocomplete="given-name" placeholder=t('app.students.first_name_placeholder') value=student[:firstName] data-students-target="firstName" data-action="input->students#updateInitials blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="firstName"
         label.students-page__field
-          span = t('app.students.last_name') + ' *'
-          input type="text" name="last_name" required=true autocomplete="family-name" value=student[:lastName] data-students-target="lastName" data-action="input->students#updateInitials blur->students#markTouched"
+          span
+            = t('app.students.last_name')
+            span.students-page__req *
+          input type="text" name="last_name" required=true autocomplete="family-name" placeholder=t('app.students.last_name_placeholder') value=student[:lastName] data-students-target="lastName" data-action="input->students#updateInitials blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="lastName"
         label.students-page__field
           span = t('app.students.preferred_name')
-          input type="text" name="preferred_name" value=student[:preferredName] data-students-target="preferredName" data-action="input->students#updateInitials"
+          input type="text" name="preferred_name" placeholder=t('app.students.preferred_name_placeholder') value=student[:preferredName] data-students-target="preferredName" data-action="input->students#updateInitials"
           span.students-page__hint = t('app.students.preferred_name_hint')
         label.students-page__field
           span = t('app.students.date_of_birth')
@@ -69,7 +81,9 @@
             option value="non_binary" selected=(student[:gender].to_s == 'non_binary') = t('app.students.gender_non_binary')
             option value="prefer_not" selected=(student[:gender].to_s == 'prefer_not') = t('app.students.gender_prefer_not')
         label.students-page__field
-          span = t('app.students.status') + ' *'
+          span
+            = t('app.students.status')
+            span.students-page__req *
           select name="status" required=true data-students-target="formStatus" data-action="blur->students#markTouched"
             option value="active" selected=(student[:status].to_s == 'active' || student[:status].blank?) = t('app.statuses.active')
             option value="trial" selected=(student[:status].to_s == 'trial') = t('app.statuses.trial')
@@ -79,12 +93,17 @@
         label.students-page__field.students-page__field--full
           span = t('app.students.assigned_teacher')
           - if can_assign_teacher?
-            span.students-page__hint = t('app.students.assigned_teacher_hint')
-            select name="teacher_id"
-              option value="" = t('app.students.select_teacher')
-              - @teachers.each do |teacher|
-                - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
-                option value=teacher[:id] selected=(teacher[:id].to_s == student[:teacherId].to_s) = name
+            - if auto_teacher
+              span.students-page__hint = t('app.students.assigned_teacher_auto')
+              p.students-page__locked-teacher = @teachers.first[:displayName].presence || [@teachers.first[:firstName], @teachers.first[:lastName]].compact_blank.join(' ')
+              input type="hidden" name="teacher_id" value=@teachers.first[:id]
+            - else
+              span.students-page__hint = t('app.students.assigned_teacher_hint')
+              select name="teacher_id"
+                option value="" = t('app.students.select_teacher')
+                - @teachers.each do |teacher|
+                  - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
+                  option value=teacher[:id] selected=(teacher[:id].to_s == student[:teacherId].to_s) = name
           - else
             span.students-page__hint = t('app.students.assigned_teacher_locked')
             p.students-page__locked-teacher = current_user.teacher_profile&.display_label || t('app.common.teacher')
@@ -94,23 +113,24 @@
       p.students-page__section-sub = t('app.students.contact_info_sub')
       .students-page__fields
         label.students-page__field
-          span = t('app.students.email')
-          .students-page__input-icon
-            = icon_tag 'mail', size: 18
-            input type="email" name="email" autocomplete="email" value=student[:email] data-students-target="email" data-action="blur->students#markTouched"
+          span = t('app.students.email_address')
+          input type="email" name="email" autocomplete="email" placeholder=t('app.students.email_placeholder') value=student[:email] data-students-target="email" data-action="blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="email"
         label.students-page__field
-          span = t('app.students.phone')
-          input type="tel" name="phone" autocomplete="tel" value=student[:phone]
+          span = t('app.students.phone_number')
+          input type="tel" name="phone" autocomplete="tel" placeholder=t('app.students.phone_placeholder') value=student[:phone]
         label.students-page__field.students-page__field--full
           span = t('app.students.address')
-          input type="text" name="address" autocomplete="street-address" value=student[:address]
+          input type="text" name="address" autocomplete="street-address" placeholder=t('app.students.address_placeholder') value=student[:address]
       .students-page__subblock
         h3 = t('app.students.parent_guardian')
         .students-page__fields
           label.students-page__field
-            span = t('app.students.parent_name')
-            input type="text" name="parent_name" value=student[:parentName] data-students-target="parentName"
+            span
+              = t('app.students.parent_name')
+              span.students-page__req *
+            input type="text" name="parent_name" required=true placeholder=t('app.students.parent_name_placeholder') value=student[:parentName] data-students-target="parentName" data-action="blur->students#markTouched"
+            p.students-page__field-error hidden="hidden" data-error-for="parentName"
           label.students-page__field
             span = t('app.students.relationship')
             select name="relationship"
@@ -121,19 +141,26 @@
               option value="guardian" selected=(student[:relationship].to_s == 'guardian') = t('app.students.relationship_guardian')
               option value="other" selected=(student[:relationship].to_s == 'other') = t('app.students.relationship_other')
           label.students-page__field
-            span = t('app.students.email')
-            input type="email" name="parent_email" value=student[:parentEmail] data-students-target="parentEmail" data-action="blur->students#markTouched"
+            span
+              = t('app.students.email_address')
+              span.students-page__req *
+            input type="email" name="parent_email" required=true placeholder=t('app.students.email_placeholder') value=student[:parentEmail] data-students-target="parentEmail" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentEmail"
           label.students-page__field
-            span = t('app.students.phone')
-            input type="tel" name="parent_phone" value=student[:parentPhone] data-students-target="parentPhone"
+            span
+              = t('app.students.phone_number')
+              span.students-page__req *
+            input type="tel" name="parent_phone" required=true placeholder=t('app.students.phone_placeholder') value=student[:parentPhone] data-students-target="parentPhone" data-action="blur->students#markTouched"
+            p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
 
     section.students-page__card
-      h2 = t('app.students.learning')
+      h2 = t('app.students.learning_details')
       p.students-page__section-sub = t('app.students.learning_sub')
       .students-page__fields
         label.students-page__field
-          span = t('app.students.grade') + ' *'
+          span
+            = t('app.students.grade_class')
+            span.students-page__req *
           select name="grade" required=true data-students-target="grade" data-action="blur->students#markTouched"
             option value="" = t('app.students.select_grade')
             - t('app.students.grades').each do |grade|
@@ -141,31 +168,22 @@
           p.students-page__field-error hidden="hidden" data-error-for="grade"
         label.students-page__field
           span = t('app.students.student_id')
-          input type="text" name="student_code" value=student[:studentCode]
+          input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
           span.students-page__hint = t('app.students.student_id_hint')
         label.students-page__field
-          span = t('app.students.enrollment') + ' *'
+          span
+            = t('app.students.enrollment')
+            span.students-page__req *
           input type="date" name="enrollment_date" required=true value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="enrollmentDate"
         label.students-page__field
-          span = t('app.students.academic_year') + ' *'
+          span
+            = t('app.students.academic_year')
+            span.students-page__req *
           select name="academic_year" required=true data-students-target="academicYear" data-action="blur->students#markTouched"
             - StudentsHelper::ACADEMIC_YEARS.each do |year|
               option value=year selected=(year == (student[:academicYear].presence || '2025/2026')) = year
           p.students-page__field-error hidden="hidden" data-error-for="academicYear"
-        label.students-page__field
-          span = t('app.students.level')
-          select name="level"
-            option value="" = t('app.students.select_level')
-            - StudentsHelper::LEVELS.each do |value, key|
-              option value=value selected=(value.to_s == student[:level].to_s) = t("app.students.levels.#{key}")
-        .students-page__field.students-page__field--full
-          p.students-page__chips-label = t('app.students.subjects')
-          .students-page__chips
-            - StudentsHelper::SUBJECTS.each do |subject|
-              label.students-page__chip-toggle
-                input type="checkbox" name="subjects[]" value=subject checked=Array(student[:subjects]).include?(subject)
-                span = subject
 
     section.students-page__card
       h2 = t('app.students.lesson_preferences')
@@ -189,24 +207,6 @@
                 span = weekday_short_label(day)
 
     section.students-page__card
-      h2 = t('app.students.emergency')
-      p.students-page__section-sub = t('app.students.emergency_sub')
-      .students-page__fields.students-page__fields--three
-        label.students-page__field
-          span = t('app.students.contact_name')
-          input type="text" name="emergency_name" value=student[:emergencyName]
-        label.students-page__field
-          span = t('app.students.relationship')
-          select name="emergency_relationship"
-            option value="" = t('app.students.select_relationship')
-            option value="parent" selected=(student[:emergencyRelationship].to_s == 'parent') = t('app.students.relationship_parent')
-            option value="guardian" selected=(student[:emergencyRelationship].to_s == 'guardian') = t('app.students.relationship_guardian')
-            option value="other" selected=(student[:emergencyRelationship].to_s == 'other') = t('app.students.relationship_other')
-        label.students-page__field
-          span = t('app.students.phone')
-          input type="tel" name="emergency_phone" value=student[:emergencyPhone]
-
-    section.students-page__card
       h2 = t('app.students.internal_notes')
       p.students-page__section-sub = t('app.students.internal_notes_sub')
       label.students-page__field.students-page__field--full
@@ -215,8 +215,8 @@
         p.students-page__field-error hidden="hidden" data-error-for="notes"
       p.students-page__notes-count data-students-target="notesCount" 0/300
 
-    p.students-page__form-alert hidden="hidden" data-students-target="formAlert" = t('app.students.fix_fields')
+    p.students-page__form-alert hidden="hidden" data-students-target="formAlert" = editing ? t('app.students.fix_fields_save') : t('app.students.fix_fields')
 
     .students-page__form-actions.students-page__form-actions--sticky
-      = link_to t('app.common.cancel'), students_path, class: 'students-page__secondary-btn'
+      = link_to t('app.common.cancel'), cancel_path, class: 'students-page__secondary-btn'
       button.students-page__primary-btn type="submit" data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')

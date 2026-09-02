@@ -53,6 +53,8 @@ export default class extends Controller {
     "assignBox",
     "removeDialog",
     "removeConfirm",
+    "deleteDialog",
+    "deleteName",
     "toast",
     "absenceDialog",
     "absenceList",
@@ -98,7 +100,17 @@ export default class extends Controller {
   }
 
   filter() {
-    if (!this.hasRowTarget) return
+    if (!this.hasRowTarget) {
+      if (this.hasTableTarget) {
+        this.tableTarget.classList.add("teachers-page__table--hidden")
+        this.tableTarget.hidden = true
+      }
+      if (this.hasEmptyTarget) this.emptyTarget.classList.remove("teachers-page__empty--hidden")
+      if (this.hasEmptyTitleTarget) this.emptyTitleTarget.textContent = this.t("teachers", "empty_title")
+      if (this.hasEmptyTextTarget) this.emptyTextTarget.textContent = this.t("teachers", "empty_text")
+      if (this.hasAddBtnTarget) this.addBtnTarget.classList.remove("teachers-page__empty-add--hidden")
+      return
+    }
 
     const query = (this.hasSearchTarget ? this.searchTarget.value : "").trim().toLowerCase()
     const status = this.hasStatusTarget ? this.statusTarget.value : ""
@@ -452,6 +464,28 @@ export default class extends Controller {
     this.closeRemove()
     if (name) this.showToast(this.t("teachers", "removed_toast", { name }))
     this.filterAssigned()
+  }
+
+  askDelete(event) {
+    this.deleteId = event.currentTarget.dataset.id
+    this.deleteName = event.currentTarget.dataset.name || ""
+    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = this.deleteName
+    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = false
+  }
+
+  closeDelete() {
+    this.deleteId = null
+    this.deleteName = ""
+    if (this.hasDeleteDialogTarget) this.deleteDialogTarget.hidden = true
+  }
+
+  confirmDelete() {
+    if (!this.deleteId) return
+    const row = this.rowTargets.find((item) => String(item.dataset.id) === String(this.deleteId))
+    row?.remove()
+    this.closeDelete()
+    this.showToast(this.t("teachers", "deleted_toast"))
+    this.filter()
   }
 
   showToast(message) {

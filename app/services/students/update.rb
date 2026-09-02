@@ -2,6 +2,7 @@
 
 module Students
   class Update
+    include Photo
     extend ActiveModel::Naming
     extend ActiveModel::Translation
 
@@ -16,6 +17,8 @@ module Students
 
     def save
       @errors = ActiveModel::Errors.new(self)
+      user.errors.clear
+      student_profile.errors.clear
       assign_records
       validate
       return false if errors.any? || user.errors.any? || student_profile.errors.any?
@@ -51,10 +54,12 @@ module Students
       user.errors.add(:email, :blank) if user.email.blank?
       student_profile.errors.add(:first_name, :blank) if student_profile.first_name.blank?
       student_profile.errors.add(:last_name, :blank) if student_profile.last_name.blank?
+      validate_photo!
     end
 
     def persist
       User.transaction do
+        persist_photo
         user.save!
         student_profile.save!
       end

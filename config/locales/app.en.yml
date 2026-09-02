@@ -61,6 +61,10 @@ en:
       confirmed: Confirmed
       pending: Pending
       cancelled: Cancelled
+      completed: Completed
+      no_show: No-show
+      cancelled_charged: Cancelled · Charged
+      cancelled_not_charged: Cancelled · Not charged
     students:
       title: Students
       subtitle: Manage student profiles, contacts and learning details.
@@ -87,6 +91,14 @@ en:
       col_teacher: Teacher
       col_status: Status
       col_actions: Actions
+      view_aria: "View %{name}"
+      edit_aria: "Edit %{name}"
+      delete: Delete student
+      delete_aria: "Delete %{name}"
+      delete_title: Delete student?
+      delete_text: Are you sure you want to delete this student? This action cannot be undone.
+      delete_confirm: Delete student
+      deleted_toast: Student deleted.
       select_all: Select all visible students
       select_one: "Select %{name}"
       not_found_title: Student not found
@@ -97,7 +109,7 @@ en:
       guardian: Guardian
       grade: Grade
       student_id: Student ID
-      enrollment: Enrollment
+      enrollment: Enrollment date
       subjects: Subjects
       name: Name
       email: Email
@@ -109,20 +121,20 @@ en:
       view_teacher: View teacher
       create_title: Create student
       edit_title: Edit student
-      edit_subtitle: Update the student profile, contacts and learning details.
+      edit_subtitle: Update this student’s contact, learning and lesson information.
       create_student: Create student
-      save_student: Save student
-      create_subtitle: Add a student profile, contacts and learning preferences.
+      save_student: Save changes
+      create_subtitle: Add a student and keep their contact, learning and lesson information organized.
       basic_info: Basic information
-      basic_info_sub: Primary profile details for the student.
+      basic_info_sub: Add the student’s primary profile details.
       first_name: First name
       last_name: Last name
       preferred_name: Preferred name
-      preferred_name_hint: Shown in the workspace
+      preferred_name_hint: Shown across lessons and messages when provided.
       status: Status
       contact: Contact
       contact_sub: How to reach the student.
-      learning_sub: Subjects and lesson preferences.
+      learning_sub: Capture the academic context for this student.
       level: Level
       location_preference: Location preference
       guardian_sub: Parent or guardian contact details.
@@ -140,6 +152,7 @@ en:
       stats_new_aria: Filter students created this month
       created: "%{name} created successfully."
       updated: "%{name} updated successfully."
+      deleted: "%{name} deleted successfully."
       profile_fallback: Student profile
       photo: Profile photo
       photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
@@ -212,6 +225,20 @@ en:
         - Adult learner
       choose_file: Choose file
       replace_photo: Replace photo
+      first_name_placeholder: Enter first name
+      last_name_placeholder: Enter last name
+      preferred_name_placeholder: Optional preferred name
+      email_address: Email address
+      email_placeholder: Enter email address
+      phone_number: Phone number
+      phone_placeholder: Enter phone number
+      address_placeholder: Enter home address
+      parent_name_placeholder: Enter full name
+      student_id_placeholder: Optional student ID
+      learning_details: Learning details
+      grade_class: Grade / class
+      saving: Saving…
+      fix_fields_save: Please fix the highlighted fields before saving this student.
       photo_type_error: Use a JPG, PNG or WEBP image.
       photo_size_error: Keep the photo under 2 MB.
       select_gender: Select gender
@@ -239,6 +266,125 @@ en:
       assigned_to_toast: "Student assigned to %{name}."
       assignment_assigned: Assigned
       assignment_unassigned: Unassigned
+      edit_student: Edit student
+      create_lesson: Create lesson
+      more_actions: More student actions
+      share_material: Share material
+      share_material_toast: Material sharing is not available in this demo yet.
+      open_calendar: Open calendar
+      stats_lessons_completed: Lessons completed
+      stats_lessons_month: "%{count} this month"
+      stats_upcoming_lessons: Upcoming lessons
+      stats_next_on: "Next on %{date}"
+      stats_no_upcoming: No upcoming lessons
+      stats_homework_completed: Homework completed
+      stats_homework_of: "%{done} of %{total} assignments"
+      stats_homework_none: No assignments yet
+      stats_current_progress: Current progress
+      stats_on_track: On track
+      stats_needs_attention: Needs attention
+      stats_no_progress: No progress yet
+      learning_information: Learning information
+      subject: Subject
+      current_level: Current level
+      learning_goal: Learning goal
+      preferred_format: Preferred format
+      start_date: Start date
+      tags: Tags
+      minutes: "%{count} minutes"
+      upcoming_lessons: Upcoming lessons
+      schedule_next_hint: Schedule the next lesson for this student.
+      create_next_hint: Create the next lesson for this student.
+      recent_activity: Recent activity
+      no_activity: No recent activity yet.
+      today: Today
+      view_progress_details: View progress details
+      course_progress: Course progress
+      current_focus: "Current focus:"
+      updated_on: "Updated %{date}"
+      no_progress_records: No progress records yet.
+      lesson_pricing: Lesson pricing
+      default_price: Default price
+      per_lesson: "%{price} / lesson"
+      duration: Duration
+      payment_status: Payment status
+      payment_credit: Credit
+      payment_due: Due
+      payment_balanced: Balanced
+      balance_credit: "%{amount} credit"
+      balance_due: "%{amount} due"
+      balance_zero: "%{amount} balance"
+      edit_pricing: Edit pricing
+      preferred_contact: Preferred contact
+      preferred_contact_email: Email
+      parent_or_guardian: Parent or guardian
+      no_guardian: No guardian on file
+      add_guardian: Add guardian
+      no_teacher_title: No teacher assigned
+      view_in_calendar: View in Calendar
+      open_lesson: Open lesson
+      online_lesson: Online lesson
+      in_person_lesson: In-person lesson
+      with_teacher: "With %{name}"
+      all_lessons: All lessons
+      filter_lessons: Filter lessons
+      filter_upcoming: Upcoming
+      filter_completed: Completed
+      filter_cancelled: Cancelled
+      no_lessons_found: No lessons found
+      no_lessons_hint: Adjust the filter or create a new lesson.
+      col_date: Date
+      col_time: Time
+      col_lesson: Lesson
+      col_type: Type
+      col_attendance: Attendance
+      attendance_none: Not recorded
+      attendance:
+        attended: Attended
+        absent: Absent
+        late: Late
+        excused: Excused
+        pending: Not recorded
+      open_homework: Open homework
+      col_homework: Homework
+      col_assigned: Assigned
+      col_due: Due
+      col_score: Score / feedback
+      homework_empty_title: No homework yet
+      homework_empty_hint: Assigned homework will appear here.
+      overall_progress: Overall progress
+      skills: Skills
+      recent_milestones: Recent milestones
+      no_milestones: No milestones recorded yet.
+      progress_empty_title: No progress records
+      progress_empty_hint: Teacher assessments and milestones will appear here.
+      notes_empty_title: No notes yet
+      notes_empty_hint: Teacher and administrative notes will appear here.
+      note_admin: Administrator only
+      note_student: Student-visible
+      note_teacher: Teacher-visible
+      restricted: Restricted
+      payments_intro: Current balance is calculated from payments, lesson charges, refunds, and adjustments.
+      available_credit: Available credit
+      confirmed_payments: Confirmed payments
+      amount_due: Amount due
+      nothing_due: Nothing due
+      default_per_lesson: "Default %{price} / lesson"
+      completed_lessons_only: Completed lessons only
+      transaction_history: Transaction history
+      transaction_history_hint: Every balance change is recorded here. Completed lessons create lesson charges; scheduled future lessons do not.
+      no_transactions: No transactions yet
+      no_transactions_hint: Payments, lesson charges, refunds, and adjustments will appear here.
+      col_amount: Amount
+      col_balance_after: Balance after
+      col_method: Method
+      col_recorded_by: Recorded by
+      pending_payments_notice: "%{count} payments awaiting confirmation — review pending submissions in the table below."
+      pending_payment_notice: 1 payment awaiting confirmation — review pending submissions in the table below.
+      balance_negative_notice: "Balance is negative. %{amount} due. Recording lessons is still allowed unless workspace policy blocks it."
+      activity_homework: "Completed “%{title}” homework"
+      activity_lesson: "Attended %{title}"
+      activity_progress: "Progress updated to %{percent}%"
       enter_first_name: Enter a first name.
       enter_last_name: Enter a last name.
       enter_email: Enter a valid email address.
@@ -269,6 +415,14 @@ en:
       empty_filtered_text: Try a different search or clear the active filters.
       empty_title: No teachers yet
       empty_text: Add your first teacher to assign lessons and manage access.
+      view_aria: "View %{name}"
+      edit_aria: "Edit %{name}"
+      delete: Delete teacher
+      delete_aria: "Delete %{name}"
+      delete_title: Delete teacher?
+      delete_text: Are you sure you want to delete this teacher? This action cannot be undone.
+      delete_confirm: Delete teacher
+      deleted_toast: Teacher deleted.
       not_found_title: Teacher not found
       not_found_text: This teacher may have been removed or is not available in the current session.
       back: Back to teachers
@@ -346,6 +500,8 @@ en:
       remove_subject: Remove subject
       default_price: Default lesson price
       default_price_hint: Used as the default price when creating a lesson.
+      lesson_types: Lesson types & pricing
+      lesson_types_hint: Add the lesson types this teacher offers, each with its format, duration and price.
       currency: Currency
       optional: · Optional
       years: years
@@ -450,11 +606,13 @@ en:
       teacher: Teacher
       student: Student
       lesson_type: Lesson type
+      format: Format
       status: Status
       location: Location
       all_teachers: All teachers
       all_students: All students
-      all_types: All types
+      all_types: All lesson types
+      all_formats: All formats
       all_statuses: All statuses
       all_locations: All locations
       individual: Individual
@@ -491,7 +649,11 @@ en:
       remove_participant: Remove student
       lesson_price: Lesson price
       currency: Currency
-      price_hint: Loaded from the teacher’s default. Changing it only affects this lesson.
+      price_hint: Loaded from the selected lesson type. Changing it only affects this lesson.
+      select_lesson_type: Select a lesson type
+      lesson_type_need_teacher: Select a teacher to choose a lesson type.
+      lesson_type_empty: This teacher has no active lesson types. Add a lesson type before creating the lesson.
+      min: min
       lesson_format: Lesson format
       optional: optional
       lesson_notes: Lesson notes
@@ -725,6 +887,75 @@ en:
       settings:
         title: Settings
         description: Configure your workspace preferences.
+    settings:
+      title: Settings
+      subtitle: Manage workspace-wide configuration.
+      lessons_card: Lessons
+      lessons_card_text: Lesson types and default pricing
+      lessons_title: Lessons
+      lessons_subtitle: Configure how lessons are booked and priced.
+    profile:
+      title: My profile
+      subtitle: "%{name}’s personal details and lesson types."
+      personal: Personal information
+      personal_sub: Your name, photo and contact details.
+      teaching: Teaching settings
+      teaching_sub: Your timezone and preferred currency for lesson types.
+      default_currency: Default currency
+      default_currency_hint: Prefills the currency when you add a new lesson type.
+      lesson_types_text: The lesson formats you offer, with their duration and price. These are used to prefill new lessons on your calendar.
+      save: Save changes
+    lesson_types:
+      title: Lesson types
+      card_text: Individual, group and other formats — duration and default price
+      school_text: Define the lesson formats teachers can offer, with a default duration and price. Set teacher-specific pricing from each teacher’s profile.
+      solo_text: Define the lesson formats you offer and their default price.
+      add: Add lesson type
+      add_title: Add lesson type
+      edit_title: Edit lesson type
+      save: Save
+      empty_title: No lesson types yet
+      empty_text: Add your first lesson type — for example “Individual lesson” or “Group lesson”.
+      none_yet: No lesson types yet — add the first one below.
+      name: Lesson type name
+      name_placeholder: Individual lesson
+      format: Format
+      individual: Individual
+      group: Group
+      price_type: Price type
+      per_lesson: Per lesson
+      per_student: Per student
+      duration: Default duration
+      price: Price
+      description: Description
+      description_placeholder: What this lesson type covers, or who it’s for…
+      active_label: Active — available for new lessons
+      active: Active
+      inactive: Inactive
+      min: min
+      edit: Edit
+      delete: Delete
+      reactivate: Reactivate
+      enabled: Enabled
+      disabled: Disabled
+      price_override: Teacher price override
+      price_override_hint: Leave blank to use the default price
+      manage: Manage lesson types
+      delete_title: Delete lesson type?
+      delete_text: will no longer be available for new lessons. If it was never used on a lesson it’s removed entirely; if it was, it’s deactivated instead so historical lessons keep their record.
+      delete_confirm: Delete lesson type
+      name_blank: Enter a lesson type name.
+      duration_invalid: Enter a duration greater than zero.
+      price_invalid: Enter zero or a positive price.
+      duplicate: A lesson type with this name already exists.
+      invalid: Check the highlighted fields.
+      added: Lesson type added.
+      updated: Lesson type updated.
+      deleted: Lesson type deleted.
+      deactivated: This lesson type has been used on lessons, so it was deactivated instead of deleted to keep historical records intact.
+      reactivated: Lesson type reactivated.
+      need_one: Enable at least one lesson type for an active teacher.
+      profile_saved: Profile saved.
     payments:
       title: Payments
       subtitle: Student balances, lesson charges, teacher earnings and payouts.

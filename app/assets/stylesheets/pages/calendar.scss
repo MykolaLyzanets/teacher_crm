@@ -1094,6 +1094,14 @@
       font-weight: 600;
       color: var(--olive);
     }
+
+    &--warn {
+      border-radius: 12px;
+      border: 1px solid #e3d7c7;
+      background: #faf6ee;
+      padding: 10px 12px;
+      color: #73634d;
+    }
   }
 
   &__modal {

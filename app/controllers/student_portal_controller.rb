@@ -38,9 +38,14 @@ class StudentPortalController < ApplicationController
   private
 
   def require_student!
-    return if current_user.student?
+    unless current_user.student?
+      redirect_to dashboard_path, alert: I18n.t('app.student_portal.staff_denied')
+      return
+    end
+    return unless current_user.student_profile&.deleted_at
 
-    redirect_to dashboard_path, alert: I18n.t('app.student_portal.staff_denied')
+    sign_out current_user
+    redirect_to new_user_session_path, alert: I18n.t('app.students.not_found_text')
   end
 
   def load_portal_context

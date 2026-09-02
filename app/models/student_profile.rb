@@ -8,6 +8,8 @@ class StudentProfile < ApplicationRecord
 
   enum status: STATUSES
 
+  mount_uploader :photo, ImageUploader
+
   belongs_to :user, inverse_of: :student_profile
   belongs_to :workspace, inverse_of: :student_profiles
   belongs_to :teacher_profile, foreign_key: :teacher_id, optional: true, inverse_of: :student_profiles
@@ -27,6 +29,10 @@ class StudentProfile < ApplicationRecord
 
   def display_label
     preferred_name.presence || [first_name, last_name].compact_blank.join(' ').presence || 'Student'
+  end
+
+  def photo_url
+    photo.url if photo.present?
   end
 
   def assign_to!(teacher_profile, assigned_by:)
@@ -57,7 +63,7 @@ class StudentProfile < ApplicationRecord
       firstName: first_name,
       lastName: last_name,
       preferredName: preferred_name,
-      photo:,
+      photo: photo_url,
       dateOfBirth: date_of_birth&.iso8601,
       gender:,
       status:,

@@ -1,0 +1,96 @@
+{
+  "lessonTypes": [
+    {
+      "id": "lt-individual",
+      "name": "Individual lesson",
+      "mode": "individual",
+      "defaultDurationMinutes": 60,
+      "defaultPriceCents": 50000,
+      "currency": "UAH",
+      "priceType": "per_lesson",
+      "isActive": true
+    },
+    {
+      "id": "lt-group",
+      "name": "Group lesson",
+      "mode": "group",
+      "defaultDurationMinutes": 60,
+      "defaultPriceCents": 30000,
+      "currency": "UAH",
+      "priceType": "per_student",
+      "isActive": true
+    },
+    {
+      "id": "lt-trial",
+      "name": "Trial lesson",
+      "mode": "individual",
+      "defaultDurationMinutes": 30,
+      "defaultPriceCents": 0,
+      "currency": "UAH",
+      "priceType": "per_lesson",
+      "isActive": true
+    },
+    {
+      "id": "lt-speaking-club",
+      "name": "Speaking club",
+      "mode": "group",
+      "defaultDurationMinutes": 60,
+      "defaultPriceCents": 25000,
+      "currency": "UAH",
+      "priceType": "per_student",
+      "isActive": true
+    },
+    {
+      "id": "lt-consultation",
+      "name": "Consultation",
+      "mode": "individual",
+      "defaultDurationMinutes": 30,
+      "defaultPriceCents": 0,
+      "currency": "UAH",
+      "priceType": "per_lesson",
+      "isActive": true
+    }
+  ],
+  "links": [
+    {
+      "id": "tlt-ava-individual",
+      "teacherId": "tch-ava",
+      "teacherEmail": "ava.thompson@example.com",
+      "lessonTypeId": "lt-individual",
+      "enabled": true,
+      "priceOverrideCents": 55000
+    },
+    {
+      "id": "tlt-ava-speaking-club",
+      "teacherId": "tch-ava",
+      "teacherEmail": "ava.thompson@example.com",
+      "lessonTypeId": "lt-speaking-club",
+      "enabled": false,
+      "priceOverrideCents": null
+    },
+    {
+      "id": "tlt-noah-individual",
+      "teacherId": "tch-noah",
+      "teacherEmail": "noah.patel@example.com",
+      "lessonTypeId": "lt-individual",
+      "enabled": true,
+      "priceOverrideCents": 60000
+    },
+    {
+      "id": "tlt-noah-trial",
+      "teacherId": "tch-noah",
+      "teacherEmail": "noah.patel@example.com",
+      "lessonTypeId": "lt-trial",
+      "enabled": false,
+      "priceOverrideCents": null
+    },
+    {
+      "id": "tlt-mia-group",
+      "teacherId": "tch-mia",
+      "teacherEmail": "mia.chen@example.com",
+      "lessonTypeId": "lt-group",
+      "enabled": true,
+      "priceOverrideCents": 32000
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+- teacher = (@teacher || {}).with_indifferent_access
+- content_for :title, "#{t('app.profile.title')} | danlio"
+
+.settings-page.settings-page--profile data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value=(teacher[:defaultLessonCurrency].presence || 'UAH')
+  p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
+  .settings-page__header
+    h1.settings-page__title = t('app.profile.title')
+    p.settings-page__subtitle = t('app.profile.subtitle', name: teacher_display_name(teacher))
+
+  form.settings-page__form id="my-profile-form" novalidate="novalidate" data-action="submit->lesson-types#saveProfile"
+    section.settings-page__card
+      h2 = t('app.profile.personal')
+      p.settings-page__section-sub = t('app.profile.personal_sub')
+      .settings-page__fields
+        label.settings-page__field
+          span
+            = t('app.teachers.first_name')
+            abbr.lt-req *
+          input type="text" name="first_name" required="required" value=teacher[:firstName] autocomplete="given-name"
+        label.settings-page__field
+          span
+            = t('app.teachers.last_name')
+            abbr.lt-req *
+          input type="text" name="last_name" required="required" value=teacher[:lastName] autocomplete="family-name"
+        label.settings-page__field
+          span = t('app.teachers.email')
+          input type="email" name="email" value=teacher[:email] autocomplete="email"
+        label.settings-page__field
+          span = t('app.teachers.phone')
+          input type="tel" name="phone" value=teacher[:phone] autocomplete="tel"
+
+    section.settings-page__card
+      h2 = t('app.profile.teaching')
+      p.settings-page__section-sub = t('app.profile.teaching_sub')
+      .settings-page__fields
+        label.settings-page__field
+          span = t('app.teachers.timezone')
+          select name="timezone"
+            - TeachersHelper::TIMEZONES.each do |tz|
+              option value=tz selected=(tz == (teacher[:timezone].presence || 'America/New_York')) = tz.tr('_', ' ')
+        label.settings-page__field
+          span = t('app.profile.default_currency')
+          select name="default_lesson_currency" data-action="change->lesson-types#onDefaultCurrencyChange"
+            - %w[UAH EUR USD GBP PLN].each do |code|
+              option value=code selected=(code == (teacher[:defaultLessonCurrency].presence || 'UAH')) = code
+          p.settings-page__hint = t('app.profile.default_currency_hint')
+
+  section.settings-page__card
+    = render 'lesson_types/manager', heading: :h2, title: t('app.lesson_types.title'), description: t('app.profile.lesson_types_text'), show_toast: false
+  = render 'lesson_types/dialogs'
+
+  .settings-page__sticky
+    button.settings-page__primary-btn type="submit" form="my-profile-form" = t('app.profile.save')

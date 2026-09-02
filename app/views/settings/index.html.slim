@@ -1,0 +1,14 @@
+- content_for :title, "#{t('app.settings.title')} | danlio"
+
+.settings-page
+  .settings-page__header
+    h1.settings-page__title = t('app.settings.title')
+    p.settings-page__subtitle = t('app.settings.subtitle')
+
+  = link_to settings_lessons_path, class: 'settings-page__link-card'
+    .settings-page__link-icon
+      = icon_tag 'book', size: 22
+    div
+      p.settings-page__link-title = t('app.settings.lessons_card')
+      p.settings-page__link-text = t('app.settings.lessons_card_text')
+    = icon_tag 'chevron-right', size: 20

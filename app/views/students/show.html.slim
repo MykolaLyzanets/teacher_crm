@@ -10,6 +10,13 @@
 - else
   - student = @student
   - name = student_display_name(student)
+  - lessons = Array(@student_lessons)
+  - homework = Array(@student_homework)
+  - notes = Array(@student_notes)
+  - upcoming = student_upcoming_lessons(lessons)
+  - next_lesson = upcoming.first
+  - stats = student_profile_stats(lessons:, homework:, progress: @student_progress)
+  - activity = student_activity_items(lessons:, homework:, progress: @student_progress, notes:, finance: @finance, include_finance: can_view_finance?)
   - content_for :title, "#{name} | danlio"
 
   .students-page.students-page--profile data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
@@ -18,210 +25,37 @@
       = icon_tag 'chevron-right', size: 16
       span = name
 
-    section.students-page__hero
-      .students-page__hero-main
-        .students-page__hero-identity
-          span.students-page__avatar.students-page__avatar--lg = student_initials(student)
-          div
-            .students-page__hero-title
-              h1 = name
-              span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
-            p.students-page__hero-sub
-              = [student[:grade], student[:level], student[:academicYear]].compact_blank.join(' · ').presence || t('app.students.profile_fallback')
-            .students-page__hero-contacts
-              - if student[:email].present?
-                span
-                  = icon_tag 'mail', size: 18
-                  = student[:email]
-              - if student[:phone].present?
-                span
-                  = icon_tag 'message', size: 18
-                  = student[:phone]
-        = link_to calendar_path(studentId: student[:id]), class: 'students-page__primary-btn' do
-          = icon_tag 'calendar', size: 20
-          span = t('app.students.schedule_lesson')
-        = link_to t('app.common.edit'), edit_student_path(student[:id]), class: 'students-page__secondary-btn'
+    = render 'students/profile/header', student: student, name: name
+    p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
+    = render 'students/profile/stats', stats: stats
 
-      .students-page__info-grid
-        .students-page__info-card
-          h2 = t('app.students.learning')
-          .students-page__info-row
-            span = t('app.students.grade')
-            strong = student[:grade].presence || '—'
-          .students-page__info-row
-            span = t('app.students.student_id')
-            strong = student[:studentCode].presence || '—'
-          .students-page__info-row
-            span = t('app.students.enrollment')
-            strong = student[:enrollmentDate].presence || '—'
-          .students-page__info-row
-            span = t('app.students.subjects')
-            strong = Array(student[:subjects]).presence&.join(', ') || '—'
-        .students-page__info-card
-          h2 = t('app.students.guardian')
-          .students-page__info-row
-            span = t('app.students.name')
-            strong = student[:parentName].presence || '—'
-          .students-page__info-row
-            span = t('app.students.email')
-            strong = student[:parentEmail].presence || '—'
-          .students-page__info-row
-            span = t('app.students.phone')
-            strong = student[:parentPhone].presence || '—'
-          .students-page__info-row
-            span = t('app.students.preferred_days')
-            strong = Array(student[:preferredDays]).presence&.join(', ') || '—'
-
-      - if student[:notes].present?
-        .students-page__notes
-          p.students-page__notes-label = t('app.students.notes')
-          p = student[:notes]
-
+    - active_tab = @profile_tab.presence || 'overview'
     .students-page__tabs data-controller="profile-tabs"
+      - tabs = student_profile_tab_items
       div role="tablist" aria-label=t('app.students.tabs_aria')
-        - tabs = [{ id: 'overview', label: t('app.students.tab_overview') }, { id: 'lessons', label: t('app.students.tab_lessons') }, { id: 'homework', label: t('app.students.tab_homework') }, { id: 'progress', label: t('app.students.tab_progress') }, { id: 'notes', label: t('app.students.tab_notes') }]
-        - tabs << { id: 'payments', label: t('app.students.tab_payments') } if can_view_finance?
-        - tabs.each_with_index do |tab, index|
-          button.students-page__tab type="button" role="tab" aria-selected=(index.zero? ? 'true' : 'false') data-profile-tabs-target="tab" data-tab=tab[:id] data-action="profile-tabs#select"
+        - tabs.each do |tab|
+          - selected = tab[:id] == active_tab
+          = link_to student_profile_tab_path(student, tab[:id]), class: "students-page__tab#{' is-active' if selected}", role: 'tab', id: "student-tab-#{tab[:id]}", aria: { controls: "student-panel-#{tab[:id]}", selected: selected }, tabindex: (selected ? 0 : -1), data: { profile_tabs_target: 'tab', tab: tab[:id], action: 'click->profile-tabs#select keydown->profile-tabs#keydown' } do
             = tab[:label]
 
-      .students-page__panel data-profile-tabs-target="panel" data-tab="overview"
-        section.students-page__teacher-card
-          .students-page__teacher-card-head
-            h2 = t('app.students.assigned_teacher')
-            span.status-badge.status-badge--olive data-students-target="assignBadge" hidden=(@teacher.blank? ? true : nil) = t('app.students.assignment_assigned')
-            span.status-badge.status-badge--neutral data-students-target="unassignBadge" hidden=(@teacher.present? ? true : nil) = t('app.students.assignment_unassigned')
-          p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
+      .students-page__tab-panel class=(active_tab == 'overview' ? nil : 'is-hidden') role="tabpanel" id="student-panel-overview" aria-labelledby="student-tab-overview" hidden=(active_tab == 'overview' ? nil : true) data-profile-tabs-target="panel" data-tab="overview"
+        = render 'students/profile/overview', student: student, upcoming: upcoming, next_lesson: next_lesson, activity: activity, progress: @student_progress, pricing: @pricing, finance: @finance, balance_cents: @balance_cents
 
-          .students-page__teacher-card-body data-students-target="assignedBlock" hidden=(@teacher.blank? ? true : nil)
-            span.students-page__avatar data-students-target="teacherAvatar"
-              - if @teacher
-                = [@teacher[:firstName].to_s[0], @teacher[:lastName].to_s[0]].join
-            .students-page__teacher-copy
-              a.students-page__name href=(can_manage_teachers? && @teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherName"
-                - if @teacher
-                  = @teacher[:displayName].presence || "#{@teacher[:firstName]} #{@teacher[:lastName]}"
-              p.students-page__meta data-students-target="teacherMeta"
-                - if @teacher
-                  = @teacher[:jobTitle].presence || t('app.common.teacher')
-            .students-page__teacher-actions
-              - if can_manage_teachers? && @teacher
-                a.students-page__view-btn href=teacher_path(@teacher[:id]) data-students-target="teacherLink" = t('app.students.view_profile')
-              - if can_assign_teacher?
-                button.students-page__olive-btn type="button" data-action="students#openAssign" data-id=student[:id]
-                  = icon_tag 'user-check', size: 16
-                  span = t('app.students.change_teacher')
-                button.students-page__danger-btn type="button" data-action="students#openRemove"
-                  = icon_tag 'user-x', size: 16
-                  span = t('app.students.remove_assignment')
+      .students-page__tab-panel class=(active_tab == 'lessons' ? nil : 'is-hidden') role="tabpanel" id="student-panel-lessons" aria-labelledby="student-tab-lessons" hidden=(active_tab == 'lessons' ? nil : true) data-profile-tabs-target="panel" data-tab="lessons"
+        = render 'students/profile/lessons', student: student, lessons: lessons
 
-          .students-page__teacher-card-body data-students-target="unassignedBlock" hidden=(@teacher.present? ? true : nil)
-            .students-page__empty-icon
-              = icon_tag 'user-plus', size: 22
-            div
-              p.students-page__name = t('app.students.no_teacher')
-              p.students-page__meta = t('app.students.no_teacher_hint')
-            - if can_assign_teacher?
-              button.students-page__primary-btn type="button" data-action="students#openAssign" data-id=student[:id]
-                = icon_tag 'user-check', size: 18
-                span = t('app.students.assign_teacher_cta')
+      .students-page__tab-panel class=(active_tab == 'homework' ? nil : 'is-hidden') role="tabpanel" id="student-panel-homework" aria-labelledby="student-tab-homework" hidden=(active_tab == 'homework' ? nil : true) data-profile-tabs-target="panel" data-tab="homework"
+        = render 'students/profile/homework', homework: homework
 
-        - if @next_lesson
-          section.students-page__teacher-card
-            .students-page__teacher-card-head
-              h2 = t('app.students.next_lesson')
-              = link_to t('app.students.schedule_lesson'), calendar_path(studentId: student[:id]), class: 'students-page__secondary-btn'
-            p.students-page__name = @next_lesson[:title].presence || @next_lesson[:subject]
-            p.students-page__meta = "#{@next_lesson[:date]} · #{@next_lesson[:startTime]} · #{@next_lesson[:teacher]}"
-
-      .students-page__panel hidden="hidden" data-profile-tabs-target="panel" data-tab="lessons"
-        section.students-page__teacher-card
-          .students-page__teacher-card-head
-            h2 = t('app.students.tab_lessons')
-            = link_to t('app.students.schedule_lesson'), calendar_path(studentId: student[:id]), class: 'students-page__secondary-btn'
-          - if @student_lessons.blank?
-            p.students-page__meta = t('app.students.no_lessons')
-          - else
-            ul.students-page__lesson-list
-              - @student_lessons.each do |lesson|
-                li
-                  strong = lesson[:title].presence || lesson[:subject]
-                  span = "#{lesson[:date]} · #{lesson[:startTime]} · #{lesson[:teacher]}"
-
-      .students-page__panel hidden="hidden" data-profile-tabs-target="panel" data-tab="homework"
-        section.students-page__teacher-card
-          h2 = t('app.students.tab_homework')
-          - if @student_homework.blank?
-            p.students-page__meta = t('app.students.homework_empty')
-          - else
-            ul.students-page__lesson-list
-              - @student_homework.each do |item|
-                li
-                  strong = item[:title]
-                  span = "#{item[:dueDate]} · #{item[:teacher]} · #{t("app.student_portal.homework.statuses.#{Demo::Portal.facing_status(item)}", default: item[:status])}"
-
-      .students-page__panel hidden="hidden" data-profile-tabs-target="panel" data-tab="progress"
-        section.students-page__teacher-card
-          h2 = t('app.students.tab_progress')
-          - if @student_progress.blank?
-            p.students-page__meta = t('app.students.progress_empty')
-          - else
-            p.students-page__name = "#{@student_progress[:overallPercent]}%"
-            p.students-page__meta = [@student_progress[:focus], @student_progress[:goal]].compact_blank.join(' · ')
-            ul.students-page__lesson-list
-              - Array(@student_progress[:skills]).each do |skill|
-                li
-                  strong = skill[:name]
-                  span = "#{skill[:percent]}%"
-            - Array(@student_progress[:milestones]).each do |milestone|
-              p.students-page__meta = "#{milestone[:date]} · #{milestone[:title]}"
-
-      .students-page__panel hidden="hidden" data-profile-tabs-target="panel" data-tab="notes"
-        section.students-page__teacher-card
-          h2 = t('app.students.tab_notes')
-          - if @student_notes.blank?
-            p.students-page__meta = t('app.students.notes_empty')
-          - else
-            ul.students-page__lesson-list
-              - @student_notes.each do |note|
-                li
-                  strong = note[:author]
-                  span = note[:body]
+      .students-page__tab-panel class=(active_tab == 'progress' ? nil : 'is-hidden') role="tabpanel" id="student-panel-progress" aria-labelledby="student-tab-progress" hidden=(active_tab == 'progress' ? nil : true) data-profile-tabs-target="panel" data-tab="progress"
+        = render 'students/profile/progress', progress: @student_progress
 
       - if can_view_finance?
-        .students-page__panel hidden="hidden" data-profile-tabs-target="panel" data-tab="payments"
-          section.students-page__teacher-card
-            .students-page__teacher-card-head
-              h2 = t('app.students.tab_payments')
-              span.status-badge.status-badge--neutral = t('app.students.payments_admin_only')
-            - if can_manage_payments?
-              .students-page__hero-contacts
-                button.students-page__secondary-btn type="button" data-action="students#toastMessage" data-message=t('app.payments.payment_added') = t('app.students.add_payment')
-                button.students-page__secondary-btn type="button" data-action="students#toastMessage" data-message=t('app.payments.adjusted') = t('app.students.add_adjustment')
-            - if @finance
-              .students-page__info-grid
-                .students-page__info-card
-                  h2 = t('app.students.current_balance')
-                  p.students-page__name = money_label(@finance[:availableBalanceCents], @finance[:currency])
-                .students-page__info-card
-                  h2 = t('app.students.total_paid')
-                  p.students-page__name = money_label(@finance[:totalPaidCents], @finance[:currency])
-                .students-page__info-card
-                  h2 = t('app.students.outstanding')
-                  p.students-page__name = money_label(@finance[:outstandingCents], @finance[:currency])
-                .students-page__info-card
-                  h2 = t('app.students.lesson_charges')
-                  p.students-page__name = @finance[:lessonChargeCount]
-              - if @finance[:pendingPaymentsCount].to_i.positive?
-                p.students-page__meta = t('app.student_portal.payments.pending_title')
-              - if @finance[:transactions].present?
-                ul.students-page__lesson-list
-                  - @finance[:transactions].each do |item|
-                    li
-                      strong = item[:description]
-                      span = "#{item[:date]} · #{signed_money_label(item[:amountCents], item[:currency])}"
-            - else
-              p.students-page__meta = t('app.students.payments_empty')
+        .students-page__tab-panel class=(active_tab == 'payments' ? nil : 'is-hidden') role="tabpanel" id="student-panel-payments" aria-labelledby="student-tab-payments" hidden=(active_tab == 'payments' ? nil : true) data-profile-tabs-target="panel" data-tab="payments"
+          = render 'students/profile/payments', student: student, finance: @finance, pricing: @pricing, balance_cents: @balance_cents
+
+      .students-page__tab-panel class=(active_tab == 'notes' ? nil : 'is-hidden') role="tabpanel" id="student-panel-notes" aria-labelledby="student-tab-notes" hidden=(active_tab == 'notes' ? nil : true) data-profile-tabs-target="panel" data-tab="notes"
+        = render 'students/profile/notes', notes: notes
 
     - if can_assign_teacher?
       .students-page__dialog[hidden] data-students-target="dialog"
@@ -248,3 +82,14 @@
           .students-page__dialog-actions
             button.students-page__secondary-btn type="button" data-action="students#closeRemove" = t('app.common.cancel')
             button.students-page__danger-btn type="button" data-action="students#confirmRemove" = t('app.students.remove_assignment')
+
+    .students-page__dialog[hidden] data-students-target="deleteDialog"
+      .students-page__dialog-backdrop data-action="click->students#closeDelete"
+      .students-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-student-title"
+        h2#delete-student-title = t('app.students.delete_title')
+        p = t('app.students.delete_text')
+        p.sr-only data-students-target="deleteName"
+        = form_with url: student_path(student[:id]), method: :delete, html: { hidden: true, data: { students_target: 'deleteForm' } }
+        .students-page__dialog-actions
+          button.students-page__secondary-btn type="button" data-action="students#closeDelete" = t('app.common.cancel')
+          button.students-page__danger-btn type="button" data-action="students#confirmDelete" = t('app.students.delete_confirm')
