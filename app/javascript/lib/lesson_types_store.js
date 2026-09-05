@@ -1,4 +1,4 @@
-const STORAGE_KEY = "danlio.lesson-types.v1"
+const STORAGE_KEY = "danlio.lesson-types.v3"
 
 const LEGACY_TYPE_NAMES = {
   individual: "Individual lesson",
@@ -7,39 +7,88 @@ const LEGACY_TYPE_NAMES = {
   consultation: "Consultation"
 }
 
+const KIND_NAMES = {
+  individual: "Individual",
+  group: "Group",
+  trial: "Trial"
+}
+
+let lessonTypes = []
+let links = []
 let seedLessons = []
 
-function read() {
+function readStored() {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed?.lessonTypes) || !Array.isArray(parsed?.links)) return null
-    return parsed
+    return {
+      lessonTypes: parsed.lessonTypes.map(normalizeType),
+      links: parsed.links
+    }
   } catch {
     return null
   }
 }
 
-function write(state) {
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+function persist() {
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ lessonTypes, links }))
+  } catch {
+    // Private mode or blocked storage — in-memory catalog still works.
+  }
 }
 
-function state() {
-  return read() || { lessonTypes: [], links: [] }
+function inferKind(item) {
+  if (item.kind) return item.kind
+  const name = String(item.name || "").toLowerCase()
+  if (name.includes("trial")) return "trial"
+  if (name.includes("group") && item.mode === "group") return "group"
+  if (name.includes("individual")) return "individual"
+  return "custom"
+}
+
+function normalizeType(item) {
+  const kind = inferKind(item)
+  const isFree = item.isFree === true || (item.isFree == null && kind === "trial")
+  return {
+    ...item,
+    subjectName: normalizeName(item.subjectName) || "General",
+    kind,
+    isFree,
+    defaultPriceCents: isFree ? 0 : item.defaultPriceCents
+  }
 }
 
 export function initLessonTypesStore(seed = {}) {
   seedLessons = Array.isArray(seed.lessons) ? seed.lessons : seedLessons
-  if (read()) return
-  write({
-    lessonTypes: Array.isArray(seed.lessonTypes) ? seed.lessonTypes : [],
-    links: Array.isArray(seed.links) ? seed.links : []
-  })
+  const seededTypes = (Array.isArray(seed.lessonTypes) ? seed.lessonTypes : []).map(normalizeType)
+  const seededLinks = Array.isArray(seed.links) ? seed.links : []
+  const stored = readStored()
+
+  if (stored?.lessonTypes?.length) {
+    lessonTypes = stored.lessonTypes.map(normalizeType)
+    links = stored.links
+    const have = new Set(lessonTypes.map((item) => item.id))
+    seededTypes.forEach((item) => {
+      if (!have.has(item.id)) lessonTypes.push(item)
+    })
+  } else {
+    lessonTypes = seededTypes
+    links = seededLinks
+  }
+  persist()
 }
 
 export function listLessonTypes() {
-  return [...state().lessonTypes].sort((a, b) => a.name.localeCompare(b.name))
+  return [...lessonTypes].sort(
+    (a, b) => a.subjectName.localeCompare(b.subjectName) || a.name.localeCompare(b.name)
+  )
+}
+
+export function listSubjectNames() {
+  return [...new Set(listLessonTypes().map((item) => item.subjectName))]
 }
 
 export function listActiveLessonTypes() {
@@ -47,7 +96,7 @@ export function listActiveLessonTypes() {
 }
 
 export function getLessonTypeById(id) {
-  return state().lessonTypes.find((item) => String(item.id) === String(id))
+  return lessonTypes.find((item) => String(item.id) === String(id))
 }
 
 export function formatMoney(cents, currency = "UAH") {
@@ -73,6 +122,16 @@ export function priceSuffix(priceType) {
   return priceType === "per_student" ? " / student" : " / lesson"
 }
 
+export function lessonTypeDisplayName(item) {
+  if (!item) return ""
+  return item.subjectName ? `${item.subjectName} · ${item.name}` : item.name
+}
+
+export function kindDisplayName(kind, customName) {
+  if (kind === "custom") return normalizeName(customName)
+  return KIND_NAMES[kind] || normalizeName(customName)
+}
+
 function normalizeName(name) {
   return String(name || "").trim().replace(/\s+/g, " ")
 }
@@ -81,56 +140,74 @@ function normalizePriceType(mode, priceType) {
   return mode === "individual" ? "per_lesson" : priceType
 }
 
-function findDuplicateName(name, excludeId) {
-  const needle = name.trim().toLowerCase()
-  return state().lessonTypes.find(
-    (item) => item.id !== excludeId && item.name.toLowerCase() === needle
+function findDuplicateName(subjectName, name, excludeId) {
+  const subjectNeedle = String(subjectName || "").trim().toLowerCase()
+  const nameNeedle = String(name || "").trim().toLowerCase()
+  return lessonTypes.find(
+    (item) =>
+      item.id !== excludeId &&
+      item.subjectName.toLowerCase() === subjectNeedle &&
+      item.name.toLowerCase() === nameNeedle
   )
 }
 
 export function createLessonType(input) {
-  const name = normalizeName(input.name)
+  const subjectName = normalizeName(input.subjectName)
+  if (!subjectName) return { ok: false, message: "subject" }
+  const kind = input.kind || inferKind(input)
+  const name = normalizeName(input.name) || (kind === "custom" ? "" : kindDisplayName(kind))
   if (!name) return { ok: false, message: "name" }
-  if (findDuplicateName(name)) return { ok: false, message: "duplicate" }
+  if (findDuplicateName(subjectName, name)) return { ok: false, message: "duplicate" }
 
+  const isFree = input.isFree === true
   const lessonType = {
     id: `lt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    subjectName,
+    kind,
     name,
     mode: input.mode === "group" ? "group" : "individual",
     defaultDurationMinutes: Number(input.defaultDurationMinutes) || 60,
-    defaultPriceCents: Number.isFinite(input.defaultPriceCents) ? input.defaultPriceCents : 0,
+    defaultPriceCents: isFree ? 0 : (Number.isFinite(input.defaultPriceCents) ? input.defaultPriceCents : 0),
     currency: input.currency || "UAH",
     priceType: normalizePriceType(input.mode, input.priceType || "per_lesson"),
+    isFree,
     isActive: input.isActive !== false,
     description: input.description || undefined
   }
-  const current = state()
-  write({ ...current, lessonTypes: [...current.lessonTypes, lessonType] })
+  lessonTypes = [...lessonTypes, lessonType]
+  persist()
   return { ok: true, lessonType }
 }
 
 export function updateLessonType(id, patch) {
-  const current = state()
-  const existing = current.lessonTypes.find((item) => item.id === id)
+  const existing = lessonTypes.find((item) => item.id === id)
   if (!existing) return { ok: false, message: "missing" }
 
-  const name = patch.name != null ? normalizeName(patch.name) : existing.name
+  const subjectName = patch.subjectName != null ? normalizeName(patch.subjectName) : existing.subjectName
+  if (!subjectName) return { ok: false, message: "subject" }
+  const kind = patch.kind ?? existing.kind
+  const name = patch.name != null
+    ? (normalizeName(patch.name) || (kind === "custom" ? "" : kindDisplayName(kind)))
+    : existing.name
   if (!name) return { ok: false, message: "name" }
-  if (findDuplicateName(name, id)) return { ok: false, message: "duplicate" }
+  if (findDuplicateName(subjectName, name, id)) return { ok: false, message: "duplicate" }
 
   const mode = patch.mode ?? existing.mode
+  const isFree = patch.isFree ?? existing.isFree
   const next = {
     ...existing,
     ...patch,
+    subjectName,
+    kind,
     name,
     mode,
     priceType: normalizePriceType(mode, patch.priceType ?? existing.priceType),
+    defaultPriceCents: isFree ? 0 : (patch.defaultPriceCents ?? existing.defaultPriceCents),
+    isFree,
     id: existing.id
   }
-  write({
-    ...current,
-    lessonTypes: current.lessonTypes.map((item) => (item.id === id ? next : item))
-  })
+  lessonTypes = lessonTypes.map((item) => (item.id === id ? next : item))
+  persist()
   return { ok: true, lessonType: next }
 }
 
@@ -153,12 +230,35 @@ export function deleteLessonType(id) {
     updateLessonType(id, { isActive: false })
     return { ok: true, deactivatedInstead: true }
   }
-  const current = state()
-  write({
-    lessonTypes: current.lessonTypes.filter((item) => item.id !== id),
-    links: current.links.filter((item) => item.lessonTypeId !== id)
-  })
+  lessonTypes = lessonTypes.filter((item) => item.id !== id)
+  links = links.filter((item) => item.lessonTypeId !== id)
+  persist()
   return { ok: true, deactivatedInstead: false }
+}
+
+export function renameSubject(oldName, newName) {
+  const trimmed = normalizeName(newName)
+  if (!trimmed) return { ok: false, message: "subject" }
+  if (
+    trimmed.toLowerCase() !== String(oldName || "").trim().toLowerCase() &&
+    listSubjectNames().some((name) => name.toLowerCase() === trimmed.toLowerCase())
+  ) {
+    return { ok: false, message: "duplicate_lesson" }
+  }
+
+  const needle = String(oldName || "").trim().toLowerCase()
+  lessonTypes = lessonTypes.map((item) =>
+    item.subjectName.toLowerCase() === needle ? { ...item, subjectName: trimmed } : item
+  )
+  persist()
+  return { ok: true }
+}
+
+export function deleteSubject(subjectName) {
+  const needle = String(subjectName || "").trim().toLowerCase()
+  const types = lessonTypes.filter((item) => item.subjectName.toLowerCase() === needle)
+  types.forEach((item) => deleteLessonType(item.id))
+  return { ok: true }
 }
 
 function teacherMatches(link, teacherId, teacherEmail) {
@@ -168,13 +268,13 @@ function teacherMatches(link, teacherId, teacherEmail) {
 }
 
 export function listTeacherLinks(teacherId, teacherEmail) {
-  return state().links.filter((link) => teacherMatches(link, teacherId, teacherEmail))
+  return links.filter((link) => teacherMatches(link, teacherId, teacherEmail))
 }
 
 export function getEffectiveLessonTypesForTeacher(teacherId, teacherEmail) {
-  const links = listTeacherLinks(teacherId, teacherEmail)
+  const teacherLinks = listTeacherLinks(teacherId, teacherEmail)
   return listActiveLessonTypes().map((lessonType) => {
-    const link = links.find((item) => item.lessonTypeId === lessonType.id)
+    const link = teacherLinks.find((item) => item.lessonTypeId === lessonType.id)
     return {
       lessonType,
       enabled: link?.enabled ?? true,
@@ -190,10 +290,9 @@ export function getBookableLessonTypesForTeacher(teacherId, teacherEmail) {
 }
 
 export function saveTeacherLessonTypeAccess(teacherId, teacherEmail, rows) {
-  const current = state()
-  const untouched = current.links.filter((item) => !teacherMatches(item, teacherId, teacherEmail))
+  const untouched = links.filter((item) => !teacherMatches(item, teacherId, teacherEmail))
   const upserted = rows.map((row) => {
-    const existing = current.links.find(
+    const existing = links.find(
       (item) => teacherMatches(item, teacherId, teacherEmail) && item.lessonTypeId === row.lessonTypeId
     )
     return {
@@ -205,18 +304,19 @@ export function saveTeacherLessonTypeAccess(teacherId, teacherEmail, rows) {
       priceOverrideCents: row.priceOverrideCents ?? null
     }
   })
-  write({ ...current, links: [...untouched, ...upserted] })
+  links = [...untouched, ...upserted]
+  persist()
 }
 
 export function lessonTypeNameForLesson(lesson) {
   if (lesson?.lessonTypeName) return lesson.lessonTypeName
-  const fromId = lesson?.lessonTypeId && getLessonTypeById(lesson.lessonTypeId)?.name
-  if (fromId) return fromId
+  const fromId = lesson?.lessonTypeId && getLessonTypeById(lesson.lessonTypeId)
+  if (fromId) return lessonTypeDisplayName(fromId)
   return LEGACY_TYPE_NAMES[lesson?.type] || lesson?.type || ""
 }
 
 export function uniqueLessonTypeNames() {
-  const names = new Set(listLessonTypes().map((item) => item.name))
+  const names = new Set(listLessonTypes().map((item) => lessonTypeDisplayName(item)))
   seedLessons.forEach((lesson) => {
     const name = lessonTypeNameForLesson(lesson)
     if (name) names.add(name)

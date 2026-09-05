@@ -9,14 +9,17 @@ section.students-page__profile-panel.students-page__teacher-panel
     .students-page__assign-identity
       span.students-page__avatar.students-page__avatar--md data-students-target="teacherAvatar"
         - if @teacher
-          = [@teacher[:firstName].to_s[0], @teacher[:lastName].to_s[0]].join
-      div
+          - if @teacher[:photo].present?
+            img.students-page__avatar-img alt="" src=@teacher[:photo]
+          - else
+            = teacher_picker_initials(@teacher)
+      .students-page__teacher-copy
         p.students-page__name data-students-target="teacherName"
           - if @teacher
-            = @teacher[:displayName].presence || "#{@teacher[:firstName]} #{@teacher[:lastName]}"
+            = teacher_picker_name(@teacher)
         p.students-page__meta data-students-target="teacherMeta"
           - if @teacher
-            = [@teacher[:jobTitle].presence || Array(@teacher[:subjects]).first(2).join(', ').presence || t('app.common.teacher'), t("app.statuses.#{@teacher[:status]}", default: @teacher[:status].to_s.humanize)].compact_blank.join(' · ')
+            = teacher_picker_role_line(@teacher)
     .students-page__teacher-actions
       - if can_manage_teachers?
         a.students-page__ghost-btn href=(@teacher ? teacher_path(@teacher[:id]) : '#') data-students-target="teacherLink" = t('app.students.view_profile')

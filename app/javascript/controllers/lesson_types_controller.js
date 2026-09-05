@@ -1,14 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
+import { closeModal, openModal } from "../lib/modal"
 import {
   createLessonType,
   deleteLessonType,
+  deleteSubject,
   formatMoney,
   formatPriceInput,
   getEffectiveLessonTypesForTeacher,
   initLessonTypesStore,
+  kindDisplayName,
+  listActiveLessonTypes,
   listLessonTypes,
   parsePriceInput,
   priceSuffix,
+  renameSubject,
   saveTeacherLessonTypeAccess,
   setLessonTypeActive,
   updateLessonType
@@ -16,42 +21,55 @@ import {
 
 const DURATIONS = [30, 45, 60, 90, 120]
 const CURRENCIES = ["UAH", "EUR", "USD", "GBP", "PLN"]
+const KINDS = ["individual", "group", "trial", "custom"]
 
 const ICONS = {
-  plus: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
-  pencil: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
-  trash: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  plus: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  pencil: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  trash: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  x: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
   clipboard: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/></svg>'
 }
 
 export default class extends Controller {
   static targets = [
     "toast",
+    "seedJson",
     "list",
     "empty",
     "accessList",
     "listError",
+    "newSubject",
     "dialog",
     "dialogTitle",
+    "dialogSubject",
+    "dialogSubmit",
     "formError",
+    "kind",
     "name",
+    "customNameWrap",
     "mode",
+    "modeWrap",
     "priceTypeWrap",
     "priceType",
     "duration",
     "price",
     "currency",
+    "free",
+    "freeHint",
+    "perStudentHint",
     "description",
     "active",
     "nameError",
     "durationError",
     "priceError",
     "deleteDialog",
-    "deleteName"
+    "deleteName",
+    "subjectDeleteDialog",
+    "subjectDeleteName"
   ]
 
   static values = {
-    seed: Object,
     i18n: Object,
     mode: { type: String, default: "catalog" },
     teacherId: String,
@@ -62,10 +80,57 @@ export default class extends Controller {
   }
 
   connect() {
-    initLessonTypesStore(this.seedValue || {})
+    this.pendingSubjects = []
+    this.renamingSubject = null
     this.dialogTargetId = null
+    this.dialogSubjectName = ""
     this.pendingDeleteId = null
-    this.render()
+    this.pendingDeleteSubject = null
+    try {
+      initLessonTypesStore(this.readSeed())
+    } catch (error) {
+      console.error("lesson-types seed", error)
+    }
+    this.bindAddLesson()
+    try {
+      this.render()
+    } catch (error) {
+      console.error("lesson-types render", error)
+    }
+  }
+
+  disconnect() {
+    if (this.hasDialogTarget) closeModal(this.dialogTarget)
+    if (this.hasDeleteDialogTarget) closeModal(this.deleteDialogTarget)
+    if (this.hasSubjectDeleteDialogTarget) closeModal(this.subjectDeleteDialogTarget)
+  }
+
+  readSeed() {
+    if (!this.hasSeedJsonTarget) return {}
+    try {
+      return JSON.parse(this.seedJsonTarget.textContent || "{}")
+    } catch (error) {
+      console.error("lesson-types seed json", error)
+      return {}
+    }
+  }
+
+  bindAddLesson() {
+    const button = this.element.querySelector("[data-role='add-lesson']")
+    const input = this.newSubjectInput()
+    if (button && !button.dataset.ltBound) {
+      button.dataset.ltBound = "1"
+      button.addEventListener("click", (event) => this.addSubject(event))
+    }
+    if (input && !input.dataset.ltBound) {
+      input.dataset.ltBound = "1"
+      input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return
+        event.preventDefault()
+        event.stopPropagation()
+        this.addSubject(event)
+      })
+    }
   }
 
   t(key, fallback) {
@@ -78,6 +143,18 @@ export default class extends Controller {
     this.toastTarget.hidden = false
     window.clearTimeout(this.toastTimer)
     this.toastTimer = window.setTimeout(() => { this.toastTarget.hidden = true }, 3200)
+  }
+
+  catalogForMode() {
+    return this.modeValue === "teacher" ? listActiveLessonTypes() : listLessonTypes()
+  }
+
+  subjectNames() {
+    const names = [...new Set(this.catalogForMode().map((item) => item.subjectName))]
+    this.pendingSubjects.forEach((pending) => {
+      if (!names.some((name) => name.toLowerCase() === pending.toLowerCase())) names.push(pending)
+    })
+    return names
   }
 
   render() {
@@ -94,19 +171,74 @@ export default class extends Controller {
 
   renderCatalog() {
     if (!this.hasListTarget) return
-    const types = listLessonTypes()
-    if (this.hasEmptyTarget) this.emptyTarget.hidden = types.length > 0
-    this.listTarget.hidden = types.length === 0
-    this.listTarget.innerHTML = types.map((item) => this.catalogRow(item)).join("")
+    const subjects = this.subjectNames()
+    if (this.hasEmptyTarget) this.emptyTarget.hidden = subjects.length > 0
+    this.listTarget.hidden = subjects.length === 0
+    this.listTarget.innerHTML = subjects.map((subjectName) => this.subjectCard(subjectName, "catalog")).join("")
+  }
+
+  renderTeacherAccess() {
+    if (!this.hasAccessListTarget) return
+    const subjects = this.subjectNames()
+    if (!subjects.length) {
+      this.accessListTarget.innerHTML = `<p class="lt-empty-inline">${esc(this.t("none_yet", "No lessons yet — add the first one below."))}</p>`
+      return
+    }
+    this.accessListTarget.innerHTML = subjects.map((subjectName) => this.subjectCard(subjectName, "teacher")).join("")
+  }
+
+  subjectCard(subjectName, mode) {
+    const types = this.catalogForMode().filter((item) => item.subjectName === subjectName)
+    const rows = mode === "teacher"
+      ? getEffectiveLessonTypesForTeacher(this.teacherIdValue, this.teacherEmailValue)
+      : types.map((lessonType) => ({ lessonType }))
+    const body = types.map((lessonType) => {
+      if (mode === "teacher") {
+        const row = rows.find((item) => item.lessonType.id === lessonType.id)
+        return row ? this.accessRow(row) : ""
+      }
+      return this.catalogRow(lessonType)
+    }).join("")
+
+    return `<article class="lt-subject">
+      ${this.subjectHeader(subjectName, types.length, mode)}
+      ${body ? `<div class="lt-subject__types">${body}</div>` : ""}
+      <button type="button" class="lt-add-type" data-action="lesson-types#openNewForSubject" data-subject="${esc(subjectName)}">
+        ${ICONS.plus}
+        ${esc(this.t("add_lesson_type", "Add lesson type"))}
+      </button>
+    </article>`
+  }
+
+  subjectHeader(subjectName, typeCount, mode) {
+    if (mode !== "teacher") {
+      return `<p class="lt-subject__name">${esc(subjectName)}</p>`
+    }
+    if (this.renamingSubject === subjectName) {
+      return `<div class="lt-subject__rename">
+                    <input type="text" value="${esc(subjectName)}" aria-label="${esc(this.t("lesson_name", "Lesson name"))}" data-role="rename-input" data-action="keydown.enter->lesson-types#confirmRename">
+        <button type="button" class="lt-rename-save" data-action="lesson-types#confirmRename">${esc(this.t("save_rename", "Save"))}</button>
+        <button type="button" class="lt-icon-btn" data-action="lesson-types#cancelRename" aria-label="${esc(this.t("cancel_rename", "Cancel rename"))}">${ICONS.x}</button>
+      </div>`
+    }
+    return `<div class="lt-subject__head">
+      <p class="lt-subject__name">${esc(subjectName)}</p>
+      <div class="lt-row__actions">
+        <button type="button" class="lt-icon-btn" title="${esc(this.t("rename_lesson", "Rename lesson"))}" aria-label="${esc(this.t("rename_lesson", "Rename lesson"))}: ${esc(subjectName)}" data-action="lesson-types#startRename" data-subject="${esc(subjectName)}">${ICONS.pencil}</button>
+        <button type="button" class="lt-icon-btn lt-icon-btn--danger" title="${esc(this.t("delete_lesson", "Delete lesson"))}" aria-label="${esc(this.t("delete_lesson", "Delete lesson"))}: ${esc(subjectName)}" data-action="lesson-types#askDeleteSubject" data-subject="${esc(subjectName)}" data-count="${typeCount}">${ICONS.trash}</button>
+      </div>
+    </div>`
   }
 
   catalogRow(item) {
-    const price = `${formatMoney(item.defaultPriceCents, item.currency)}${priceSuffix(item.priceType)}`
+    const price = item.isFree
+      ? this.t("free", "Free")
+      : `${formatMoney(item.defaultPriceCents, item.currency)}${priceSuffix(item.priceType)}`
     const mode = this.t(item.mode, item.mode)
     const status = item.isActive ? this.t("active", "Active") : this.t("inactive", "Inactive")
     const statusClass = item.isActive ? "olive" : "neutral"
     const deleteBtn = item.isActive
-      ? `<button type="button" class="lt-icon-btn" data-action="lesson-types#askDelete" data-id="${esc(item.id)}" aria-label="${esc(this.t("delete", "Delete"))}">${ICONS.trash}</button>`
+      ? `<button type="button" class="lt-icon-btn lt-icon-btn--danger" data-action="lesson-types#askDelete" data-id="${esc(item.id)}" aria-label="${esc(this.t("delete", "Delete"))}">${ICONS.trash}</button>`
       : `<button type="button" class="lt-text-btn" data-action="lesson-types#reactivate" data-id="${esc(item.id)}">${esc(this.t("reactivate", "Reactivate"))}</button>`
     return `<article class="lt-row ${item.isActive ? "" : "is-inactive"}">
       <div>
@@ -124,22 +256,21 @@ export default class extends Controller {
     </article>`
   }
 
-  renderTeacherAccess() {
-    if (!this.hasAccessListTarget) return
-    const rows = getEffectiveLessonTypesForTeacher(this.teacherIdValue, this.teacherEmailValue)
-    if (!rows.length) {
-      this.accessListTarget.innerHTML = `<p class="lt-empty-inline">${esc(this.t("none_yet", "No lesson types yet — add the first one below."))}</p>`
-      return
-    }
-    this.accessListTarget.innerHTML = rows.map((row) => this.accessRow(row)).join("")
-  }
-
   accessRow(row) {
     const item = row.lessonType
-    const priceLabel = `${formatPriceInput(item.defaultPriceCents)} ${item.currency}${priceSuffix(item.priceType)}`
+    const priceLabel = item.isFree
+      ? this.t("free", "Free")
+      : `${formatPriceInput(item.defaultPriceCents)} ${item.currency}${priceSuffix(item.priceType)}`
     const override = row.priceOverrideCents != null ? formatPriceInput(row.priceOverrideCents) : ""
     const enabledClass = row.enabled ? "is-on" : ""
     const enabledLabel = row.enabled ? this.t("enabled", "Enabled") : this.t("disabled", "Disabled")
+    const overrideBlock = row.enabled && !item.isFree ? `<label class="lt-override">
+        <span>${esc(this.t("price_override", "Teacher price override"))}</span>
+        <span class="lt-override__row">
+          <input type="text" inputmode="decimal" value="${esc(override)}" placeholder="${esc(formatPriceInput(item.defaultPriceCents))}" data-action="input->lesson-types#changeOverride" data-id="${esc(item.id)}">
+          <span>${esc(item.currency)}</span>
+        </span>
+      </label>` : ""
     return `<article class="lt-access" data-lesson-type-id="${esc(item.id)}">
       <div class="lt-access__head">
         <div>
@@ -152,17 +283,10 @@ export default class extends Controller {
         <div class="lt-row__actions">
           <button type="button" class="lt-toggle ${enabledClass}" data-action="lesson-types#toggleEnabled" data-id="${esc(item.id)}" aria-pressed="${row.enabled}">${esc(enabledLabel)}</button>
           <button type="button" class="lt-icon-btn" data-action="lesson-types#openEdit" data-id="${esc(item.id)}" aria-label="${esc(this.t("edit", "Edit"))}">${ICONS.pencil}</button>
-          <button type="button" class="lt-icon-btn" data-action="lesson-types#askDelete" data-id="${esc(item.id)}" aria-label="${esc(this.t("delete", "Delete"))}">${ICONS.trash}</button>
+          <button type="button" class="lt-icon-btn lt-icon-btn--danger" data-action="lesson-types#askDelete" data-id="${esc(item.id)}" aria-label="${esc(this.t("delete", "Delete"))}">${ICONS.trash}</button>
         </div>
       </div>
-      ${row.enabled ? `<label class="lt-override">
-        <span>${esc(this.t("price_override", "Teacher price override"))}</span>
-        <span class="lt-override__row">
-          <input type="text" inputmode="decimal" value="${esc(override)}" placeholder="${esc(formatPriceInput(item.defaultPriceCents))}" data-action="input->lesson-types#changeOverride" data-id="${esc(item.id)}">
-          <span>${esc(item.currency)}</span>
-        </span>
-        <small>${esc(this.t("price_override_hint", "Leave blank to use the default price"))} (${esc(priceLabel)}).</small>
-      </label>` : ""}
+      ${overrideBlock}
     </article>`
   }
 
@@ -176,9 +300,12 @@ export default class extends Controller {
     const chips = rows.map((row) => {
       const item = row.lessonType
       const extra = row.enabled
-        ? ` · ${formatMoney(row.effectivePriceCents, row.effectiveCurrency)}${priceSuffix(item.priceType)}`
+        ? (item.isFree
+          ? ` · ${this.t("free", "Free")}`
+          : ` · ${formatMoney(row.effectivePriceCents, row.effectiveCurrency)}${priceSuffix(item.priceType)}`)
         : ` · ${this.t("disabled", "Disabled")}`
-      return `<li class="lt-chip ${row.enabled ? "" : "is-off"}">${esc(item.name)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}${esc(extra)}</li>`
+      const label = item.subjectName ? `${item.subjectName} · ${item.name}` : item.name
+      return `<li class="lt-chip ${row.enabled ? "" : "is-off"}">${esc(label)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}${esc(extra)}</li>`
     }).join("")
     const manage = this.editUrlValue
       ? `<a class="lt-manage-link" href="${esc(this.editUrlValue)}">${esc(this.t("manage", "Manage lesson types"))}</a>`
@@ -186,10 +313,146 @@ export default class extends Controller {
     this.accessListTarget.innerHTML = `<ul class="lt-chips">${chips}</ul>${manage}`
   }
 
+  newSubjectInput() {
+    if (this.hasNewSubjectTarget) return this.newSubjectTarget
+    return this.element.querySelector("[data-role='new-subject']")
+  }
+
+  addSubject(event) {
+    event?.preventDefault?.()
+    event?.stopPropagation?.()
+    const input = this.newSubjectInput()
+    if (!input) {
+      this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
+      return
+    }
+    const name = input.value.trim().replace(/\s+/g, " ")
+    if (!name) {
+      input.focus()
+      this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
+      return
+    }
+    if (this.subjectNames().some((existing) => existing.toLowerCase() === name.toLowerCase())) {
+      input.value = ""
+      input.focus()
+      this.showToast(this.t("duplicate_lesson", "A lesson with this name already exists."))
+      this.safeRender()
+      return
+    }
+    input.value = ""
+    this.pendingSubjects = [...this.pendingSubjects, name]
+    this.safeRender()
+    this.showToast(this.t("lesson_added", "Lesson added."))
+  }
+
+  safeRender() {
+    try {
+      this.render()
+    } catch (error) {
+      console.error("lesson-types render", error)
+    }
+  }
+
+  startRename(event) {
+    this.renamingSubject = event.currentTarget.dataset.subject
+    this.render()
+    const input = this.element.querySelector("[data-role='rename-input']")
+    input?.focus()
+    input?.select()
+  }
+
+  cancelRename() {
+    this.renamingSubject = null
+    this.render()
+  }
+
+  confirmRename(event) {
+    event?.preventDefault?.()
+    if (!this.renamingSubject) return
+    const input = this.element.querySelector("[data-role='rename-input']")
+    const nextName = (input?.value || "").trim().replace(/\s+/g, " ")
+    if (!nextName) {
+      this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
+      return
+    }
+    const oldName = this.renamingSubject
+    const pendingIndex = this.pendingSubjects.findIndex((name) => name.toLowerCase() === oldName.toLowerCase())
+    const hasTypes = this.catalogForMode().some((item) => item.subjectName.toLowerCase() === oldName.toLowerCase())
+    if (pendingIndex >= 0 && !hasTypes) {
+      if (this.subjectNames().some((name) => name.toLowerCase() === nextName.toLowerCase() && name.toLowerCase() !== oldName.toLowerCase())) {
+        this.showToast(this.t("duplicate_lesson", "A lesson with this name already exists."))
+        return
+      }
+      this.pendingSubjects = this.pendingSubjects.map((name, index) => (index === pendingIndex ? nextName : name))
+    } else {
+      const result = renameSubject(oldName, nextName)
+      if (!result.ok) {
+        this.showToast(result.message === "duplicate_lesson"
+          ? this.t("duplicate_lesson", "A lesson with this name already exists.")
+          : this.t("lesson_name_blank", "Enter a lesson name."))
+        return
+      }
+      if (pendingIndex >= 0) {
+        this.pendingSubjects = this.pendingSubjects.map((name, index) => (index === pendingIndex ? nextName : name))
+      }
+    }
+    this.renamingSubject = null
+    this.render()
+    this.showToast(this.t("lesson_renamed", "Lesson renamed."))
+  }
+
+  askDeleteSubject(event) {
+    const subjectName = event.currentTarget.dataset.subject
+    const count = Number(event.currentTarget.dataset.count || 0)
+    if (count === 0) {
+      this.pendingSubjects = this.pendingSubjects.filter((name) => name.toLowerCase() !== subjectName.toLowerCase())
+      this.render()
+      return
+    }
+    this.pendingDeleteSubject = subjectName
+    if (this.hasSubjectDeleteNameTarget) this.subjectDeleteNameTarget.textContent = `“${subjectName}”`
+    if (this.hasSubjectDeleteDialogTarget) {
+      openModal(this.subjectDeleteDialogTarget, { onClose: () => this.closeSubjectDelete() })
+    }
+  }
+
+  closeSubjectDelete() {
+    this.pendingDeleteSubject = null
+    if (this.hasSubjectDeleteDialogTarget) closeModal(this.subjectDeleteDialogTarget)
+  }
+
+  confirmDeleteSubject() {
+    if (!this.pendingDeleteSubject) return
+    deleteSubject(this.pendingDeleteSubject)
+    this.pendingSubjects = this.pendingSubjects.filter(
+      (name) => name.toLowerCase() !== this.pendingDeleteSubject.toLowerCase()
+    )
+    this.closeSubjectDelete()
+    this.render()
+    if (this.modeValue === "teacher") this.persistAccess()
+    this.showToast(this.t("lesson_deleted", "Lesson deleted."))
+  }
+
   openNew() {
+    const subjects = this.subjectNames()
+    this.openNewForSubject({ currentTarget: { dataset: { subject: subjects[0] || "" } } })
+  }
+
+  openNewForSubject(event) {
+    event?.preventDefault?.()
     this.dialogTargetId = "new"
-    this.fillDialog(null)
-    this.showDialog()
+    this.dialogSubjectName = event.currentTarget.dataset.subject || ""
+    if (!this.dialogSubjectName) {
+      this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
+      return
+    }
+    try {
+      this.fillDialog(null)
+      this.showDialog()
+    } catch (error) {
+      console.error("lesson-types dialog", error)
+      this.showToast(this.t("invalid", "Check the highlighted fields."))
+    }
   }
 
   openEdit(event) {
@@ -197,6 +460,7 @@ export default class extends Controller {
     const item = listLessonTypes().find((row) => row.id === id)
     if (!item) return
     this.dialogTargetId = id
+    this.dialogSubjectName = item.subjectName
     this.fillDialog(item)
     this.showDialog()
   }
@@ -207,36 +471,81 @@ export default class extends Controller {
         ? this.t("edit_title", "Edit lesson type")
         : this.t("add_title", "Add lesson type")
     }
-    this.nameTarget.value = item?.name || ""
-    this.modeTarget.value = item?.mode || "individual"
-    this.priceTypeTarget.value = item?.priceType || "per_lesson"
-    this.durationTarget.value = item?.defaultDurationMinutes || 60
-    this.priceTarget.value = item ? formatPriceInput(item.defaultPriceCents) : ""
-    this.currencyTarget.value = item?.currency || this.defaultCurrencyValue || "UAH"
+    if (this.hasDialogSubjectTarget) this.dialogSubjectTarget.textContent = this.dialogSubjectName
+    if (this.hasDialogSubmitTarget) {
+      this.dialogSubmitTarget.textContent = item
+        ? this.t("save_changes", "Save changes")
+        : this.t("add_lesson_type", "Add lesson type")
+    }
+    if (this.hasKindTarget) this.kindTarget.value = item?.kind || "individual"
+    if (this.hasNameTarget) this.nameTarget.value = item?.kind === "custom" ? (item.name || "") : ""
+    if (this.hasModeTarget) this.modeTarget.value = item?.mode || "individual"
+    if (this.hasPriceTypeTarget) this.priceTypeTarget.value = item?.priceType || "per_lesson"
+    if (this.hasDurationTarget) this.durationTarget.value = item?.defaultDurationMinutes || 60
+    if (this.hasPriceTarget) this.priceTarget.value = item && !item.isFree ? formatPriceInput(item.defaultPriceCents) : ""
+    if (this.hasCurrencyTarget) this.currencyTarget.value = item?.currency || this.defaultCurrencyValue || "UAH"
     if (this.hasDescriptionTarget) this.descriptionTarget.value = item?.description || ""
     if (this.hasActiveTarget) this.activeTarget.checked = item ? item.isActive !== false : true
+    if (this.hasFreeTarget) this.freeTarget.checked = item ? Boolean(item.isFree) : false
     this.clearDialogErrors()
-    this.syncPriceType()
+    this.syncKindFields()
+  }
+
+  onKindChange() {
+    const kind = this.kindTarget.value
+    if (kind === "group") this.modeTarget.value = "group"
+    if (kind === "individual" || kind === "trial") this.modeTarget.value = "individual"
+    if (kind === "trial" && (!this.dialogTargetId || this.dialogTargetId === "new")) {
+      this.durationTarget.value = 30
+      if (this.hasFreeTarget) this.freeTarget.checked = true
+    }
+    this.syncKindFields()
   }
 
   onModeChange() {
-    this.syncPriceType()
+    this.syncKindFields()
   }
 
-  syncPriceType() {
-    const individual = this.modeTarget.value !== "group"
-    if (individual) this.priceTypeTarget.value = "per_lesson"
-    if (this.hasPriceTypeWrapTarget) this.priceTypeWrapTarget.hidden = individual
+  toggleFree() {
+    this.syncKindFields()
+  }
+
+  syncKindFields() {
+    if (!this.hasKindTarget || !this.hasModeTarget || !this.hasPriceTypeTarget || !this.hasPriceTarget || !this.hasCurrencyTarget) return
+    const kind = this.kindTarget.value
+    const custom = kind === "custom"
+    const group = this.modeTarget.value === "group" || kind === "group"
+    if (kind === "group") this.modeTarget.value = "group"
+    if (kind === "individual" || kind === "trial") this.modeTarget.value = "individual"
+    if (!group) this.priceTypeTarget.value = "per_lesson"
+    if (this.hasCustomNameWrapTarget) this.customNameWrapTarget.hidden = !custom
+    if (this.hasModeWrapTarget) this.modeWrapTarget.hidden = !custom
+    if (this.hasPriceTypeWrapTarget) this.priceTypeWrapTarget.hidden = this.modeTarget.value !== "group"
+    const isFree = this.hasFreeTarget && this.freeTarget.checked
+    this.priceTarget.disabled = isFree
+    this.currencyTarget.disabled = isFree
+    if (isFree) this.priceTarget.value = ""
+    if (this.hasFreeHintTarget) this.freeHintTarget.hidden = !isFree
+    if (this.hasPerStudentHintTarget) {
+      this.perStudentHintTarget.hidden = isFree || this.priceTypeTarget.value !== "per_student"
+    }
   }
 
   showDialog() {
-    this.dialogTarget.hidden = false
-    this.nameTarget.focus()
+    if (!this.hasDialogTarget) return
+    const focusTarget = this.hasCustomNameWrapTarget && this.customNameWrapTarget.hidden === false
+      ? (this.hasNameTarget ? this.nameTarget : null)
+      : (this.hasKindTarget ? this.kindTarget : null)
+    openModal(this.dialogTarget, {
+      focus: focusTarget,
+      onClose: () => this.closeDialog()
+    })
   }
 
   closeDialog() {
-    this.dialogTarget.hidden = true
+    if (this.hasDialogTarget) closeModal(this.dialogTarget)
     this.dialogTargetId = null
+    this.dialogSubjectName = ""
   }
 
   clearDialogErrors() {
@@ -255,31 +564,44 @@ export default class extends Controller {
   submitDialog(event) {
     event.preventDefault()
     this.clearDialogErrors()
-    const name = this.nameTarget.value.trim()
+    const kind = this.kindTarget.value
+    const customName = this.nameTarget.value.trim()
+    const name = kind === "custom" ? customName : (this.t(kind, kindDisplayName(kind)))
     const duration = Number(this.durationTarget.value)
-    const priceCents = parsePriceInput(this.priceTarget.value)
+    const isFree = this.hasFreeTarget && this.freeTarget.checked
+    const priceCents = isFree ? 0 : parsePriceInput(this.priceTarget.value)
     let invalid = false
-    if (!name) {
-      this.showFieldError("nameError", this.t("name_blank", "Enter a lesson type name."))
+    if (kind === "custom" && !customName) {
+      this.showFieldError("nameError", this.t("custom_name_blank", "Enter a name for this custom lesson type."))
       invalid = true
     }
     if (!Number.isInteger(duration) || duration <= 0) {
       this.showFieldError("durationError", this.t("duration_invalid", "Enter a duration greater than zero."))
       invalid = true
     }
-    if (priceCents == null || Number.isNaN(priceCents)) {
+    if (!isFree && (priceCents == null || Number.isNaN(priceCents))) {
       this.showFieldError("priceError", this.t("price_invalid", "Enter zero or a positive price."))
+      invalid = true
+    }
+    if (!this.dialogSubjectName) {
+      if (this.hasFormErrorTarget) {
+        this.formErrorTarget.textContent = this.t("lesson_name_blank", "Enter a lesson name.")
+        this.formErrorTarget.hidden = false
+      }
       invalid = true
     }
     if (invalid) return
 
     const input = {
+      subjectName: this.dialogSubjectName,
+      kind,
       name,
       mode: this.modeTarget.value,
       defaultDurationMinutes: duration,
       defaultPriceCents: priceCents,
       currency: this.currencyTarget.value,
       priceType: this.priceTypeTarget.value,
+      isFree,
       isActive: this.hasActiveTarget ? this.activeTarget.checked : true,
       description: this.hasDescriptionTarget ? this.descriptionTarget.value.trim() : ""
     }
@@ -291,8 +613,10 @@ export default class extends Controller {
 
     if (!result.ok) {
       const message = result.message === "duplicate"
-        ? this.t("duplicate", "A lesson type with this name already exists.")
-        : this.t("invalid", "Check the highlighted fields.")
+        ? this.t("duplicate", "This lesson already has a type with this name.")
+        : result.message === "name"
+          ? this.t("name_blank", "Enter a lesson type name.")
+          : this.t("invalid", "Check the highlighted fields.")
       if (this.hasFormErrorTarget) {
         this.formErrorTarget.textContent = message
         this.formErrorTarget.hidden = false
@@ -300,6 +624,9 @@ export default class extends Controller {
       return
     }
 
+    this.pendingSubjects = this.pendingSubjects.filter(
+      (name) => name.toLowerCase() !== this.dialogSubjectName.toLowerCase()
+    )
     this.closeDialog()
     this.render()
     if (this.modeValue === "teacher") this.persistAccess()
@@ -319,13 +646,15 @@ export default class extends Controller {
     const item = listLessonTypes().find((row) => row.id === id)
     if (!item) return
     this.pendingDeleteId = id
-    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = item.name
-    this.deleteDialogTarget.hidden = false
+    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = `“${item.name}”`
+    if (this.hasDeleteDialogTarget) {
+      openModal(this.deleteDialogTarget, { onClose: () => this.closeDelete() })
+    }
   }
 
   closeDelete() {
     this.pendingDeleteId = null
-    this.deleteDialogTarget.hidden = true
+    if (this.hasDeleteDialogTarget) closeModal(this.deleteDialogTarget)
   }
 
   confirmDelete() {
@@ -333,6 +662,7 @@ export default class extends Controller {
     const result = deleteLessonType(this.pendingDeleteId)
     this.closeDelete()
     this.render()
+    if (this.modeValue === "teacher") this.persistAccess()
     this.showToast(result.deactivatedInstead
       ? this.t("deactivated", "This lesson type has been used on lessons, so it was deactivated instead of deleted.")
       : this.t("deleted", "Lesson type deleted."))
@@ -417,4 +747,4 @@ function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-export { DURATIONS, CURRENCIES }
+export { DURATIONS, CURRENCIES, KINDS }

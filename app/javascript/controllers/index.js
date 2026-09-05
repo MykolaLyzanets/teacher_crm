@@ -48,3 +48,9 @@ application.register("notifications", NotificationsController)
 
 import LessonTypesController from "./lesson_types_controller"
 application.register("lesson-types", LessonTypesController)
+
+import ModalController from "./modal_controller"
+application.register("modal", ModalController)
+
+import ProfileMenuController from "./profile_menu_controller"
+application.register("profile-menu", ProfileMenuController)

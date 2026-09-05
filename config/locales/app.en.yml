@@ -12,6 +12,8 @@ en:
       reports: Reports
       messages: Messages
       settings: Settings
+      my_profile: My profile
+      log_out: Log out
       home: danlio home
     header:
       open_nav: Open navigation
@@ -25,6 +27,8 @@ en:
       owner_role: Owner
       student_role: Student
       admin_role: Admin
+      profile_menu: Profile menu
+      logging_out: Logging out…
     common:
       coming_soon: Coming soon
       view: View
@@ -85,6 +89,7 @@ en:
       search_teachers_aria: Search teachers
       assign_empty: No teachers match your search.
       assign_load: "%{count} assigned"
+      assign_current: Current
       select_teacher: Select teacher
       empty_filtered_title: No students match your filters
       empty_filtered_text: Try a different search or clear the filters.
@@ -937,30 +942,52 @@ en:
       teaching_sub: Your timezone and preferred currency for lesson types.
       default_currency: Default currency
       default_currency_hint: Prefills the currency when you add a new lesson type.
-      lesson_types_text: The lesson formats you offer, with their duration and price. These are used to prefill new lessons on your calendar.
+      lesson_types_text: Add the lessons you teach, then the types and pricing for each. These are used to prefill new lessons on your calendar.
       save: Save changes
     lesson_types:
       title: Lesson types
       card_text: Individual, group and other formats — duration and default price
-      school_text: Define the lesson formats teachers can offer, with a default duration and price. Set teacher-specific pricing from each teacher’s profile.
-      solo_text: Define the lesson formats you offer and their default price.
+      school_text: Add lessons and their pricing types. Teachers enable and price these from their own profile.
+      solo_text: Add the lessons you teach, then the types and pricing for each.
       add: Add lesson type
       add_title: Add lesson type
       edit_title: Edit lesson type
       save: Save
-      empty_title: No lesson types yet
-      empty_text: Add your first lesson type — for example “Individual lesson” or “Group lesson”.
-      none_yet: No lesson types yet — add the first one below.
+      save_changes: Save changes
+      empty_title: No lessons yet
+      empty_text: Add your first lesson — for example “English” or “Mathematics”.
+      none_yet: No lessons yet — add the first one below.
+      lessons_pricing: Lessons & Pricing
+      lessons_pricing_hint: Add a lesson (e.g. English), then add its types — Individual, Group, Trial or Custom — each with its own duration and price.
+      add_lesson: Add lesson
+      add_lesson_type: Add lesson type
+      lesson_name_placeholder: Lesson name — e.g. English
+      new_lesson_name: New lesson name
+      rename_lesson: Rename lesson
+      delete_lesson: Delete lesson
+      save_rename: Save
+      cancel_rename: Cancel rename
+      lesson_name: Lesson name
+      type: Type
+      trial: Trial
+      custom: Custom
+      custom_name: Custom type name
+      custom_name_placeholder: Speaking Club
+      custom_name_blank: Enter a name for this custom lesson type.
       name: Lesson type name
-      name_placeholder: Individual lesson
+      name_placeholder: Individual
       format: Format
       individual: Individual
       group: Group
-      price_type: Price type
+      price_type: Pricing mode
       per_lesson: Per lesson
       per_student: Per student
-      duration: Default duration
+      duration: Duration
       price: Price
+      free: Free
+      free_lesson: Free lesson
+      free_hint: Displayed as Free — no charge for this lesson type.
+      per_student_hint: Charged per student, not a flat price for the group.
       description: Description
       description_placeholder: What this lesson type covers, or who it’s for…
       active_label: Active — available for new lessons
@@ -978,14 +1005,22 @@ en:
       delete_title: Delete lesson type?
       delete_text: will no longer be available for new lessons. If it was never used on a lesson it’s removed entirely; if it was, it’s deactivated instead so historical lessons keep their record.
       delete_confirm: Delete lesson type
+      delete_lesson_title: Delete this lesson?
+      delete_lesson_text: This removes all of its lesson types. Any type already used on a lesson is deactivated instead, to keep historical records intact.
+      delete_lesson_confirm: Delete lesson
       name_blank: Enter a lesson type name.
       duration_invalid: Enter a duration greater than zero.
       price_invalid: Enter zero or a positive price.
-      duplicate: A lesson type with this name already exists.
+      duplicate: This lesson already has a type with this name.
+      duplicate_lesson: A lesson with this name already exists.
+      lesson_name_blank: Enter a lesson name.
       invalid: Check the highlighted fields.
       added: Lesson type added.
       updated: Lesson type updated.
       deleted: Lesson type deleted.
+      lesson_added: Lesson added.
+      lesson_renamed: Lesson renamed.
+      lesson_deleted: Lesson deleted.
       deactivated: This lesson type has been used on lessons, so it was deactivated instead of deleted to keep historical records intact.
       reactivated: Lesson type reactivated.
       need_one: Enable at least one lesson type for an active teacher.

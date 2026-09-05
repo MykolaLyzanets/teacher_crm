@@ -220,6 +220,10 @@ export default class extends Controller {
     }
   }
 
+  ignoreSearchEnter(event) {
+    if (event.key === "Enter") event.preventDefault()
+  }
+
   filterTeachers() {
     const query = this.hasAssignSearchTarget ? this.assignSearchTarget.value.trim().toLowerCase() : ""
     let visible = 0
@@ -394,21 +398,39 @@ export default class extends Controller {
 
   validateSubmit(event) {
     this.touched = new Set([
-      "firstName", "lastName", "email", "status", "grade",
-      "enrollmentDate", "academicYear", "parentName", "parentEmail", "parentPhone", "notes"
+      "firstName", "lastName", "email", "status",
+      "parentName", "parentEmail", "parentPhone", "notes"
     ])
     const errors = this.validate()
     this.renderErrors(errors)
     if (Object.keys(errors).length > 0) {
       event.preventDefault()
       if (this.hasFormAlertTarget) this.formAlertTarget.hidden = false
+      this.revealFirstError()
       return
     }
     if (this.hasFormAlertTarget) this.formAlertTarget.hidden = true
-    this.submitBtnTargets.forEach((btn) => {
-      btn.textContent = this.t("students", this.editingValue ? "saving" : "creating")
-      btn.disabled = true
-    })
+    this.markSubmitting()
+  }
+
+  revealFirstError() {
+    const invalid = this.element.querySelector(".students-page__field--invalid")
+    const focusable = invalid?.querySelector("input, select, textarea")
+    if (focusable) {
+      focusable.focus({ preventScroll: true })
+      invalid.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+    this.hasFormAlertTarget && this.formAlertTarget.scrollIntoView({ behavior: "smooth", block: "center" })
+  }
+
+  markSubmitting() {
+    window.setTimeout(() => {
+      this.submitBtnTargets.forEach((btn) => {
+        btn.textContent = this.t("students", this.editingValue ? "saving" : "creating")
+        btn.disabled = true
+      })
+    }, 0)
   }
 
   validate() {
@@ -417,9 +439,6 @@ export default class extends Controller {
     const last = this.hasLastNameTarget ? this.lastNameTarget.value.trim() : ""
     const email = this.hasEmailTarget ? this.emailTarget.value.trim() : ""
     const status = this.hasFormStatusTarget ? this.formStatusTarget.value : "active"
-    const grade = this.hasGradeTarget ? this.gradeTarget.value.trim() : ""
-    const enrollment = this.hasEnrollmentDateTarget ? this.enrollmentDateTarget.value : ""
-    const year = this.hasAcademicYearTarget ? this.academicYearTarget.value : ""
     const parentEmail = this.hasParentEmailTarget ? this.parentEmailTarget.value.trim() : ""
     const notes = this.hasNotesTarget ? this.notesTarget.value : ""
 
@@ -427,9 +446,6 @@ export default class extends Controller {
     if (!last) errors.lastName = this.t("students", "enter_last_name")
     if (!email || !EMAIL_RE.test(email)) errors.email = this.t("students", "enter_email")
     if (!status) errors.status = this.t("students", "select_status")
-    if (!grade) errors.grade = this.t("students", "select_grade_error")
-    if (!enrollment) errors.enrollmentDate = this.t("students", "choose_enrollment")
-    if (!year) errors.academicYear = this.t("students", "select_year")
     if (parentEmail && !EMAIL_RE.test(parentEmail)) errors.parentEmail = this.t("students", "enter_email")
     if (notes.length > 300) errors.notes = this.t("students", "notes_too_long")
     return errors

@@ -15,8 +15,17 @@
         span = item[:label]
 
   .app-sidebar__footer
+    - profile_active = controller_name == 'profiles'
     - settings_active = controller_name == 'settings'
+    = link_to profile_path, class: "app-sidebar__link#{" is-active" if profile_active}", data: (mobile ? { action: 'app-shell#close' } : {}) do
+      span.app-sidebar__icon
+        = icon_tag 'user', size: 20
+      span = t('app.nav.my_profile')
     = link_to settings_path, class: "app-sidebar__link#{" is-active" if settings_active}", data: (mobile ? { action: 'app-shell#close' } : {}) do
       span.app-sidebar__icon
         = icon_tag 'settings', size: 20
       span = t('app.nav.settings')
+    = button_to destroy_user_session_path, method: :delete, form: { class: 'app-sidebar__logout-form', data: { turbo: false } }, class: 'app-sidebar__link app-sidebar__logout' do
+      span.app-sidebar__icon
+        = icon_tag 'logout', size: 20
+      span = t('app.nav.log_out')

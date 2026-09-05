@@ -2,52 +2,93 @@
   "lessonTypes": [
     {
       "id": "lt-individual",
-      "name": "Individual lesson",
+      "subjectName": "English",
+      "kind": "individual",
+      "name": "Individual",
       "mode": "individual",
       "defaultDurationMinutes": 60,
       "defaultPriceCents": 50000,
       "currency": "UAH",
       "priceType": "per_lesson",
+      "isFree": false,
       "isActive": true
     },
     {
       "id": "lt-group",
-      "name": "Group lesson",
+      "subjectName": "English",
+      "kind": "group",
+      "name": "Group",
       "mode": "group",
       "defaultDurationMinutes": 60,
       "defaultPriceCents": 30000,
       "currency": "UAH",
       "priceType": "per_student",
+      "isFree": false,
       "isActive": true
     },
     {
       "id": "lt-trial",
-      "name": "Trial lesson",
+      "subjectName": "English",
+      "kind": "trial",
+      "name": "Trial",
       "mode": "individual",
       "defaultDurationMinutes": 30,
       "defaultPriceCents": 0,
       "currency": "UAH",
       "priceType": "per_lesson",
+      "isFree": true,
       "isActive": true
     },
     {
       "id": "lt-speaking-club",
+      "subjectName": "English",
+      "kind": "custom",
       "name": "Speaking club",
       "mode": "group",
       "defaultDurationMinutes": 60,
       "defaultPriceCents": 25000,
       "currency": "UAH",
       "priceType": "per_student",
+      "isFree": false,
       "isActive": true
     },
     {
       "id": "lt-consultation",
+      "subjectName": "English",
+      "kind": "custom",
       "name": "Consultation",
       "mode": "individual",
       "defaultDurationMinutes": 30,
       "defaultPriceCents": 0,
       "currency": "UAH",
       "priceType": "per_lesson",
+      "isFree": true,
+      "isActive": true
+    },
+    {
+      "id": "lt-math-individual",
+      "subjectName": "Mathematics",
+      "kind": "individual",
+      "name": "Individual",
+      "mode": "individual",
+      "defaultDurationMinutes": 60,
+      "defaultPriceCents": 60000,
+      "currency": "UAH",
+      "priceType": "per_lesson",
+      "isFree": false,
+      "isActive": true
+    },
+    {
+      "id": "lt-math-trial",
+      "subjectName": "Mathematics",
+      "kind": "trial",
+      "name": "Trial",
+      "mode": "individual",
+      "defaultDurationMinutes": 30,
+      "defaultPriceCents": 0,
+      "currency": "UAH",
+      "priceType": "per_lesson",
+      "isFree": true,
       "isActive": true
     }
   ],
@@ -69,18 +110,18 @@
       "priceOverrideCents": null
     },
     {
-      "id": "tlt-noah-individual",
+      "id": "tlt-noah-math-individual",
       "teacherId": "tch-noah",
       "teacherEmail": "noah.patel@example.com",
-      "lessonTypeId": "lt-individual",
+      "lessonTypeId": "lt-math-individual",
       "enabled": true,
-      "priceOverrideCents": 60000
+      "priceOverrideCents": 65000
     },
     {
-      "id": "tlt-noah-trial",
+      "id": "tlt-noah-math-trial",
       "teacherId": "tch-noah",
       "teacherEmail": "noah.patel@example.com",
-      "lessonTypeId": "lt-trial",
+      "lessonTypeId": "lt-math-trial",
       "enabled": false,
       "priceOverrideCents": null
     },

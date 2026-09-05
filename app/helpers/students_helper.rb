@@ -30,6 +30,24 @@ module StudentsHelper
   CANCELLED_LESSON_STATUSES = %w[cancelled cancelled_charged cancelled_not_charged].freeze
   HOMEWORK_DONE_STATUSES = %w[reviewed submitted].freeze
 
+  def student_grade_options(current)
+    options = Array(I18n.t('app.students.grades'))
+    current = current.to_s.strip
+    return [options, nil] if current.blank?
+
+    selected = options.find { |grade| grade == current } ||
+               options.find { |grade| student_grade_key(grade) == student_grade_key(current) }
+    options += [current] if selected.nil?
+    [options.uniq, selected || current]
+  end
+
+  def student_grade_key(value)
+    text = value.to_s.downcase
+    return 'adult' if text.match?(/adult|доросл/)
+
+    text[/\d+/]
+  end
+
   def student_display_name(student)
     student[:preferredName].presence ||
       [student[:firstName], student[:lastName]].compact_blank.join(' ').presence ||
@@ -383,8 +401,15 @@ module StudentsHelper
   end
 
   def teacher_picker_meta(teacher)
-    role = teacher[:jobTitle].presence || Array(teacher[:subjects]).first.presence || t('app.common.teacher')
-    "#{role} · #{t('app.students.assign_load', count: teacher[:assignedCount].to_i)}"
+    "#{teacher_picker_role(teacher)} · #{t('app.students.assign_load', count: teacher[:assignedCount].to_i)}"
+  end
+
+  def teacher_picker_role(teacher)
+    teacher[:jobTitle].presence || Array(teacher[:subjects]).first(2).join(', ').presence || t('app.common.teacher')
+  end
+
+  def teacher_picker_role_line(teacher)
+    [teacher_picker_role(teacher), student_status_label(teacher[:status])].compact_blank.join(' · ')
   end
 
   def teacher_picker_tone(status)

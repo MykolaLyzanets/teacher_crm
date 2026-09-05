@@ -1,6 +1,6 @@
 - editing = @editing
 - student = (@student || {}).with_indifferent_access
-- enrollment_default = student[:enrollmentDate].presence || Date.current.iso8601
+- enrollment_default = student[:enrollmentDate].presence
 - form_url = editing ? student_path(student[:id]) : students_path
 - form_method = editing ? :patch : :post
 - cancel_path = editing ? student_path(student[:id]) : students_path
@@ -161,31 +161,27 @@
       p.students-page__section-sub = t('app.students.learning_sub')
       .students-page__fields
         label.students-page__field
-          span
-            = t('app.students.grade_class')
-            span.students-page__req *
-          select name="grade" required=true data-students-target="grade" data-action="blur->students#markTouched"
+          span = t('app.students.grade_class')
+          select name="grade" data-students-target="grade" data-action="blur->students#markTouched"
             option value="" = t('app.students.select_grade')
-            - t('app.students.grades').each do |grade|
-              option selected=(grade.to_s == student[:grade].to_s) = grade
+            - grades, selected_grade = student_grade_options(student[:grade])
+            - grades.each do |grade|
+              option value=grade selected=(grade.to_s == selected_grade.to_s) = grade
           p.students-page__field-error hidden="hidden" data-error-for="grade"
         label.students-page__field
           span = t('app.students.student_id')
           input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
           span.students-page__hint = t('app.students.student_id_hint')
         label.students-page__field
-          span
-            = t('app.students.enrollment')
-            span.students-page__req *
-          input type="date" name="enrollment_date" required=true value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"
+          span = t('app.students.enrollment')
+          input type="date" name="enrollment_date" value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"
           p.students-page__field-error hidden="hidden" data-error-for="enrollmentDate"
         label.students-page__field
-          span
-            = t('app.students.academic_year')
-            span.students-page__req *
-          select name="academic_year" required=true data-students-target="academicYear" data-action="blur->students#markTouched"
+          span = t('app.students.academic_year')
+          select name="academic_year" data-students-target="academicYear" data-action="blur->students#markTouched"
+            option value="" = t('app.students.select_year')
             - StudentsHelper::ACADEMIC_YEARS.each do |year|
-              option value=year selected=(year == (student[:academicYear].presence || '2025/2026')) = year
+              option value=year selected=(year == student[:academicYear].to_s) = year
           p.students-page__field-error hidden="hidden" data-error-for="academicYear"
 
     section.students-page__card

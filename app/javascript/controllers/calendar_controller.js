@@ -4,6 +4,7 @@ import {
   formatPriceInput,
   getBookableLessonTypesForTeacher,
   initLessonTypesStore,
+  lessonTypeDisplayName,
   lessonTypeNameForLesson,
   priceSuffix,
   uniqueLessonTypeNames
@@ -352,8 +353,11 @@ export default class extends Controller {
     this.draftLessonTypeTarget.hidden = !teacher || bookable.length === 0
     this.draftLessonTypeTarget.innerHTML = `<option value="">${escapeHtml(this.t("calendar", "select_lesson_type"))}</option>` +
       bookable.map((item) => {
-        const price = `${formatMoney(item.effectivePriceCents, item.effectiveCurrency)}${priceSuffix(item.lessonType.priceType)}`
-        return `<option value="${escapeHtml(item.lessonType.id)}">${escapeHtml(item.lessonType.name)} · ${item.lessonType.defaultDurationMinutes} ${escapeHtml(this.t("calendar", "min") || "min")} · ${escapeHtml(price)}</option>`
+        const typeLabel = lessonTypeDisplayName(item.lessonType)
+        const price = item.lessonType.isFree
+          ? "Free"
+          : `${formatMoney(item.effectivePriceCents, item.effectiveCurrency)}${priceSuffix(item.lessonType.priceType)}`
+        return `<option value="${escapeHtml(item.lessonType.id)}">${escapeHtml(typeLabel)} · ${item.lessonType.defaultDurationMinutes} ${escapeHtml(this.t("calendar", "min") || "min")} · ${escapeHtml(price)}</option>`
       }).join("")
     const nextId = preferredId && bookable.some((item) => item.lessonType.id === preferredId)
       ? preferredId

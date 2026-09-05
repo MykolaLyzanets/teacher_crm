@@ -12,6 +12,8 @@ ua:
       reports: Звіти
       messages: Повідомлення
       settings: Налаштування
+      my_profile: Мій профіль
+      log_out: Вийти
       home: Головна danlio
     header:
       open_nav: Відкрити меню
@@ -25,6 +27,8 @@ ua:
       owner_role: Власник
       student_role: Учень
       admin_role: Адмін
+      profile_menu: Меню профілю
+      logging_out: Вихід…
     common:
       coming_soon: Незабаром
       view: Переглянути
@@ -85,6 +89,7 @@ ua:
       search_teachers_aria: Пошук викладачів
       assign_empty: Немає викладачів за цим запитом.
       assign_load: "%{count} призначено"
+      assign_current: Поточний
       select_teacher: Оберіть викладача
       empty_filtered_title: Немає учнів за вашими фільтрами
       empty_filtered_text: Спробуйте інший пошук або очистіть фільтри.
@@ -943,30 +948,52 @@ ua:
       teaching_sub: Часовий пояс і валюта для типів уроків.
       default_currency: Валюта за замовчуванням
       default_currency_hint: Підставляється, коли ви додаєте новий тип уроку.
-      lesson_types_text: Формати уроків із тривалістю та ціною. Їх використовують, щоб заповнити новий урок у календарі.
+      lesson_types_text: Додайте уроки, які ви викладаєте, а потім типи та ціни для кожного. Їх використовують, щоб заповнити новий урок у календарі.
       save: Зберегти зміни
     lesson_types:
       title: Типи уроків
       card_text: Індивідуальні, групові та інші формати — тривалість і ціна
-      school_text: Визначте формати уроків для викладачів із типовою тривалістю та ціною. Індивідуальну ціну викладача задайте в його профілі.
-      solo_text: Визначте формати уроків, які ви пропонуєте, і їхню типову ціну.
+      school_text: Додайте уроки та типи з цінами. Викладачі вмикають їх і задають свою ціну в профілі.
+      solo_text: Додайте уроки, які ви викладаєте, а потім типи та ціни для кожного.
       add: Додати тип уроку
       add_title: Додати тип уроку
       edit_title: Редагувати тип уроку
       save: Зберегти
-      empty_title: Типів уроків ще немає
-      empty_text: Додайте перший тип — наприклад «Індивідуальний урок» або «Груповий урок».
-      none_yet: Типів уроків ще немає — додайте перший нижче.
+      save_changes: Зберегти зміни
+      empty_title: Уроків ще немає
+      empty_text: Додайте перший урок — наприклад «English» або «Mathematics».
+      none_yet: Уроків ще немає — додайте перший нижче.
+      lessons_pricing: Уроки та ціни
+      lessons_pricing_hint: Додайте урок (наприклад English), а потім його типи — Individual, Group, Trial або Custom — кожен зі своєю тривалістю та ціною.
+      add_lesson: Додати урок
+      add_lesson_type: Додати тип уроку
+      lesson_name_placeholder: Назва уроку — наприклад English
+      new_lesson_name: Назва нового уроку
+      rename_lesson: Перейменувати урок
+      delete_lesson: Видалити урок
+      save_rename: Зберегти
+      cancel_rename: Скасувати перейменування
+      lesson_name: Назва уроку
+      type: Тип
+      trial: Пробний
+      custom: Інший
+      custom_name: Назва типу
+      custom_name_placeholder: Speaking Club
+      custom_name_blank: Введіть назву цього типу уроку.
       name: Назва типу
-      name_placeholder: Індивідуальний урок
+      name_placeholder: Individual
       format: Формат
       individual: Індивідуальний
       group: Груповий
-      price_type: Тип ціни
+      price_type: Режим ціни
       per_lesson: За урок
       per_student: За учня
-      duration: Тривалість за замовчуванням
+      duration: Тривалість
       price: Ціна
+      free: Безкоштовно
+      free_lesson: Безкоштовний урок
+      free_hint: Відображається як Free — за цей тип немає оплати.
+      per_student_hint: Списується за кожного учня, а не фіксовано за групу.
       description: Опис
       description_placeholder: Що охоплює цей тип або для кого він…
       active_label: Активний — доступний для нових уроків
@@ -984,14 +1011,22 @@ ua:
       delete_title: Видалити тип уроку?
       delete_text: більше не буде доступний для нових уроків. Якщо його ще не використовували — його буде видалено; якщо використовували — деактивовано, щоб зберегти історію.
       delete_confirm: Видалити тип уроку
+      delete_lesson_title: Видалити цей урок?
+      delete_lesson_text: Це видалить усі типи цього уроку. Тип, який уже використовувався на заняттях, буде деактивовано, щоб зберегти історію.
+      delete_lesson_confirm: Видалити урок
       name_blank: Введіть назву типу уроку.
       duration_invalid: Вкажіть тривалість більше нуля.
       price_invalid: Введіть нуль або додатну ціну.
-      duplicate: Тип уроку з такою назвою уже існує.
+      duplicate: У цього уроку вже є тип з такою назвою.
+      duplicate_lesson: Урок з такою назвою уже існує.
+      lesson_name_blank: Введіть назву уроку.
       invalid: Перевірте позначені поля.
       added: Тип уроку додано.
       updated: Тип уроку оновлено.
       deleted: Тип уроку видалено.
+      lesson_added: Урок додано.
+      lesson_renamed: Урок перейменовано.
+      lesson_deleted: Урок видалено.
       deactivated: Цей тип уже використовувався на уроках, тому його деактивовано замість видалення.
       reactivated: Тип уроку відновлено.
       need_one: Увімкніть принаймні один тип уроку для активного викладача.

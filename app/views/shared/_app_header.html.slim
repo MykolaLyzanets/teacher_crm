@@ -28,8 +28,19 @@ header.app-header
                 li class=("is-unread" unless item[:read])
                   p = item[:title]
                   span = item[:body]
-      = link_to profile_path, class: 'app-header__user'
-        span.app-header__avatar = current_user_initials
-        span.app-header__user-meta
-          span.app-header__user-name = current_user_display_name
-          span.app-header__user-role = current_user_role_label
+      .app-header__profile data-controller="profile-menu"
+        button.app-header__user type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="staff-profile-menu" data-profile-menu-target="button" data-action="profile-menu#toggle"
+          span.app-header__avatar = current_user_initials
+          span.app-header__user-meta
+            span.app-header__user-name = current_user_display_name
+            span.app-header__user-role = current_user_role_label
+        .app-header__profile-panel hidden="hidden" id="staff-profile-menu" role="menu" aria-label=t('app.header.profile_menu') data-profile-menu-target="panel"
+          = link_to profile_path, role: 'menuitem', data: { action: 'profile-menu#close' } do
+            = icon_tag 'user', size: 20
+            span = t('app.nav.my_profile')
+          = link_to settings_path, role: 'menuitem', data: { action: 'profile-menu#close' } do
+            = icon_tag 'settings', size: 20
+            span = t('app.nav.settings')
+          = button_to destroy_user_session_path, method: :delete, form: { class: 'app-header__logout-form', data: { turbo: false } }, class: 'app-header__logout', role: 'menuitem' do
+            = icon_tag 'logout', size: 20
+            span = t('app.nav.log_out')

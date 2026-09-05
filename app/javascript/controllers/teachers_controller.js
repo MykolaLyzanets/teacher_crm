@@ -354,7 +354,8 @@ export default class extends Controller {
 
   syncLessonTypeRequirement() {
     const status = this.hasFormStatusTarget ? this.formStatusTarget.value : "active"
-    const lessonTypes = this.application.getControllerForElementAndIdentifier(this.element, "lesson-types")
+    const host = this.element.querySelector("[data-controller~='lesson-types']") || this.element
+    const lessonTypes = this.application.getControllerForElementAndIdentifier(host, "lesson-types")
     if (lessonTypes) lessonTypes.requireActiveValue = status === "active"
   }
 
@@ -390,10 +391,12 @@ export default class extends Controller {
       return
     }
     if (this.hasFormAlertTarget) this.formAlertTarget.hidden = true
-    this.submitBtnTargets.forEach((btn) => {
-      btn.textContent = this.t("teachers", this.editingValue ? "saving" : "creating")
-      btn.disabled = true
-    })
+    window.setTimeout(() => {
+      this.submitBtnTargets.forEach((btn) => {
+        btn.textContent = this.t("teachers", this.editingValue ? "saving" : "creating")
+        btn.disabled = true
+      })
+    }, 0)
   }
 
   validate() {

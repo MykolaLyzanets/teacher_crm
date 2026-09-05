@@ -1,45 +1,52 @@
-.students-page__dialog role="presentation"
-  a.students-page__dialog-backdrop href=assign_dialog_students_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="assign_dialog"
-  .students-page__dialog-card.students-page__dialog-card--picker role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
-    .students-page__picker-head
+.danlio-modal.danlio-modal--md data-controller="modal"
+  a.danlio-modal__backdrop href=assign_dialog_students_path() tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="assign_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="assign-teacher-title"
+    .danlio-modal__head
       div
-        h2#assign-teacher-title = t('app.students.assign_dialog_title')
-        p = @student_ids.size > 1 ? t('app.students.assign_dialog_text') : t('app.students.assign_dialog_text_one')
-      a.students-page__dialog-close href=assign_dialog_students_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="assign_dialog"
-        = icon_tag 'x', size: 18
-    .students-page__picker-search
-      = icon_tag 'search', size: 18
-      input type="search" placeholder=t('app.students.search_teachers') aria-label=t('app.students.search_teachers_aria') data-students-target="assignSearch" data-action="input->students#filterTeachers"
-    = form_with url: assign_students_path(), method: :patch, html: { class: 'students-page__assign-form', data: { turbo: false } } do
+        h2#assign-teacher-title.danlio-modal__title = t('app.students.assign_dialog_title')
+        p.danlio-modal__desc = @student_ids.size > 1 ? t('app.students.assign_dialog_text') : t('app.students.assign_dialog_text_one')
+      a.danlio-modal__close href=assign_dialog_students_path() aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="assign_dialog"
+        = icon_tag 'x', size: 20
+    = form_with url: assign_students_path(), method: :patch, html: { class: 'danlio-modal__form students-page__assign-form', data: { turbo: false } } do
       - @student_ids.each do |id|
         input type="hidden" name="student_ids[]" value=id
-      - if @teachers.blank?
-        p.students-page__picker-empty = t('app.students.assign_empty')
-      - else
-        ul.students-page__picker-list
-          - @teachers.each do |teacher|
-            - name = teacher_picker_name(teacher)
-            - selected = teacher[:id].to_s == @selected_teacher_id.to_s
-            li
-              label.students-page__picker-btn class=('is-selected' if selected)
-                input.sr-only(
-                  type="radio"
-                  name="teacher_id"
-                  value=teacher[:id]
-                  required="required"
-                  checked=(true if selected)
-                  data-students-target="assignOption"
-                  data-name=name.downcase
-                )
-                span.students-page__avatar.students-page__avatar--sm = teacher_picker_initials(teacher)
-                .students-page__picker-copy
-                  .students-page__picker-name
-                    span = name
-                    span.status-badge class="status-badge--#{teacher_picker_tone(teacher[:status])}" = student_status_label(teacher[:status])
-                  p.students-page__picker-meta = teacher_picker_meta(teacher)
-                span.students-page__picker-mark
-                  = icon_tag 'user-check', size: 18
-        p.students-page__picker-empty.students-page__is-hidden data-students-target="assignEmpty" = t('app.students.assign_empty')
-      .students-page__dialog-actions
-        a.students-page__secondary-btn href=assign_dialog_students_path() data-turbo="true" data-turbo-frame="assign_dialog" = t('app.common.cancel')
-        button.students-page__primary-btn type="submit" = t('app.students.assign_teacher')
+      .danlio-modal__body.students-page__picker-body
+        .students-page__picker-search
+          = icon_tag 'search', size: 18
+          input type="search" placeholder=t('app.students.search_teachers') aria-label=t('app.students.search_teachers_aria') autofocus="autofocus" data-modal-focus="true" data-students-target="assignSearch" data-action="input->students#filterTeachers keydown->students#ignoreSearchEnter"
+        - if @teachers.blank?
+          p.students-page__picker-empty = t('app.students.assign_empty')
+        - else
+          ul.students-page__picker-list role="listbox" aria-label=t('app.students.search_teachers_aria')
+            - @teachers.each do |teacher|
+              - name = teacher_picker_name(teacher)
+              - current = teacher[:id].to_s == @selected_teacher_id.to_s
+              li
+                label.students-page__picker-btn
+                  input.sr-only(
+                    type="radio"
+                    name="teacher_id"
+                    value=teacher[:id]
+                    required="required"
+                    checked=(true if current)
+                    data-students-target="assignOption"
+                    data-name=name.downcase
+                  )
+                  span.students-page__avatar.students-page__picker-avatar
+                    - if teacher[:photo].present?
+                      img.students-page__avatar-img alt="" src=teacher[:photo]
+                    - else
+                      = teacher_picker_initials(teacher)
+                  .students-page__picker-copy
+                    .students-page__picker-name
+                      span = name
+                      span.status-badge class="status-badge--#{teacher_picker_tone(teacher[:status])}" = student_status_label(teacher[:status])
+                      - if current
+                        span.students-page__picker-current = t('app.students.assign_current')
+                    p.students-page__picker-meta = teacher_picker_meta(teacher)
+                  span.students-page__picker-mark aria-hidden="true"
+                    = icon_tag 'user-check', size: 18
+          p.students-page__picker-empty.students-page__is-hidden data-students-target="assignEmpty" = t('app.students.assign_empty')
+        .students-page__picker-actions
+          a.danlio-modal__btn.danlio-modal__btn--secondary href=assign_dialog_students_path() data-turbo="true" data-turbo-frame="assign_dialog" = t('app.common.cancel')
+          button.danlio-modal__btn.danlio-modal__btn--primary type="submit" = t('app.students.assign_teacher')

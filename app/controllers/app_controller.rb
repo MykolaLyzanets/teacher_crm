@@ -34,11 +34,11 @@ class AppController < ApplicationController
   end
 
   def can_manage_teachers?
-    current_user.owner? || current_user.admin?
+    current_user&.owner? && current_user.workspace&.school?
   end
 
   def can_assign_teacher?
-    can_manage_teachers?
+    current_user&.owner? || current_user&.admin?
   end
 
   def require_owner_staff!

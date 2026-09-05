@@ -12,7 +12,8 @@
   - name = teacher_display_name(teacher)
   - content_for :title, "#{name} | danlio"
 
-  .teachers-page.teachers-page--profile data-controller="teachers lesson-types" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common', 'app.statuses') data-teachers-name-value=name data-lesson-types-mode-value="readonly" data-lesson-types-seed-value=lesson_types_seed_json data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-edit-url-value=(can_manage_teachers? ? edit_teacher_path(teacher[:id]) : '')
+  .teachers-page.teachers-page--profile data-controller="teachers lesson-types" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common', 'app.statuses') data-teachers-name-value=name data-lesson-types-mode-value="readonly" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-edit-url-value=(can_manage_teachers? ? edit_teacher_path(teacher[:id]) : '')
+    = render 'lesson_types/seed'
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path
       = icon_tag 'chevron-right', size: 16

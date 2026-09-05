@@ -1,0 +1,5 @@
+.lt-add-lesson
+  input type="text" placeholder=t('app.lesson_types.lesson_name_placeholder') aria-label=t('app.lesson_types.new_lesson_name') autocomplete="off" data-role="new-subject" data-lesson-types-target="newSubject"
+  button.lt-add-lesson__btn type="button" data-role="add-lesson" data-action="click->lesson-types#addSubject"
+    = icon_tag 'plus', size: 16
+    span = t('app.lesson_types.add_lesson')

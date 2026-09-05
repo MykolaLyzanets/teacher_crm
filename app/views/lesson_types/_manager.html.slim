@@ -15,17 +15,13 @@
         h2.lt-manager__title = title
     - if description.present?
       p.settings-page__subtitle = description
-  button.settings-page__primary-btn type="button" data-action="lesson-types#openNew"
-    = icon_tag 'plus', size: 20
-    span = t('app.lesson_types.add')
 
 .lt-empty hidden="hidden" data-lesson-types-target="empty"
   .lt-empty__icon
     = icon_tag 'book', size: 24
   h3 = t('app.lesson_types.empty_title')
   p = t('app.lesson_types.empty_text')
-  button.settings-page__primary-btn type="button" data-action="lesson-types#openNew"
-    = icon_tag 'plus', size: 20
-    span = t('app.lesson_types.add')
 
 .lt-list data-lesson-types-target="list"
+
+= render 'lesson_types/add_lesson'

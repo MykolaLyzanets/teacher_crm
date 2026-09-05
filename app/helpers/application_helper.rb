@@ -77,7 +77,7 @@ module ApplicationHelper
       { path: reports_path, label: t('app.nav.reports'), icon: 'reports', match: 'reports' },
       { path: messages_path, label: t('app.nav.messages'), icon: 'messages', match: 'messages' }
     ]
-    return items if !user_signed_in? || current_user.owner? || current_user.admin?
+    return items if can_manage_teachers?
 
     items.reject { |item| item[:match] == 'teachers' }
   end
@@ -90,7 +90,7 @@ module ApplicationHelper
   end
 
   def can_manage_teachers?
-    user_signed_in? && (current_user.owner? || current_user.admin?)
+    user_signed_in? && current_user.owner? && current_user.workspace&.school?
   end
 
   def can_view_finance?
@@ -98,11 +98,15 @@ module ApplicationHelper
   end
 
   def can_assign_teacher?
-    can_manage_teachers?
+    user_signed_in? && (current_user.owner? || current_user.admin?)
   end
 
   def lesson_types_seed_json
     Demo::Catalog.lesson_types_seed.to_json
+  end
+
+  def lesson_types_seed_script
+    ERB::Util.json_escape(lesson_types_seed_json)
   end
 
   def app_i18n_json(*roots)
