@@ -269,7 +269,8 @@ en:
       parent_name: Parent / guardian name
       select_relationship: Select relationship
       student_id_hint: Optional internal reference.
-      select_grade: Select grade
+      optional_field: Optional.
+      select_grade: Not selected
       select_level: Select level
       preferred_location: Preferred location
       additional_notes: Additional notes
@@ -410,7 +411,7 @@ en:
       select_status: Select a status.
       select_grade_error: Select a grade or class.
       choose_enrollment: Choose an enrollment date.
-      select_year: Select an academic year.
+      select_year: Not selected
       enter_parent_name: Enter a parent or guardian name.
       enter_parent_email: Enter a parent or guardian email.
       enter_parent_phone: Enter a parent or guardian phone number.
@@ -686,15 +687,58 @@ en:
       subject_empty: No subjects or courses added for this teacher.
       add_participant: Add student
       remove_participant: Remove student
-      lesson_price: Lesson price
+      lesson: Lesson
+      select_lesson: Select a lesson
+      select_teacher_first: Select a teacher first.
+      lesson_empty: No lessons are configured for this teacher.
+      manage_lessons: Manage lessons & pricing
+      students: Student(s)
+      browse: Browse
+      hide: Hide
+      search_teachers: Search teachers…
+      no_teachers_match: No teachers match your search.
+      no_assigned_students: No students are currently assigned to this teacher.
+      teacher_auto: Assigned teacher selected automatically.
+      teacher_unassigned: No teacher is currently assigned to this student.
+      teacher_mismatch: This student is currently assigned to %{name}. Creating this lesson will not change their permanent assignment.
+      use_selected_teacher: Use selected teacher
+      use_assigned_teacher: Use assigned teacher
+      assign_permanently: Assign selected teacher to this student
+      lesson_type_need_lesson: Select a lesson first.
+      lesson_type_empty_subject: No lesson types are configured for %{subject}.
+      lesson_type_help: Sets the lesson mode, duration, price and currency from this lesson’s types.
+      lesson_type_help_plain: Sets the lesson mode and duration from this lesson’s types.
+      lesson_type_change: Lesson type change
+      lesson_type_previous: "Previous: %{label}"
+      lesson_type_new: "New: %{label}"
+      lesson_type_change_hint: This only changes this lesson. Past charges and other lessons are not affected.
+      clear_assignment: Clear assignment
+      assigned_n: "%{count} assigned"
+      custom: Custom
+      free: Free
+      you: You
+      teacher_available: Teacher is available.
+      outside_day: Teacher is outside working hours on this day.
+      outside_hours: "Outside working hours (%{range})."
+      already_booked: "Already booked: %{when}"
+      student_conflicts: Student scheduling conflicts
+      skip_conflicts: Skip conflicting occurrences
+      override_conflict: Create lesson despite scheduling conflict?
+      override_reason: Override reason
+      override_reason_placeholder: Add a reason for overriding this conflict.
+      repeat_conflict_hint: "%{count} lessons will be created. Review conflicts before continuing."
+      repeat_weekly_summary: "Repeats every week (%{count} lessons) until %{until}."
+      repeat_biweekly_summary: "Repeats every two weeks (%{count} lessons)."
+      repeat_custom_summary: "Repeats on selected days (%{count} lessons) until %{until}."
+      lesson_price: Lesson price · Optional override
       currency: Currency
-      price_hint: Loaded from the selected lesson type. Changing it only affects this lesson.
+      price_hint: Defaults to the selected lesson type’s price. Overriding it applies only to this lesson and never changes the teacher’s lesson type.
       select_lesson_type: Select a lesson type
       lesson_type_need_teacher: Select a teacher to choose a lesson type.
       lesson_type_empty: This teacher has no active lesson types. Add a lesson type before creating the lesson.
       min: min
       lesson_format: Lesson format
-      optional: optional
+      optional: · Optional
       lesson_notes: Lesson notes
       workspace_timezone: Workspace timezone
       repeat_custom: Custom
@@ -714,13 +758,13 @@ en:
         sunday: Sun
       type: Type
       notes: Notes
-      notes_placeholder: Optional lesson notes…
+      notes_placeholder: Add lesson details or preparation notes...
       title_placeholder: English lesson
       participants: Participants
       date_time: Date and time
       details: Details
       meeting_link: Meeting link
-      place: Place
+      place: Location / address
       place_placeholder: Studio, classroom or address
       repeat_settings: Repeat settings
       repeat: Repeat

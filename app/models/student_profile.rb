@@ -27,6 +27,15 @@ class StudentProfile < ApplicationRecord
 
   scope :kept, -> { where(deleted_at: nil) }
 
+  def self.optional_date(value)
+    raw = value.to_s.strip
+    return if raw.blank?
+
+    Date.iso8601(raw)
+  rescue ArgumentError, TypeError
+    nil
+  end
+
   def display_label
     preferred_name.presence || [first_name, last_name].compact_blank.join(' ').presence || 'Student'
   end

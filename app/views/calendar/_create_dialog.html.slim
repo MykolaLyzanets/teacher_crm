@@ -1,0 +1,227 @@
+- date_value = @draft_date.presence || Date.current.iso8601
+- start_value = @draft_start.presence || '10:00'
+- end_value = @draft_end.presence || '11:00'
+- teacher_id = @draft_teacher_id.to_s
+- teacher_locked = @lock_teacher
+- locked_teacher = Array(@teachers).find { |teacher| teacher[:id].to_s == teacher_id }
+- locked_name = locked_teacher && (locked_teacher[:displayName].presence || [locked_teacher[:firstName], locked_teacher[:lastName]].compact_blank.join(' ').presence)
+- selected_student = Array(@students).find { |student| student[:id].to_s == @draft_student_id.to_s }
+- selected_student_name = selected_student && student_display_name(selected_student)
+- close_path = new_calendar_path(dismiss: 1)
+
+.danlio-modal.danlio-modal--lg data-controller="modal" data-calendar-target="drawer" data-student-id=@draft_student_id.to_s
+  a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.calendar.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="create_lesson"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="create-lesson-title"
+    .danlio-modal__head
+      div
+        h2#create-lesson-title.danlio-modal__title data-calendar-target="drawerTitle" = t('app.calendar.drawer_title')
+      a.danlio-modal__close href=close_path aria-label=t('app.calendar.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="create_lesson"
+        = icon_tag 'x', size: 20
+    .danlio-modal__body
+      textarea.sr-only hidden="hidden" readonly="readonly" tabindex="-1" aria-hidden="true" data-calendar-target="studentsSeed"
+        = @students.to_json
+      textarea.sr-only hidden="hidden" readonly="readonly" tabindex="-1" aria-hidden="true" data-calendar-target="teachersSeed"
+        = @teachers.to_json
+      input type="hidden" value="individual" data-calendar-target="draftType"
+      input type="hidden" value="online" data-calendar-target="draftLocation"
+      input type="hidden" value=teacher_id data-calendar-target="draftTeacher"
+
+      .calendar-page__stack data-calendar-target="teacherLocked" hidden=(true unless teacher_locked)
+        p.calendar-page__label = t('app.calendar.teacher')
+        p.calendar-page__locked-name data-calendar-target="teacherLockedName" = locked_name.presence || t('app.calendar.you')
+
+      .calendar-page__stack data-calendar-target="teacherField" hidden=(true if teacher_locked)
+        label.calendar-page__field
+          span
+            = t('app.calendar.teacher')
+            abbr.calendar-page__req title="required" *
+          .calendar-page__picker data-calendar-target="teacherPicker"
+            button.calendar-page__picker-btn type="button" aria-expanded="false" data-calendar-target="teacherTrigger" data-action="click->calendar#toggleTeacherPicker"
+              span.calendar-page__picker-value
+                span.calendar-page__picker-icon
+                  = icon_tag 'user-check', size: 18
+                span.calendar-page__picker-label data-calendar-target="teacherLabel" = t('app.calendar.select_teacher')
+              span.calendar-page__picker-browse data-calendar-target="teacherBrowse" = t('app.calendar.browse')
+            .calendar-page__picker-menu hidden="hidden" data-calendar-target="teacherMenu"
+              .calendar-page__picker-search
+                = icon_tag 'search', size: 18
+                input type="search" placeholder=t('app.calendar.search_teachers') aria-label=t('app.calendar.search_teachers') data-calendar-target="teacherQuery" data-action="input->calendar#filterTeachers"
+              .calendar-page__picker-list role="listbox" aria-label=t('app.calendar.teacher') data-calendar-target="teacherList"
+              button.calendar-page__picker-clear type="button" hidden="hidden" data-calendar-target="teacherClear" data-action="calendar#clearTeacher" = t('app.calendar.clear_assignment')
+        p.calendar-page__hint hidden="hidden" data-calendar-target="teacherAutoHint" = t('app.calendar.teacher_auto')
+        p.calendar-page__hint hidden="hidden" data-calendar-target="teacherUnassignedHint" = t('app.calendar.teacher_unassigned')
+        .calendar-page__notice hidden="hidden" data-calendar-target="teacherMismatch"
+          p data-calendar-target="teacherMismatchText"
+          .calendar-page__notice-actions
+            button.calendar-page__mini-btn type="button" data-action="calendar#keepSelectedTeacher" = t('app.calendar.use_selected_teacher')
+            button.calendar-page__mini-btn.calendar-page__mini-btn--olive type="button" data-action="calendar#useAssignedTeacher" = t('app.calendar.use_assigned_teacher')
+
+      .calendar-page__stack data-calendar-target="studentWrap"
+        label.calendar-page__field
+          span
+            = t('app.calendar.students')
+            abbr.calendar-page__req title="required" *
+          p.calendar-page__muted data-calendar-target="studentNeedTeacher" hidden=(true if teacher_id.present?) = t('app.calendar.select_teacher_first')
+          .calendar-page__picker hidden=(true if teacher_id.blank?) data-calendar-target="studentPicker"
+            button.calendar-page__picker-btn type="button" aria-expanded="false" data-calendar-target="studentTrigger" data-action="click->calendar#toggleStudentPicker"
+              span.calendar-page__picker-value
+                span.calendar-page__picker-icon
+                  = icon_tag 'users', size: 18
+                span.calendar-page__picker-label class=("#{'is-placeholder' if selected_student_name.blank?}") data-calendar-target="studentLabel" = selected_student_name.presence || t('app.calendar.select_student')
+              span.calendar-page__picker-browse data-calendar-target="studentBrowse" = t('app.calendar.browse')
+            .calendar-page__picker-menu hidden="hidden" data-calendar-target="studentMenu"
+              .calendar-page__picker-search
+                = icon_tag 'search', size: 18
+                input type="search" placeholder=t('app.students.search_placeholder') aria-label=t('app.students.search_aria') data-calendar-target="studentQuery" data-action="input->calendar#filterStudents"
+              .calendar-page__picker-list role="listbox" aria-label=t('app.calendar.student') data-calendar-target="studentList"
+        p.calendar-page__hint
+          = t('app.calendar.add_student_hint')
+          =< link_to t('app.students.add'), new_student_path, data: { turbo: false }
+
+      .calendar-page__stack hidden="hidden" data-calendar-target="groupWrap"
+        p.calendar-page__label
+          = t('app.calendar.students')
+          span.calendar-page__count data-calendar-target="groupCount"
+          abbr.calendar-page__req title="required" *
+        .calendar-page__chips data-calendar-target="groupChips" data-action="click->calendar#removeParticipant"
+        p.calendar-page__muted data-calendar-target="groupNeedTeacher" = t('app.calendar.select_teacher_first')
+        .calendar-page__picker hidden="hidden" data-calendar-target="groupPicker"
+          button.calendar-page__add-btn type="button" aria-expanded="false" data-calendar-target="groupTrigger" data-action="click->calendar#toggleGroupPicker"
+            = icon_tag 'plus', size: 16
+            span = t('app.calendar.add_participant')
+          .calendar-page__picker-menu hidden="hidden" data-calendar-target="groupMenu"
+            .calendar-page__picker-search
+              = icon_tag 'search', size: 18
+              input type="search" placeholder=t('app.students.search_placeholder') aria-label=t('app.students.search_aria') data-calendar-target="groupQuery" data-action="input->calendar#filterGroupStudents"
+            .calendar-page__picker-list role="listbox" data-calendar-target="groupList"
+        p.calendar-page__hint
+          = t('app.calendar.add_student_hint')
+          =< link_to t('app.students.add'), new_student_path, data: { turbo: false }
+
+      label.calendar-page__check hidden="hidden" data-calendar-target="assignPermanentWrap"
+        input type="checkbox" data-calendar-target="assignPermanent" data-action="change->calendar#syncDrawerFields"
+        span = t('app.calendar.assign_permanently')
+
+      label.calendar-page__field data-calendar-target="lessonField"
+        span
+          = t('app.calendar.lesson')
+          abbr.calendar-page__req title="required" *
+        p.calendar-page__muted data-calendar-target="subjectHint" = t('app.calendar.select_teacher_first')
+        .calendar-page__notice hidden="hidden" data-calendar-target="subjectEmpty"
+          p.calendar-page__notice-row
+            = icon_tag 'alert-triangle', size: 16
+            span = t('app.calendar.lesson_empty')
+          a.calendar-page__notice-link href=settings_lesson_types_path hidden="hidden" data-calendar-target="manageLessonsLink" = t('app.calendar.manage_lessons')
+        select hidden="hidden" data-calendar-target="draftSubject" data-action="change->calendar#onSubjectChange"
+          option value="" = t('app.calendar.select_lesson')
+
+      label.calendar-page__field data-calendar-target="lessonTypeField"
+        span
+          = t('app.calendar.lesson_type')
+          abbr.calendar-page__req title="required" *
+        p.calendar-page__muted data-calendar-target="lessonTypeHint" = t('app.calendar.lesson_type_need_lesson')
+        p.calendar-page__muted hidden="hidden" data-calendar-target="lessonTypeEmpty" = t('app.calendar.lesson_type_empty_subject')
+        select hidden="hidden" data-calendar-target="draftLessonType" data-action="change->calendar#onLessonTypeChange"
+          option value="" = t('app.calendar.select_lesson_type')
+        p.calendar-page__hint data-calendar-target="lessonTypeHelp" hidden="hidden" = t('app.calendar.lesson_type_help')
+
+      .calendar-page__notice hidden="hidden" data-calendar-target="lessonTypeChanged"
+
+      label.calendar-page__field
+        span
+          = t('app.calendar.date')
+          abbr.calendar-page__req title="required" *
+        input type="date" value=date_value data-calendar-target="draftDate" data-action="change->calendar#syncDrawerFields"
+      .calendar-page__times
+        label.calendar-page__field
+          span
+            = t('app.calendar.start_time')
+            abbr.calendar-page__req title="required" *
+          input type="time" value=start_value data-calendar-target="draftStart" data-action="change->calendar#onStartChange"
+        label.calendar-page__field
+          span
+            = t('app.calendar.end_time')
+            abbr.calendar-page__req title="required" *
+          input type="time" value=end_value data-calendar-target="draftEnd" data-action="change->calendar#syncDrawerFields"
+      p.calendar-page__timezone
+        = icon_tag 'clock', size: 16
+        span data-calendar-target="timezoneLabel" = "#{t('app.calendar.workspace_timezone')}: #{@workspace_timezone.to_s.tr('_', ' ')}"
+
+      p.calendar-page__availability hidden="hidden" data-calendar-target="availability"
+      .calendar-page__notice hidden="hidden" data-calendar-target="studentConflicts"
+      .calendar-page__notice.calendar-page__notice--soft hidden="hidden" data-calendar-target="conflictOptions"
+        p.calendar-page__hint hidden="hidden" data-calendar-target="repeatConflictHint"
+        label.calendar-page__check hidden="hidden" data-calendar-target="skipConflictWrap"
+          input type="checkbox" data-calendar-target="skipConflict" data-action="change->calendar#onSkipConflict"
+          span = t('app.calendar.skip_conflicts')
+        label.calendar-page__check hidden="hidden" data-calendar-target="overrideWrap"
+          input type="checkbox" data-calendar-target="overrideConflict" data-action="change->calendar#onOverrideConflict"
+          span = t('app.calendar.override_conflict')
+        label.calendar-page__field hidden="hidden" data-calendar-target="overrideReasonWrap"
+          span
+            = t('app.calendar.override_reason')
+            abbr.calendar-page__req title="required" *
+          textarea rows="3" placeholder=t('app.calendar.override_reason_placeholder') data-calendar-target="overrideReason" data-action="input->calendar#syncDrawerFields"
+
+      - if can_view_finance?
+        label.calendar-page__field data-calendar-target="priceField"
+          span = t('app.calendar.lesson_price')
+          .calendar-page__price
+            input type="text" inputmode="decimal" placeholder="500" data-calendar-target="draftPrice" data-action="input->calendar#onPriceChange"
+            select aria-label=t('app.calendar.currency') data-calendar-target="draftCurrency" data-action="change->calendar#onPriceChange"
+              option value="UAH" = "UAH"
+              option value="EUR" = "EUR"
+              option value="USD" = "USD"
+              option value="GBP" = "GBP"
+              option value="PLN" = "PLN"
+          p.calendar-page__hint = t('app.calendar.price_hint')
+
+      .calendar-page__stack
+        p.calendar-page__label = t('app.calendar.lesson_format')
+        div.calendar-page__segment role="radiogroup" aria-label=t('app.calendar.lesson_format')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="true" data-location="online" data-calendar-target="formatBtn" data-action="calendar#setFormat" = t('app.common.online')
+          button.calendar-page__segment-btn type="button" role="radio" aria-checked="false" data-location="in_person" data-calendar-target="formatBtn" data-action="calendar#setFormat" = t('app.common.in_person')
+        label.calendar-page__field data-calendar-target="onlineField"
+          span
+            = t('app.calendar.meeting_link')
+            span.calendar-page__optional = t('app.calendar.optional')
+          .calendar-page__icon-input
+            = icon_tag 'video', size: 18
+            input type="url" placeholder="https://meet..." data-calendar-target="draftMeeting" data-action="change->calendar#syncDrawerFields"
+        label.calendar-page__field data-calendar-target="placeField" hidden="hidden"
+          span
+            = t('app.calendar.place')
+            span.calendar-page__optional = t('app.calendar.optional')
+          .calendar-page__icon-input
+            = icon_tag 'map-pin', size: 18
+            input type="text" placeholder=t('app.calendar.place_placeholder') data-calendar-target="draftPlace" data-action="change->calendar#syncDrawerFields"
+
+      label.calendar-page__field
+        span = t('app.calendar.repeat')
+        select data-calendar-target="draftRepeat" data-action="change->calendar#syncDrawerFields"
+          option value="none" = t('app.calendar.repeat_none')
+          option value="weekly" = t('app.calendar.repeat_weekly')
+          option value="biweekly" = t('app.calendar.repeat_biweekly')
+          option value="custom" = t('app.calendar.repeat_custom')
+      .calendar-page__stack data-calendar-target="repeatExtra" hidden="hidden"
+        label.calendar-page__field
+          span = t('app.calendar.repeat_until')
+          input type="date" data-calendar-target="draftRepeatEnd" data-action="change->calendar#syncDrawerFields"
+        .calendar-page__stack data-calendar-target="customDays" hidden="hidden"
+          p.calendar-page__label = t('app.calendar.weekdays')
+          .calendar-page__weekdays
+            - %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].each do |day|
+              button.calendar-page__day-btn type="button" data-day=day data-calendar-target="weekdayBtn" data-action="calendar#toggleWeekday" = t("app.calendar.weekday_short.#{day.downcase}")
+        p.calendar-page__hint data-calendar-target="repeatSummary"
+
+      label.calendar-page__field
+        span
+          = t('app.calendar.lesson_notes')
+          span.calendar-page__optional = t('app.calendar.optional')
+        textarea rows="3" placeholder=t('app.calendar.notes_placeholder') data-calendar-target="draftNotes"
+
+      .calendar-page__summary hidden="hidden" data-calendar-target="summary"
+      p.calendar-page__form-error hidden="hidden" data-calendar-target="formError" role="alert"
+    .danlio-modal__foot
+      a.danlio-modal__btn.danlio-modal__btn--secondary href=close_path data-turbo="true" data-turbo-frame="create_lesson" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="calendar#submitCreate" data-calendar-target="drawerSubmit" disabled="disabled" = t('app.calendar.create_lesson')

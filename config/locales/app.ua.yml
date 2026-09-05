@@ -269,7 +269,8 @@ ua:
       parent_name: Імʼя батьків або опікуна
       select_relationship: Оберіть звʼязок
       student_id_hint: Необовʼязковий внутрішній код.
-      select_grade: Оберіть клас
+      optional_field: Необовʼязково.
+      select_grade: Не обрано
       select_level: Оберіть рівень
       preferred_location: Бажаний формат
       additional_notes: Додаткові нотатки
@@ -410,7 +411,7 @@ ua:
       select_status: Оберіть статус.
       select_grade_error: Оберіть клас.
       choose_enrollment: Оберіть дату зарахування.
-      select_year: Оберіть навчальний рік.
+      select_year: Не обрано
       enter_parent_name: Введіть імʼя батьків або опікуна.
       enter_parent_email: Введіть email батьків або опікуна.
       enter_parent_phone: Введіть телефон батьків або опікуна.
@@ -688,7 +689,50 @@ ua:
       subject_empty: У цього викладача немає предметів чи курсів.
       add_participant: Додати учня
       remove_participant: Прибрати учня
-      lesson_price: Ціна уроку
+      lesson: Урок
+      select_lesson: Оберіть урок
+      select_teacher_first: Спочатку оберіть викладача.
+      lesson_empty: Для цього викладача не налаштовано уроків.
+      manage_lessons: Керувати уроками та цінами
+      students: Учень(і)
+      browse: Обрати
+      hide: Сховати
+      search_teachers: Пошук викладачів…
+      no_teachers_match: Немає викладачів за цим пошуком.
+      no_assigned_students: Цьому викладачу ще не призначено учнів.
+      teacher_auto: Призначеного викладача вибрано автоматично.
+      teacher_unassigned: Цьому учню ще не призначено викладача.
+      teacher_mismatch: Цей учень зараз призначений до %{name}. Створення уроку не змінить постійне призначення.
+      use_selected_teacher: Залишити вибраного викладача
+      use_assigned_teacher: Взяти призначеного викладача
+      assign_permanently: Призначити вибраного викладача цьому учню
+      lesson_type_need_lesson: Спочатку оберіть урок.
+      lesson_type_empty_subject: Для «%{subject}» не налаштовано типів уроку.
+      lesson_type_help: Задає режим, тривалість, ціну та валюту з типів цього уроку.
+      lesson_type_help_plain: Задає режим і тривалість з типів цього уроку.
+      lesson_type_change: Зміна типу уроку
+      lesson_type_previous: "Було: %{label}"
+      lesson_type_new: "Стане: %{label}"
+      lesson_type_change_hint: Змінюється лише цей урок. Минулі нарахування та інші уроки не зачіпаються.
+      clear_assignment: Очистити вибір
+      assigned_n: "%{count} учнів"
+      custom: Власний
+      free: Безкоштовно
+      you: Ви
+      teacher_available: Викладач доступний.
+      outside_day: У цей день викладач поза робочими годинами.
+      outside_hours: "Поза робочими годинами (%{range})."
+      already_booked: "Вже зайнято: %{when}"
+      student_conflicts: Конфлікти в розкладі учнів
+      skip_conflicts: Пропустити конфліктні повторення
+      override_conflict: Створити урок попри конфлікт у розкладі?
+      override_reason: Причина винятку
+      override_reason_placeholder: Додайте причину, чому створюєте урок попри конфлікт.
+      repeat_conflict_hint: "Буде створено %{count} уроків. Перевірте конфлікти перед продовженням."
+      repeat_weekly_summary: "Повторюється щотижня (%{count} уроків) до %{until}."
+      repeat_biweekly_summary: "Повторюється щодва тижні (%{count} уроків)."
+      repeat_custom_summary: "Повторюється у вибрані дні (%{count} уроків) до %{until}."
+      lesson_price: Ціна уроку · Необовʼязкова зміна
       currency: Валюта
       price_hint: Підставляється з вибраного типу уроку. Зміна стосується лише цього уроку.
       select_lesson_type: Оберіть тип уроку
@@ -696,8 +740,8 @@ ua:
       lesson_type_empty: У цього викладача немає активних типів уроків. Додайте тип, перш ніж створювати урок.
       min: хв
       lesson_format: Формат уроку
-      optional: необовʼязково
-      lesson_notes: Нотатки
+      optional: · Необовʼязково
+      lesson_notes: Нотатки до уроку
       workspace_timezone: Часовий пояс простору
       repeat_custom: Власне
       repeat_until: До
@@ -716,13 +760,13 @@ ua:
         sunday: Нд
       type: Тип
       notes: Нотатки
-      notes_placeholder: Необовʼязкові нотатки до уроку…
+      notes_placeholder: Додайте деталі уроку або нотатки для підготовки…
       title_placeholder: Урок англійської
       participants: Учасники
       date_time: Дата і час
       details: Деталі
       meeting_link: Посилання на зустріч
-      place: Місце
+      place: Місце / адреса
       place_placeholder: Студія, клас або адреса
       repeat_settings: Повторення
       repeat: Повторювати

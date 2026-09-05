@@ -13,7 +13,7 @@ section.students-page__hero
       = link_to edit_student_path(student[:id]), class: 'students-page__ghost-btn' do
         = icon_tag 'pencil', size: 18
         span = t('app.students.edit_student')
-      = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+      = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
         = icon_tag 'calendar-plus', size: 18
         span = t('app.students.create_lesson')
       .students-page__menu

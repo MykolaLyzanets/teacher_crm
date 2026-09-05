@@ -47,7 +47,7 @@
           = link_to edit_teacher_path(teacher[:id]), class: 'teachers-page__hero-btn' do
             = icon_tag 'pencil', size: 18
             span = t('app.teachers.edit_teacher')
-        = link_to calendar_path(teacherId: teacher[:id]), class: 'teachers-page__hero-btn' do
+        = link_to new_calendar_path(teacher_id: teacher[:id]), class: 'teachers-page__hero-btn', data: calendar_create_turbo_data do
           = icon_tag 'calendar-event', size: 18
           span = t('app.teachers.schedule_lesson')
         - if can_manage_teachers?

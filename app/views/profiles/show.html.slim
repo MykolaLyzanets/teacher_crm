@@ -1,7 +1,7 @@
 - teacher = (@teacher || {}).with_indifferent_access
 - content_for :title, "#{t('app.profile.title')} | danlio"
 
-.settings-page.settings-page--profile data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value=(teacher[:defaultLessonCurrency].presence || 'UAH')
+.settings-page.settings-page--profile data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value=(teacher[:defaultLessonCurrency].presence || 'UAH') data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
   = render 'lesson_types/seed'
   p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
   .settings-page__header

@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
-import { closeModal, openModal } from "../lib/modal"
+import { Turbo } from "@hotwired/turbo-rails"
+import { closeModal } from "../lib/modal"
 import {
+  addPendingSubject,
   createLessonType,
   deleteLessonType,
   deleteSubject,
@@ -11,8 +13,10 @@ import {
   kindDisplayName,
   listActiveLessonTypes,
   listLessonTypes,
+  listPendingSubjects,
   parsePriceInput,
   priceSuffix,
+  removePendingSubject,
   renameSubject,
   saveTeacherLessonTypeAccess,
   setLessonTypeActive,
@@ -76,11 +80,13 @@ export default class extends Controller {
     teacherEmail: String,
     defaultCurrency: { type: String, default: "UAH" },
     requireActive: { type: Boolean, default: false },
-    editUrl: String
+    editUrl: String,
+    dialogUrl: String,
+    deleteDialogUrl: String,
+    subjectDeleteDialogUrl: String
   }
 
   connect() {
-    this.pendingSubjects = []
     this.renamingSubject = null
     this.dialogTargetId = null
     this.dialogSubjectName = ""
@@ -91,7 +97,6 @@ export default class extends Controller {
     } catch (error) {
       console.error("lesson-types seed", error)
     }
-    this.bindAddLesson()
     try {
       this.render()
     } catch (error) {
@@ -107,29 +112,13 @@ export default class extends Controller {
 
   readSeed() {
     if (!this.hasSeedJsonTarget) return {}
+    const raw = (this.seedJsonTarget.value || this.seedJsonTarget.textContent || "").trim()
+    if (!raw) return {}
     try {
-      return JSON.parse(this.seedJsonTarget.textContent || "{}")
+      return JSON.parse(raw)
     } catch (error) {
       console.error("lesson-types seed json", error)
       return {}
-    }
-  }
-
-  bindAddLesson() {
-    const button = this.element.querySelector("[data-role='add-lesson']")
-    const input = this.newSubjectInput()
-    if (button && !button.dataset.ltBound) {
-      button.dataset.ltBound = "1"
-      button.addEventListener("click", (event) => this.addSubject(event))
-    }
-    if (input && !input.dataset.ltBound) {
-      input.dataset.ltBound = "1"
-      input.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter") return
-        event.preventDefault()
-        event.stopPropagation()
-        this.addSubject(event)
-      })
     }
   }
 
@@ -151,7 +140,7 @@ export default class extends Controller {
 
   subjectNames() {
     const names = [...new Set(this.catalogForMode().map((item) => item.subjectName))]
-    this.pendingSubjects.forEach((pending) => {
+    listPendingSubjects().forEach((pending) => {
       if (!names.some((name) => name.toLowerCase() === pending.toLowerCase())) names.push(pending)
     })
     return names
@@ -322,27 +311,27 @@ export default class extends Controller {
     event?.preventDefault?.()
     event?.stopPropagation?.()
     const input = this.newSubjectInput()
-    if (!input) {
-      this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
-      return
-    }
-    const name = input.value.trim().replace(/\s+/g, " ")
+    const name = (input?.value || "").trim().replace(/\s+/g, " ")
     if (!name) {
-      input.focus()
+      input?.focus()
       this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
       return
     }
-    if (this.subjectNames().some((existing) => existing.toLowerCase() === name.toLowerCase())) {
-      input.value = ""
-      input.focus()
+    const result = addPendingSubject(name)
+    if (!result.ok) {
+      if (input) input.value = ""
+      input?.focus()
       this.showToast(this.t("duplicate_lesson", "A lesson with this name already exists."))
       this.safeRender()
       return
     }
-    input.value = ""
-    this.pendingSubjects = [...this.pendingSubjects, name]
+    if (input) input.value = ""
     this.safeRender()
     this.showToast(this.t("lesson_added", "Lesson added."))
+    this.openNewForSubject({
+      preventDefault() {},
+      currentTarget: { dataset: { subject: result.name } }
+    })
   }
 
   safeRender() {
@@ -376,25 +365,12 @@ export default class extends Controller {
       return
     }
     const oldName = this.renamingSubject
-    const pendingIndex = this.pendingSubjects.findIndex((name) => name.toLowerCase() === oldName.toLowerCase())
-    const hasTypes = this.catalogForMode().some((item) => item.subjectName.toLowerCase() === oldName.toLowerCase())
-    if (pendingIndex >= 0 && !hasTypes) {
-      if (this.subjectNames().some((name) => name.toLowerCase() === nextName.toLowerCase() && name.toLowerCase() !== oldName.toLowerCase())) {
-        this.showToast(this.t("duplicate_lesson", "A lesson with this name already exists."))
-        return
-      }
-      this.pendingSubjects = this.pendingSubjects.map((name, index) => (index === pendingIndex ? nextName : name))
-    } else {
-      const result = renameSubject(oldName, nextName)
-      if (!result.ok) {
-        this.showToast(result.message === "duplicate_lesson"
-          ? this.t("duplicate_lesson", "A lesson with this name already exists.")
-          : this.t("lesson_name_blank", "Enter a lesson name."))
-        return
-      }
-      if (pendingIndex >= 0) {
-        this.pendingSubjects = this.pendingSubjects.map((name, index) => (index === pendingIndex ? nextName : name))
-      }
+    const result = renameSubject(oldName, nextName)
+    if (!result.ok) {
+      this.showToast(result.message === "duplicate_lesson"
+        ? this.t("duplicate_lesson", "A lesson with this name already exists.")
+        : this.t("lesson_name_blank", "Enter a lesson name."))
+      return
     }
     this.renamingSubject = null
     this.render()
@@ -405,28 +381,22 @@ export default class extends Controller {
     const subjectName = event.currentTarget.dataset.subject
     const count = Number(event.currentTarget.dataset.count || 0)
     if (count === 0) {
-      this.pendingSubjects = this.pendingSubjects.filter((name) => name.toLowerCase() !== subjectName.toLowerCase())
+      removePendingSubject(subjectName)
       this.render()
       return
     }
     this.pendingDeleteSubject = subjectName
-    if (this.hasSubjectDeleteNameTarget) this.subjectDeleteNameTarget.textContent = `“${subjectName}”`
-    if (this.hasSubjectDeleteDialogTarget) {
-      openModal(this.subjectDeleteDialogTarget, { onClose: () => this.closeSubjectDelete() })
-    }
+    this.loadFrame(this.subjectDeleteDialogUrlValue, { subject: subjectName }, "lesson_subject_delete_dialog")
   }
 
   closeSubjectDelete() {
     this.pendingDeleteSubject = null
-    if (this.hasSubjectDeleteDialogTarget) closeModal(this.subjectDeleteDialogTarget)
+    this.dismissFrame(this.subjectDeleteDialogUrlValue, "lesson_subject_delete_dialog")
   }
 
   confirmDeleteSubject() {
     if (!this.pendingDeleteSubject) return
     deleteSubject(this.pendingDeleteSubject)
-    this.pendingSubjects = this.pendingSubjects.filter(
-      (name) => name.toLowerCase() !== this.pendingDeleteSubject.toLowerCase()
-    )
     this.closeSubjectDelete()
     this.render()
     if (this.modeValue === "teacher") this.persistAccess()
@@ -446,13 +416,7 @@ export default class extends Controller {
       this.showToast(this.t("lesson_name_blank", "Enter a lesson name."))
       return
     }
-    try {
-      this.fillDialog(null)
-      this.showDialog()
-    } catch (error) {
-      console.error("lesson-types dialog", error)
-      this.showToast(this.t("invalid", "Check the highlighted fields."))
-    }
+    this.loadFrame(this.dialogUrlValue, { subject: this.dialogSubjectName }, "lesson_type_dialog")
   }
 
   openEdit(event) {
@@ -461,8 +425,21 @@ export default class extends Controller {
     if (!item) return
     this.dialogTargetId = id
     this.dialogSubjectName = item.subjectName
+    this.loadFrame(this.dialogUrlValue, { subject: item.subjectName, id }, "lesson_type_dialog")
+  }
+
+  dialogTargetConnected() {
+    this.dialogSubjectName = this.dialogTarget.dataset.subject || this.dialogSubjectName
+    this.dialogTargetId = this.dialogTarget.dataset.id || this.dialogTargetId || "new"
+    const item = this.dialogTargetId !== "new"
+      ? listLessonTypes().find((row) => row.id === this.dialogTargetId)
+      : null
     this.fillDialog(item)
-    this.showDialog()
+  }
+
+  dialogTargetDisconnected() {
+    this.dialogTargetId = null
+    this.dialogSubjectName = ""
   }
 
   fillDialog(item) {
@@ -532,20 +509,16 @@ export default class extends Controller {
   }
 
   showDialog() {
-    if (!this.hasDialogTarget) return
-    const focusTarget = this.hasCustomNameWrapTarget && this.customNameWrapTarget.hidden === false
-      ? (this.hasNameTarget ? this.nameTarget : null)
-      : (this.hasKindTarget ? this.kindTarget : null)
-    openModal(this.dialogTarget, {
-      focus: focusTarget,
-      onClose: () => this.closeDialog()
-    })
+    this.loadFrame(this.dialogUrlValue, {
+      subject: this.dialogSubjectName,
+      id: this.dialogTargetId !== "new" ? this.dialogTargetId : ""
+    }, "lesson_type_dialog")
   }
 
   closeDialog() {
-    if (this.hasDialogTarget) closeModal(this.dialogTarget)
     this.dialogTargetId = null
     this.dialogSubjectName = ""
+    this.dismissFrame(this.dialogUrlValue, "lesson_type_dialog")
   }
 
   clearDialogErrors() {
@@ -624,9 +597,7 @@ export default class extends Controller {
       return
     }
 
-    this.pendingSubjects = this.pendingSubjects.filter(
-      (name) => name.toLowerCase() !== this.dialogSubjectName.toLowerCase()
-    )
+    removePendingSubject(this.dialogSubjectName)
     this.closeDialog()
     this.render()
     if (this.modeValue === "teacher") this.persistAccess()
@@ -646,15 +617,40 @@ export default class extends Controller {
     const item = listLessonTypes().find((row) => row.id === id)
     if (!item) return
     this.pendingDeleteId = id
-    if (this.hasDeleteNameTarget) this.deleteNameTarget.textContent = `“${item.name}”`
-    if (this.hasDeleteDialogTarget) {
-      openModal(this.deleteDialogTarget, { onClose: () => this.closeDelete() })
-    }
+    this.loadFrame(this.deleteDialogUrlValue, { id, name: item.name }, "lesson_type_delete_dialog")
   }
 
   closeDelete() {
     this.pendingDeleteId = null
-    if (this.hasDeleteDialogTarget) closeModal(this.deleteDialogTarget)
+    this.dismissFrame(this.deleteDialogUrlValue, "lesson_type_delete_dialog")
+  }
+
+  deleteDialogTargetConnected() {
+    this.pendingDeleteId = this.deleteDialogTarget.dataset.id || this.pendingDeleteId
+  }
+
+  subjectDeleteDialogTargetConnected() {
+    this.pendingDeleteSubject = this.subjectDeleteDialogTarget.dataset.subject || this.pendingDeleteSubject
+  }
+
+  loadFrame(url, params, frameId) {
+    if (!url) return
+    const next = new URL(url, window.location.origin)
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value == null || value === "") next.searchParams.delete(key)
+      else next.searchParams.set(key, value)
+    })
+    const href = `${next.pathname}${next.search}`
+    const frame = document.getElementById(frameId)
+    if (frame) {
+      frame.src = href
+      return
+    }
+    Turbo.visit(href, { frame: frameId })
+  }
+
+  dismissFrame(url, frameId) {
+    this.loadFrame(url, { dismiss: 1 }, frameId)
   }
 
   confirmDelete() {

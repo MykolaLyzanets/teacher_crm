@@ -16,6 +16,7 @@ const KIND_NAMES = {
 let lessonTypes = []
 let links = []
 let seedLessons = []
+let pendingSubjects = []
 
 function readStored() {
   try {
@@ -25,7 +26,8 @@ function readStored() {
     if (!Array.isArray(parsed?.lessonTypes) || !Array.isArray(parsed?.links)) return null
     return {
       lessonTypes: parsed.lessonTypes.map(normalizeType),
-      links: parsed.links
+      links: parsed.links,
+      pendingSubjects: Array.isArray(parsed.pendingSubjects) ? parsed.pendingSubjects.map(normalizeName).filter(Boolean) : []
     }
   } catch {
     return null
@@ -34,7 +36,7 @@ function readStored() {
 
 function persist() {
   try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ lessonTypes, links }))
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ lessonTypes, links, pendingSubjects }))
   } catch {
     // Private mode or blocked storage — in-memory catalog still works.
   }
@@ -78,6 +80,7 @@ export function initLessonTypesStore(seed = {}) {
     lessonTypes = seededTypes
     links = seededLinks
   }
+  pendingSubjects = stored?.pendingSubjects || []
   persist()
 }
 
@@ -89,6 +92,28 @@ export function listLessonTypes() {
 
 export function listSubjectNames() {
   return [...new Set(listLessonTypes().map((item) => item.subjectName))]
+}
+
+export function listPendingSubjects() {
+  return [...pendingSubjects]
+}
+
+export function addPendingSubject(name) {
+  const trimmed = normalizeName(name)
+  if (!trimmed) return { ok: false, message: "subject" }
+  const names = [...listSubjectNames(), ...pendingSubjects]
+  if (names.some((existing) => existing.toLowerCase() === trimmed.toLowerCase())) {
+    return { ok: false, message: "duplicate_lesson" }
+  }
+  pendingSubjects = [...pendingSubjects, trimmed]
+  persist()
+  return { ok: true, name: trimmed }
+}
+
+export function removePendingSubject(name) {
+  const needle = normalizeName(name).toLowerCase()
+  pendingSubjects = pendingSubjects.filter((item) => item.toLowerCase() !== needle)
+  persist()
 }
 
 export function listActiveLessonTypes() {
@@ -239,17 +264,19 @@ export function deleteLessonType(id) {
 export function renameSubject(oldName, newName) {
   const trimmed = normalizeName(newName)
   if (!trimmed) return { ok: false, message: "subject" }
+  const oldNeedle = String(oldName || "").trim().toLowerCase()
+  const names = [...listSubjectNames(), ...pendingSubjects]
   if (
-    trimmed.toLowerCase() !== String(oldName || "").trim().toLowerCase() &&
-    listSubjectNames().some((name) => name.toLowerCase() === trimmed.toLowerCase())
+    trimmed.toLowerCase() !== oldNeedle &&
+    names.some((name) => name.toLowerCase() === trimmed.toLowerCase())
   ) {
     return { ok: false, message: "duplicate_lesson" }
   }
 
-  const needle = String(oldName || "").trim().toLowerCase()
   lessonTypes = lessonTypes.map((item) =>
-    item.subjectName.toLowerCase() === needle ? { ...item, subjectName: trimmed } : item
+    item.subjectName.toLowerCase() === oldNeedle ? { ...item, subjectName: trimmed } : item
   )
+  pendingSubjects = pendingSubjects.map((name) => (name.toLowerCase() === oldNeedle ? trimmed : name))
   persist()
   return { ok: true }
 }
@@ -258,6 +285,8 @@ export function deleteSubject(subjectName) {
   const needle = String(subjectName || "").trim().toLowerCase()
   const types = lessonTypes.filter((item) => item.subjectName.toLowerCase() === needle)
   types.forEach((item) => deleteLessonType(item.id))
+  pendingSubjects = pendingSubjects.filter((name) => name.toLowerCase() !== needle)
+  persist()
   return { ok: true }
 }
 

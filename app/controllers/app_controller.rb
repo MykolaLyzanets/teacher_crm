@@ -17,7 +17,6 @@ class AppController < ApplicationController
     {
       'students' => 'students',
       'teachers' => 'teachers',
-      'calendar' => 'calendar',
       'dashboard' => 'dashboard',
       'lessons' => 'lessons',
       'payments' => 'payments',

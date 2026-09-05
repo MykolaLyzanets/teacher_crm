@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.lesson_types.title')} | danlio"
 
-.settings-page data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value="UAH"
+.settings-page data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value="UAH" data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
   = render 'lesson_types/seed'
   nav.settings-page__crumb aria-label="Breadcrumb"
     = link_to t('app.settings.title'), settings_path

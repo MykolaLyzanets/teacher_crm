@@ -35,9 +35,24 @@ export default class extends Controller {
     "removePhotoInput",
     "email",
     "formStatus",
-    "grade",
-    "enrollmentDate",
-    "academicYear",
+    "parentName",
+    "parentEmail",
+    "parentPhone",
+    "notes",
+    "notesCount",
+    "formAlert",
+    "submitBtn",
+    "toast",
+    "assignedBlock",
+    "unassignedBlock",
+    "assignBadge",
+    "teacherAvatar",
+    "teacherName",
+    "teacherMeta",
+    "teacherLink",
+    "removeDialog",
+    "unassignForm",
+    "formStatus",
     "parentName",
     "parentEmail",
     "parentPhone",
@@ -380,9 +395,6 @@ export default class extends Controller {
       last_name: "lastName",
       email: "email",
       status: "status",
-      grade: "grade",
-      enrollment_date: "enrollmentDate",
-      academic_year: "academicYear",
       parent_name: "parentName",
       parent_email: "parentEmail",
       parent_phone: "parentPhone",
@@ -452,6 +464,9 @@ export default class extends Controller {
   }
 
   renderErrors(errors) {
+    this.element.querySelectorAll(".students-page__field--invalid").forEach((field) => {
+      field.classList.remove("students-page__field--invalid")
+    })
     this.element.querySelectorAll("[data-error-for]").forEach((node) => {
       const key = node.dataset.errorFor
       const show = this.touched.has(key) && errors[key]

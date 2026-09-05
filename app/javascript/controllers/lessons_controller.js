@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Turbo } from "@hotwired/turbo-rails"
 
 const TONES = { completed: "olive", cancelled: "rose", upcoming: "amber" }
 
@@ -189,7 +190,14 @@ export default class extends Controller {
   }
 
   openEdit() {
-    if (this.calendarUrlValue) window.location.href = this.calendarUrlValue
+    const url = this.calendarUrlValue
+    if (!url) return
+    const frame = document.getElementById("create_lesson")
+    if (frame) {
+      frame.src = url
+      return
+    }
+    Turbo.visit(url, { frame: "create_lesson" })
   }
 
   fillDrawer(lesson) {

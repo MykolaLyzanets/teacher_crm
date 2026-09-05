@@ -56,7 +56,12 @@ function onKeyDown(event) {
 
 export function openModal(el, { focus, onClose } = {}) {
   if (!el) return
-  if (stack.some((item) => item.el === el)) return
+  const existing = stack.findIndex((item) => item.el === el)
+  if (existing >= 0) {
+    el.hidden = false
+    el.removeAttribute("hidden")
+    return
+  }
   el.hidden = false
   el.removeAttribute("hidden")
   lockScroll()

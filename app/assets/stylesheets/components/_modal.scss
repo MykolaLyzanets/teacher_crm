@@ -1,7 +1,7 @@
 .danlio-modal {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 80;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9,6 +9,10 @@
 
   &[hidden] {
     display: none !important;
+  }
+
+  &.is-open {
+    display: flex !important;
   }
 }
 

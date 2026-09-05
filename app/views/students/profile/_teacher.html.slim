@@ -27,7 +27,7 @@ section.students-page__profile-panel.students-page__teacher-panel
         = link_to student_assign_dialog_path(student), class: 'students-page__olive-btn', data: assign_dialog_turbo_data do
           = icon_tag 'user-switch', size: 16
           span = t('app.students.change_teacher')
-        button.students-page__danger-btn type="button" data-action="students#openRemove"
+        = link_to unassign_dialog_student_path(student[:id]), class: 'students-page__danger-btn', data: unassign_dialog_turbo_data do
           = icon_tag 'user-minus', size: 16
           span = t('app.students.remove_assignment')
 

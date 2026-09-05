@@ -1,0 +1,78 @@
+- close_path = settings_lesson_type_dialog_path(dismiss: 1)
+
+.danlio-modal.danlio-modal--md data-controller="modal" data-lesson-types-target="dialog" data-subject=@subject data-id=@lesson_type_id
+  a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_type_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="lesson-type-dialog-title"
+    .danlio-modal__head
+      div
+        h2#lesson-type-dialog-title.danlio-modal__title data-lesson-types-target="dialogTitle" = t('app.lesson_types.add_title')
+        p.danlio-modal__desc data-lesson-types-target="dialogSubject" = @subject
+      a.danlio-modal__close href=close_path aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_type_dialog"
+        = icon_tag 'x', size: 20
+    form.danlio-modal__form data-action="submit->lesson-types#submitDialog"
+      .danlio-modal__body
+        p.lt-field-error hidden="hidden" data-lesson-types-target="formError"
+        label.lt-field
+          span
+            = t('app.lesson_types.type')
+            abbr.lt-req *
+          select data-lesson-types-target="kind" data-action="change->lesson-types#onKindChange" data-modal-focus="true"
+            option value="individual" = t('app.lesson_types.individual')
+            option value="group" = t('app.lesson_types.group')
+            option value="trial" = t('app.lesson_types.trial')
+            option value="custom" = t('app.lesson_types.custom')
+        .lt-grid data-lesson-types-target="customNameWrap" hidden="hidden"
+          label.lt-field
+            span
+              = t('app.lesson_types.custom_name')
+              abbr.lt-req *
+            input type="text" placeholder=t('app.lesson_types.custom_name_placeholder') data-lesson-types-target="name"
+            p.lt-field-error hidden="hidden" data-lesson-types-target="nameError"
+          label.lt-field data-lesson-types-target="modeWrap"
+            span
+              = t('app.lesson_types.format')
+              abbr.lt-req *
+            select data-lesson-types-target="mode" data-action="change->lesson-types#onModeChange"
+              option value="individual" = t('app.lesson_types.individual')
+              option value="group" = t('app.lesson_types.group')
+        .lt-grid
+          label.lt-field
+            span
+              = t('app.lesson_types.duration')
+              abbr.lt-req *
+            input type="number" min="1" step="1" list="lesson-type-durations" data-lesson-types-target="duration"
+            datalist#lesson-type-durations
+              - [30, 45, 60, 90, 120].each do |minutes|
+                option value=minutes
+            p.lt-field-error hidden="hidden" data-lesson-types-target="durationError"
+          label.lt-field data-lesson-types-target="priceTypeWrap" hidden="hidden"
+            span
+              = t('app.lesson_types.price_type')
+              abbr.lt-req *
+            select data-lesson-types-target="priceType" data-action="change->lesson-types#onModeChange"
+              option value="per_lesson" = t('app.lesson_types.per_lesson')
+              option value="per_student" = t('app.lesson_types.per_student')
+        label.lt-field
+          span
+            = t('app.lesson_types.price')
+            abbr.lt-req *
+          .lt-price
+            input type="text" inputmode="decimal" placeholder="500" data-lesson-types-target="price"
+            select aria-label=t('app.teachers.currency') data-lesson-types-target="currency"
+              - %w[UAH EUR USD GBP PLN].each do |code|
+                option value=code = code
+          p.lt-field-error hidden="hidden" data-lesson-types-target="priceError"
+          p.lt-field-hint hidden="hidden" data-lesson-types-target="freeHint" = t('app.lesson_types.free_hint')
+          p.lt-field-hint hidden="hidden" data-lesson-types-target="perStudentHint" = t('app.lesson_types.per_student_hint')
+        label.lt-check
+          input type="checkbox" data-lesson-types-target="free" data-action="change->lesson-types#toggleFree"
+          span = t('app.lesson_types.free_lesson')
+        label.lt-field
+          span = t('app.lesson_types.description')
+          textarea rows="3" placeholder=t('app.lesson_types.description_placeholder') data-lesson-types-target="description"
+        label.lt-check
+          input type="checkbox" checked="checked" data-lesson-types-target="active"
+          span = t('app.lesson_types.active_label')
+      .danlio-modal__foot
+        a.danlio-modal__btn.danlio-modal__btn--secondary href=close_path data-turbo="true" data-turbo-frame="lesson_type_dialog" = t('app.common.cancel')
+        button.danlio-modal__btn.danlio-modal__btn--primary type="submit" data-lesson-types-target="dialogSubmit" = t('app.lesson_types.add')

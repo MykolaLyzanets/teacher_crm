@@ -3,9 +3,9 @@
 class StudentsController < AppController
   helper LessonsHelper
   helper FinanceHelper
-  before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign unassign delete_dialog]
-  before_action :require_assign_permission!, only: %i[assign_dialog assign unassign]
-  before_action :set_student_record, only: %i[show edit update destroy unassign]
+  before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign unassign unassign_dialog delete_dialog]
+  before_action :require_assign_permission!, only: %i[assign_dialog assign unassign unassign_dialog]
+  before_action :set_student_record, only: %i[show edit update destroy unassign unassign_dialog]
 
   def index
     @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
@@ -125,6 +125,18 @@ class StudentsController < AppController
         student_profiles_scope.find_by(id: @student_ids.first)&.teacher_id
       end
     render :assign_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def unassign_dialog
+    if @student_record.blank?
+      return redirect_to students_path unless turbo_frame_request?
+
+      render :unassign_dialog, layout: false
+      return
+    end
+
+    @student = @student_record.as_catalog
+    render :unassign_dialog, layout: (turbo_frame_request? ? false : 'app')
   end
 
   def assign

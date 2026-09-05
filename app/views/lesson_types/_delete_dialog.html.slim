@@ -1,0 +1,17 @@
+- close_path = settings_lesson_type_delete_dialog_path(dismiss: 1)
+
+.danlio-modal.danlio-modal--sm data-controller="modal" data-lesson-types-target="deleteDialog" data-id=@lesson_type_id
+  a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_type_delete_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="delete-lesson-type-title"
+    .danlio-modal__head
+      h2#delete-lesson-type-title.danlio-modal__title = t('app.lesson_types.delete_title')
+      a.danlio-modal__close href=close_path aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_type_delete_dialog"
+        = icon_tag 'x', size: 20
+    .danlio-modal__body
+      p.danlio-modal__copy
+        span data-lesson-types-target="deleteName" = @lesson_type_name.present? ? "“#{@lesson_type_name}”" : nil
+        '
+        = t('app.lesson_types.delete_text')
+      .danlio-modal__actions
+        a.danlio-modal__btn.danlio-modal__btn--secondary href=close_path data-turbo="true" data-turbo-frame="lesson_type_delete_dialog" = t('app.common.cancel')
+        button.danlio-modal__btn.danlio-modal__btn--danger type="button" data-action="lesson-types#confirmDelete" = t('app.lesson_types.delete_confirm')

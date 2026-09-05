@@ -1,0 +1,14 @@
+.danlio-modal.danlio-modal--sm data-controller="modal"
+  a.danlio-modal__backdrop href=unassign_dialog_student_path(@student_record) tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="unassign_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="remove-assignment-title"
+    .danlio-modal__head
+      div
+        h2#remove-assignment-title.danlio-modal__title = t('app.students.remove_confirm_title')
+        p.danlio-modal__desc = t('app.students.remove_confirm_text')
+      a.danlio-modal__close href=unassign_dialog_student_path(@student_record) aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="unassign_dialog"
+        = icon_tag 'x', size: 20
+    .danlio-modal__body
+      = form_with url: unassign_student_path(@student_record), method: :delete, html: { class: 'danlio-modal__form', data: { turbo: false } } do
+        .danlio-modal__actions.danlio-modal__actions--end
+          a.danlio-modal__btn.danlio-modal__btn--secondary href=unassign_dialog_student_path(@student_record) data-turbo="true" data-turbo-frame="unassign_dialog" = t('app.common.cancel')
+          button.danlio-modal__btn.danlio-modal__btn--danger type="submit" = t('app.students.remove_assignment')

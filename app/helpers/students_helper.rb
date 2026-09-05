@@ -420,6 +420,10 @@ module StudentsHelper
     { turbo: true, turbo_frame: 'assign_dialog' }
   end
 
+  def unassign_dialog_turbo_data
+    { turbo: true, turbo_frame: 'unassign_dialog' }
+  end
+
   def student_assign_dialog_path(student)
     assign_dialog_students_path(student_ids: [student[:id]])
   end

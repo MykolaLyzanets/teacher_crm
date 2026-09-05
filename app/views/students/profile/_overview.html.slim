@@ -24,7 +24,7 @@
           div
             p.students-page__empty-title = t('app.students.stats_no_upcoming')
             p.students-page__empty-text = t('app.students.create_next_hint')
-          = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+          = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
             = t('app.students.create_lesson')
 
     section.students-page__profile-panel
@@ -59,7 +59,7 @@
           div
             p.students-page__empty-title = t('app.students.stats_no_upcoming')
             p.students-page__empty-text = t('app.students.schedule_next_hint')
-          = link_to calendar_path(studentId: student[:id]), class: 'students-page__create-btn' do
+          = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
             = t('app.students.create_lesson')
       - else
         ul.students-page__upcoming-list

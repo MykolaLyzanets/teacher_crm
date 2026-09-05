@@ -87,6 +87,11 @@ module Students
         return
       end
 
+      if workspace.individual? && actor.teacher_profile
+        @assigned_teacher = actor.teacher_profile
+        return
+      end
+
       id = params[:teacher_id].presence
       return if id.blank?
 
@@ -108,7 +113,7 @@ module Students
         first_name: params[:first_name].to_s.strip,
         last_name: params[:last_name].to_s.strip,
         preferred_name: params[:preferred_name].to_s.strip.presence,
-        date_of_birth: params[:date_of_birth].presence,
+        date_of_birth: StudentProfile.optional_date(params[:date_of_birth]),
         gender: params[:gender].to_s.strip.presence,
         status: params[:status].presence || 'active',
         phone: params[:phone].to_s.strip.presence,
@@ -119,7 +124,7 @@ module Students
         parent_phone: params[:parent_phone].to_s.strip.presence,
         grade: params[:grade].to_s.strip.presence,
         student_code: params[:student_code].to_s.strip.presence,
-        enrollment_date: params[:enrollment_date].presence,
+        enrollment_date: StudentProfile.optional_date(params[:enrollment_date]),
         academic_year: params[:academic_year].to_s.strip.presence,
         level: params[:level].to_s.strip.presence,
         subjects: Array(params[:subjects]).compact_blank,

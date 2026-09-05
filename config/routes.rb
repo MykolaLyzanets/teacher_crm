@@ -33,6 +33,7 @@ Rails.application.routes.draw do
         get :delete_dialog
       end
       member do
+        get :unassign_dialog
         delete :unassign
       end
     end
@@ -44,6 +45,7 @@ Rails.application.routes.draw do
       end
     end
     get 'calendar', to: 'calendar#index'
+    get 'calendar/new', to: 'calendar#new', as: :new_calendar
     get 'lessons', to: 'lessons#index'
     get 'payments', to: 'payments#index'
     get 'profile', to: 'profiles#show'
@@ -51,6 +53,9 @@ Rails.application.routes.draw do
     get 'settings', to: 'settings#index'
     get 'settings/lessons', to: 'settings#lessons', as: :settings_lessons
     get 'settings/lessons/lesson-types', to: 'settings#lesson_types', as: :settings_lesson_types
+    get 'settings/lessons/lesson-types/dialog', to: 'settings#lesson_type_dialog', as: :settings_lesson_type_dialog
+    get 'settings/lessons/lesson-types/delete-dialog', to: 'settings#lesson_type_delete_dialog', as: :settings_lesson_type_delete_dialog
+    get 'settings/lessons/lesson-types/subject-delete-dialog', to: 'settings#lesson_subject_delete_dialog', as: :settings_lesson_subject_delete_dialog
 
     scope :student, as: :student do
       get '/', to: 'student_portal#home', as: :root

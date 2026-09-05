@@ -26,7 +26,7 @@
         p.students-page__subtitle = editing ? t('app.students.edit_subtitle') : t('app.students.create_subtitle')
     .students-page__form-actions.students-page__form-actions--top
       = link_to t('app.common.cancel'), cancel_path, class: 'students-page__secondary-btn'
-      button.students-page__primary-btn type="submit" form="student-form" data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')
+      button.students-page__primary-btn type="submit" form="student-form" formnovalidate=true data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')
 
   = form_with url: form_url, method: form_method, multipart: true, html: { id: 'student-form', class: 'students-page__form', novalidate: true, data: { action: 'submit->students#validateSubmit' } } do
     section.students-page__card
@@ -162,27 +162,27 @@
       .students-page__fields
         label.students-page__field
           span = t('app.students.grade_class')
-          select name="grade" data-students-target="grade" data-action="blur->students#markTouched"
+          select name="grade"
             option value="" = t('app.students.select_grade')
             - grades, selected_grade = student_grade_options(student[:grade])
             - grades.each do |grade|
               option value=grade selected=(grade.to_s == selected_grade.to_s) = grade
-          p.students-page__field-error hidden="hidden" data-error-for="grade"
+          span.students-page__hint = t('app.students.optional_field')
         label.students-page__field
           span = t('app.students.student_id')
           input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
           span.students-page__hint = t('app.students.student_id_hint')
         label.students-page__field
           span = t('app.students.enrollment')
-          input type="date" name="enrollment_date" value=enrollment_default data-students-target="enrollmentDate" data-action="blur->students#markTouched"
-          p.students-page__field-error hidden="hidden" data-error-for="enrollmentDate"
+          input type="date" name="enrollment_date" value=enrollment_default
+          span.students-page__hint = t('app.students.optional_field')
         label.students-page__field
           span = t('app.students.academic_year')
-          select name="academic_year" data-students-target="academicYear" data-action="blur->students#markTouched"
+          select name="academic_year"
             option value="" = t('app.students.select_year')
             - StudentsHelper::ACADEMIC_YEARS.each do |year|
               option value=year selected=(year == student[:academicYear].to_s) = year
-          p.students-page__field-error hidden="hidden" data-error-for="academicYear"
+          span.students-page__hint = t('app.students.optional_field')
 
     section.students-page__card
       h2 = t('app.students.lesson_preferences')
@@ -218,4 +218,4 @@
 
     .students-page__form-actions.students-page__form-actions--sticky
       = link_to t('app.common.cancel'), cancel_path, class: 'students-page__secondary-btn'
-      button.students-page__primary-btn type="submit" data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')
+      button.students-page__primary-btn type="submit" formnovalidate=true data-students-target="submitBtn" = editing ? t('app.students.save_student') : t('app.students.create_student')

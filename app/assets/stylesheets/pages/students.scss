@@ -963,6 +963,12 @@
       resize: vertical;
     }
 
+    input:invalid,
+    select:invalid,
+    textarea:invalid {
+      box-shadow: none;
+    }
+
     &--full {
       @media (min-width: 640px) {
         grid-column: 1 / -1;

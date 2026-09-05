@@ -1,13 +1,13 @@
 - content_for :title, "#{t('app.lessons.title')} | danlio"
 
-.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common') data-lessons-calendar-url-value=calendar_path(create: 1)
+.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common') data-lessons-calendar-url-value=new_calendar_path
   p.lessons-page__toast hidden="hidden" role="status" data-lessons-target="toast"
 
   .lessons-page__header
     div
       h1.lessons-page__title = t('app.lessons.title')
       p.lessons-page__subtitle = t('app.lessons.subtitle')
-    = link_to calendar_path(create: 1), class: 'lessons-page__primary-btn' do
+    = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
       = lesson_icon 'plus', size: 20
       span = t('app.lessons.create')
 
@@ -35,7 +35,7 @@
         = lesson_icon 'clipboard', size: 24
       h2 = t('app.lessons.empty_title')
       p = t('app.lessons.empty_text')
-      = link_to calendar_path(create: 1), class: 'lessons-page__primary-btn' do
+      = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
         = lesson_icon 'plus', size: 20
         span = t('app.lessons.create')
 

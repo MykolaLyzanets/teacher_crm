@@ -10,7 +10,7 @@
 - content_for :title, "#{editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')} | danlio"
 
 .teachers-page.teachers-page--form data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teachers-editing-value=editing data-teachers-name-value=teacher_display_name(teacher)
-  .lt-scope data-controller="lesson-types" data-lesson-types-mode-value="teacher" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s == 'active' || teacher[:status].blank?) data-lesson-types-default-currency-value="UAH"
+  .lt-scope data-controller="lesson-types" data-lesson-types-mode-value="teacher" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s == 'active' || teacher[:status].blank?) data-lesson-types-default-currency-value="UAH" data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
     = render 'lesson_types/seed'
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path

@@ -59,20 +59,6 @@
 
     - if can_assign_teacher?
       = turbo_frame_tag 'assign_dialog'
-
-      .danlio-modal.danlio-modal--sm hidden="hidden" data-students-target="removeDialog"
-        button.danlio-modal__backdrop type="button" aria-label=t('app.common.close') data-action="students#closeRemove"
-        .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="remove-assignment-title"
-          .danlio-modal__head
-            div
-              h2#remove-assignment-title.danlio-modal__title = t('app.students.remove_confirm_title')
-              p.danlio-modal__desc = t('app.students.remove_confirm_text')
-            button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="students#closeRemove"
-              = icon_tag 'x', size: 20
-          .danlio-modal__body
-            = form_with url: unassign_student_path(student[:id]), method: :delete, html: { class: 'danlio-modal__form', data: { students_target: 'unassignForm', turbo: false } } do
-              .danlio-modal__actions.danlio-modal__actions--end
-                button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="students#closeRemove" = t('app.common.cancel')
-                button.danlio-modal__btn.danlio-modal__btn--danger type="submit" = t('app.students.remove_assignment')
+      = turbo_frame_tag 'unassign_dialog'
 
     = turbo_frame_tag 'delete_dialog'
