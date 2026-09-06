@@ -129,7 +129,7 @@ class TeachersController < AppController
       :default_lesson_duration_minutes, :duration_preset, :custom_duration,
       :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
-      :notes, :workspace_role, :photo, :remove_photo,
+      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
     )
     permitted[:working_hours] = permitted_working_hours
@@ -146,10 +146,6 @@ class TeachersController < AppController
 
   def set_teacher_record
     @teacher_record = teacher_profiles_scope.find_by(id: params[:id])
-  end
-
-  def catalog_lessons
-    Array(Demo::Catalog.lessons).map(&:with_indifferent_access)
   end
 
   def default_teacher_attrs
@@ -176,7 +172,8 @@ class TeachersController < AppController
       calendarColor: 'olive',
       inviteToWorkspace: false,
       invitationTiming: 'send_now',
-      notes: ''
+      notes: '',
+      lessonCatalog: '[]'
     }.with_indifferent_access
   end
 
@@ -234,7 +231,8 @@ class TeachersController < AppController
       calendarColor: data[:calendar_color].presence || fallback[:calendarColor],
       notes: data[:notes].to_s,
       photo:,
-      inviteToWorkspace: data[:invite_to_workspace].to_s == '1'
+      inviteToWorkspace: data[:invite_to_workspace].to_s == '1',
+      lessonCatalog: data[:lesson_catalog].presence || fallback[:lessonCatalog] || '[]'
     ).with_indifferent_access
   end
 

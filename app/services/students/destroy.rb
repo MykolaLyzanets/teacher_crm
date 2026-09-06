@@ -7,7 +7,10 @@ module Students
     end
 
     def call
-      student_profile.update!(status: :archived)
+      StudentProfile.transaction do
+        student_profile.update!(status: :archived)
+        Lessons::CancelForStudent.new(student_profile:, cause: 'archived').call
+      end
     end
 
     private

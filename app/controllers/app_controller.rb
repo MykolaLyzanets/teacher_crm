@@ -9,7 +9,8 @@ class AppController < ApplicationController
   layout 'app'
 
   helper_method :app_page_stylesheet, :can_manage_teachers?, :can_assign_teacher?,
-                :can_view_finance?, :can_manage_payments?, :staff_notifications, :unread_staff_count
+                :can_view_finance?, :can_manage_payments?, :can_override_schedule?,
+                :staff_notifications, :unread_staff_count
 
   private
 
@@ -50,6 +51,10 @@ class AppController < ApplicationController
     current_user.owner? || current_user.admin?
   end
 
+  def can_override_schedule?
+    current_user.owner? || current_user.admin?
+  end
+
   def can_manage_payments?
     can_view_finance?
   end
@@ -60,5 +65,11 @@ class AppController < ApplicationController
 
   def unread_staff_count
     staff_notifications.count { |item| !item[:read] }
+  end
+
+  def ensure_api_workspace!
+    return if current_user.admin? || current_workspace.present?
+
+    render json: { error: I18n.t('app.workspace.required') }, status: :forbidden
   end
 end

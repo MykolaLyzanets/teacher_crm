@@ -101,14 +101,6 @@ module ApplicationHelper
     user_signed_in? && (current_user.owner? || current_user.admin?)
   end
 
-  def lesson_types_seed_json
-    Demo::Catalog.lesson_types_seed.to_json
-  end
-
-  def lesson_types_seed_script
-    ERB::Util.json_escape(lesson_types_seed_json)
-  end
-
   def app_i18n_json(*roots)
     roots.flatten.each_with_object({}) do |root, hash|
       key = root.to_s.split('.').last

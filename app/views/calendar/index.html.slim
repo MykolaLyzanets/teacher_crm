@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.calendar.title')} | danlio"
 
-.calendar-page data-controller="calendar" data-calendar-i18n-value=app_i18n_json('app.calendar', 'app.statuses', 'app.common') data-calendar-lessons-value=@lessons_json data-calendar-teachers-value=@teachers.to_json data-calendar-students-value=@students.to_json data-calendar-teacher-id-value=(@preset_teacher_id.to_s) data-calendar-student-id-value=(@preset_student_id.to_s) data-calendar-lesson-types-seed-value=lesson_types_seed_json data-calendar-show-price-value=can_view_finance?.to_s data-calendar-can-override-value=(current_user.owner? || current_user.admin?).to_s data-calendar-can-manage-teachers-value=can_manage_teachers?.to_s data-calendar-lock-teacher-value=@lock_teacher.to_s data-calendar-current-teacher-id-value=@current_teacher_id.to_s data-calendar-timezone-value=@workspace_timezone data-calendar-create-url-value=new_calendar_path data-calendar-dismiss-url-value=(new_calendar_path(dismiss: 1))
+.calendar-page data=calendar_page_data
   p.calendar-page__toast hidden=true role="status" data-calendar-target="toast"
   .calendar-page__header
     div
@@ -144,8 +144,8 @@
           strong data-calendar-target="detailsNotes"
       .calendar-page__modal-foot
         button.calendar-page__primary-btn type="button" data-action="calendar#editLesson" = t('app.calendar.edit')
-        button.calendar-page__secondary-btn type="button" data-action="calendar#duplicateLesson" = t('app.calendar.duplicate')
-        button.calendar-page__danger-btn type="button" data-action="calendar#cancelLesson" = t('app.calendar.cancel_lesson')
+        button.calendar-page__secondary-btn type="button" data-calendar-target="detailsDuplicate" data-action="calendar#duplicateLesson" = t('app.calendar.duplicate')
+        button.calendar-page__danger-btn type="button" data-calendar-target="detailsCancel" data-action="calendar#cancelLesson" = t('app.calendar.cancel_lesson')
 
   .calendar-page__modal.calendar-page__modal--overflow hidden="hidden" data-calendar-target="overflow"
     button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeOverflow"

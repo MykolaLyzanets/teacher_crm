@@ -3,7 +3,7 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development? || Rails.env.test?
+  mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   authenticate :user, ->(user) { user.admin? } do
     mount Sidekiq::Web => '/sidekiq'
@@ -30,6 +30,8 @@ Rails.application.routes.draw do
       collection do
         get :assign_dialog
         patch :assign
+        get :status_dialog
+        patch :bulk_status
         get :delete_dialog
       end
       member do
@@ -43,12 +45,21 @@ Rails.application.routes.draw do
         get :assign_dialog
         get :unassign_dialog
       end
+      resources :subjects, only: %i[index create]
     end
+    resources :subjects, only: :update do
+      resources :lesson_types, only: %i[index create]
+    end
+    resources :lesson_types, only: :update
     get 'calendar', to: 'calendar#index'
     get 'calendar/new', to: 'calendar#new', as: :new_calendar
-    get 'lessons', to: 'lessons#index'
+    resources :lessons, only: %i[index create update] do
+      member { patch :outcome }
+    end
     get 'payments', to: 'payments#index'
     get 'profile', to: 'profiles#show'
+    patch 'profile', to: 'profiles#update'
+    put 'profile', to: 'profiles#update'
 
     get 'settings', to: 'settings#index'
     get 'settings/lessons', to: 'settings#lessons', as: :settings_lessons

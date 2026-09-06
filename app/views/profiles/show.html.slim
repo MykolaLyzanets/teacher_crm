@@ -1,14 +1,14 @@
 - teacher = (@teacher || {}).with_indifferent_access
+- timezones = (TeachersHelper::TIMEZONES + [TeacherProfile::DEFAULT_TIMEZONE, teacher[:timezone]]).compact.uniq
 - content_for :title, "#{t('app.profile.title')} | danlio"
 
-.settings-page.settings-page--profile data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value=(teacher[:defaultLessonCurrency].presence || 'UAH') data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
-  = render 'lesson_types/seed'
+.settings-page.settings-page--profile data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id])
   p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
   .settings-page__header
     h1.settings-page__title = t('app.profile.title')
     p.settings-page__subtitle = t('app.profile.subtitle', name: teacher_display_name(teacher))
 
-  form.settings-page__form id="my-profile-form" novalidate="novalidate" data-action="submit->lesson-types#saveProfile"
+  = form_with url: profile_path, method: :patch, html: { id: 'my-profile-form', class: 'settings-page__form', novalidate: true } do
     section.settings-page__card
       h2 = t('app.profile.personal')
       p.settings-page__section-sub = t('app.profile.personal_sub')
@@ -37,11 +37,11 @@
         label.settings-page__field
           span = t('app.teachers.timezone')
           select name="timezone"
-            - TeachersHelper::TIMEZONES.each do |tz|
-              option value=tz selected=(tz == (teacher[:timezone].presence || 'America/New_York')) = tz.tr('_', ' ')
+            - timezones.each do |tz|
+              option value=tz selected=(tz == (teacher[:timezone].presence || TeacherProfile::DEFAULT_TIMEZONE)) = tz.tr('_', ' ')
         label.settings-page__field
           span = t('app.profile.default_currency')
-          select name="default_lesson_currency" data-action="change->lesson-types#onDefaultCurrencyChange"
+          select name="default_lesson_currency"
             - %w[UAH EUR USD GBP PLN].each do |code|
               option value=code selected=(code == (teacher[:defaultLessonCurrency].presence || 'UAH')) = code
           p.settings-page__hint = t('app.profile.default_currency_hint')

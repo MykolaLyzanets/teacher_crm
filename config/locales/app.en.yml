@@ -82,6 +82,11 @@ en:
       assigned: Assigned
       unassigned: Unassigned
       assign_teacher: Assign teacher
+      change_status: Change status
+      status_dialog_title: Change status
+      status_dialog_text: Choose a status for the selected students.
+      status_dialog_text_one: Choose a status for this student.
+      status_updated_many: "Updated status for %{count} students."
       assign_dialog_title: Assign teacher
       assign_dialog_text: Choose a teacher for the selected students.
       assign_dialog_text_one: Select a teacher for this student.
@@ -786,7 +791,9 @@ en:
       need_title_date: Please enter a title and date.
       created: Lesson created successfully.
       created_many: "%{count} lessons created successfully."
+      created_skipped: "%{count} lessons created. Skipped %{skipped} conflicting dates."
       updated: Lesson updated successfully.
+      save_failed: Could not save the lesson.
       months:
         january: January
         february: February
@@ -944,6 +951,30 @@ en:
       join_meeting: Join meeting →
       default_subject: Lesson
       group_fallback: Group lesson
+      save_failed: Could not save the lesson outcome.
+      date_and_location: Date and location
+      date: Date
+      time: Time
+      lesson_type: Lesson type
+      timezone: Timezone
+      meeting: Meeting
+      location: Location
+      join_online: Join online lesson
+      meeting_pending: Meeting link will appear here.
+      no_notes: No notes yet.
+      view_profile: View profile
+      assigned_teacher: Assigned teacher
+      individual_lesson: Individual lesson
+      group_lesson: Group lesson
+      group_participants: "%{count} participants"
+      participants_count: "Participants · %{count}"
+      completed_banner: Completed
+      cancelled_banner: Cancelled
+      cancelled_student_archived: The student was archived
+      cancelled_student_paused: The student was paused
+      cancelled_manual: Cancelled manually
+      min: min
+      free: Free
       types:
         individual: Individual
         group: Group
@@ -988,11 +1019,12 @@ en:
       default_currency_hint: Prefills the currency when you add a new lesson type.
       lesson_types_text: Add the lessons you teach, then the types and pricing for each. These are used to prefill new lessons on your calendar.
       save: Save changes
+      saved: Profile saved.
     lesson_types:
       title: Lesson types
       card_text: Individual, group and other formats — duration and default price
-      school_text: Add lessons and their pricing types. Teachers enable and price these from their own profile.
-      solo_text: Add the lessons you teach, then the types and pricing for each.
+      school_text: Choose a teacher, then add the subjects they teach and the lesson types for each subject.
+      solo_text: Add the subjects you teach, then the types for each.
       add: Add lesson type
       add_title: Add lesson type
       edit_title: Edit lesson type
@@ -1047,10 +1079,10 @@ en:
       price_override_hint: Leave blank to use the default price
       manage: Manage lesson types
       delete_title: Delete lesson type?
-      delete_text: will no longer be available for new lessons. If it was never used on a lesson it’s removed entirely; if it was, it’s deactivated instead so historical lessons keep their record.
+      delete_text: will be deactivated and no longer offered when creating a new lesson. Existing lessons keep this type.
       delete_confirm: Delete lesson type
       delete_lesson_title: Delete this lesson?
-      delete_lesson_text: This removes all of its lesson types. Any type already used on a lesson is deactivated instead, to keep historical records intact.
+      delete_lesson_text: This subject will be deactivated and no longer offered when creating a new lesson. Existing lessons stay valid.
       delete_lesson_confirm: Delete lesson
       name_blank: Enter a lesson type name.
       duration_invalid: Enter a duration greater than zero.
@@ -1065,10 +1097,13 @@ en:
       lesson_added: Lesson added.
       lesson_renamed: Lesson renamed.
       lesson_deleted: Lesson deleted.
-      deactivated: This lesson type has been used on lessons, so it was deactivated instead of deleted to keep historical records intact.
+      deactivated: This lesson type has been deactivated.
       reactivated: Lesson type reactivated.
       need_one: Enable at least one lesson type for an active teacher.
       profile_saved: Profile saved.
+      select_teacher: Select a teacher to manage their lessons.
+      save_teacher_first: Save the teacher first to add lessons.
+      save_failed: Could not save changes.
     payments:
       title: Payments
       subtitle: Student balances, lesson charges, teacher earnings and payouts.

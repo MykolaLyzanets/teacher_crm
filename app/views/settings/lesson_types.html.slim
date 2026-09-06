@@ -1,12 +1,20 @@
 - content_for :title, "#{t('app.lesson_types.title')} | danlio"
 
-.settings-page data-controller="lesson-types" data-lesson-types-mode-value="catalog" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-default-currency-value="UAH" data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
-  = render 'lesson_types/seed'
+.settings-page data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: @preset_teacher_id)
   nav.settings-page__crumb aria-label="Breadcrumb"
     = link_to t('app.settings.title'), settings_path
     = icon_tag 'chevron-right', size: 16
     = link_to t('app.settings.lessons_title'), settings_lessons_path
     = icon_tag 'chevron-right', size: 16
     span = t('app.lesson_types.title')
-  = render 'lesson_types/manager', heading: :h1, title: t('app.lesson_types.lessons_pricing'), description: (@solo ? t('app.lesson_types.solo_text') : t('app.lesson_types.school_text'))
+
+  - unless @lock_teacher
+    label.settings-page__field
+      span = t('app.calendar.teacher')
+      select data-lesson-types-target="teacherSelect" data-action="change->lesson-types#changeTeacher"
+        option value="" = t('app.calendar.select_teacher')
+        - @teachers.each do |teacher|
+          option value=teacher.id selected=(teacher.id.to_s == @preset_teacher_id.to_s) = teacher.display_label
+
+  = render 'lesson_types/manager', heading: :h1, title: t('app.lesson_types.lessons_pricing'), description: (@teachers.one? ? t('app.lesson_types.solo_text') : t('app.lesson_types.school_text'))
   = render 'lesson_types/dialogs'

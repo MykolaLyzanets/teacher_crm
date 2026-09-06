@@ -79,6 +79,9 @@ export default class extends Controller {
     this.photoUrl = ""
     this.dirty = false
     this.touched = new Set()
+    this["markDirty"] = this.markDirty.bind(this)
+    this["confirmLeave"] = this.confirmLeave.bind(this)
+    this["validateSubmit"] = this.validateSubmit.bind(this)
     if (this.hasNotesTarget) this.updateNotesCount()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
     this.syncHoursUi()
@@ -342,7 +345,8 @@ export default class extends Controller {
     })
   }
 
-  markDirty() {
+  markDirty(event) {
+    if (event?.target?.closest?.(".lt-teaching, .lt-add-lesson, .lt-list, .lt-empty, .lt-subject")) return
     this.dirty = true
   }
 
@@ -352,14 +356,8 @@ export default class extends Controller {
     if (!window.confirm(this.t("teachers", key))) event.preventDefault()
   }
 
-  syncLessonTypeRequirement() {
-    const status = this.hasFormStatusTarget ? this.formStatusTarget.value : "active"
-    const host = this.element.querySelector("[data-controller~='lesson-types']") || this.element
-    const lessonTypes = this.application.getControllerForElementAndIdentifier(host, "lesson-types")
-    if (lessonTypes) lessonTypes.requireActiveValue = status === "active"
-  }
-
   markTouched(event) {
+    this.dirty = true
     const map = {
       first_name: "firstName",
       last_name: "lastName",

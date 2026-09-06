@@ -35,5 +35,6 @@ section.students-page__table-card
             td = lesson[:teacher]
             td = lesson_type_label(lesson)
             td
-              span class="status-badge status-badge--#{student_lesson_status_tone(lesson[:status])}" = student_lesson_status_label(lesson[:status])
+              - reason = lesson_cancel_reason(lesson)
+              span.status-badge class="status-badge--#{student_lesson_status_tone(lesson[:status])}" data-cancel-reason=reason data-action=("mouseenter->students#showCancelTip mouseleave->students#hideCancelTip" if reason) aria-label=(reason ? "#{student_lesson_status_label(lesson[:status])}: #{reason}" : nil) = student_lesson_status_label(lesson[:status])
             td = student_attendance_label(lesson)

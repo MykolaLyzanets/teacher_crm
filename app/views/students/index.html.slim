@@ -38,7 +38,8 @@
         .students-page__bulk.students-page__bulk--hidden data-students-target="bulk"
           p data-students-target="bulkCount" = t('app.common.selected', count: 0)
           = form_with url: assign_dialog_students_path, method: :get, html: { id: 'bulk-assign-form', data: { turbo: true, turbo_frame: 'assign_dialog' } } do
-            button.students-page__secondary-btn type="submit" = t('app.students.assign_teacher')
+            button.students-page__secondary-btn type="submit" data-turbo-frame="assign_dialog" = t('app.students.assign_teacher')
+            button.students-page__secondary-btn type="submit" formaction=status_dialog_students_path data-turbo-frame="status_dialog" = t('app.students.change_status')
 
     .students-page__empty.students-page__empty--hidden data-students-target="empty"
       .students-page__empty-icon
@@ -66,4 +67,5 @@
 
   - if can_assign_teacher?
     = turbo_frame_tag 'assign_dialog'
+    = turbo_frame_tag 'status_dialog'
   = turbo_frame_tag 'delete_dialog'

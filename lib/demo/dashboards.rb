@@ -4,9 +4,8 @@ module Demo
   module Dashboards
     module_function
 
-    def admin(now: Time.zone.now)
+    def admin(lessons:, now: Time.zone.now)
       today = now.to_date
-      lessons = Timeline.lessons
       today_lessons = lessons_on(lessons, today)
       attention = needs_attention(lessons, now)
       teachers = Catalog.teachers
@@ -29,9 +28,8 @@ module Demo
       }.with_indifferent_access
     end
 
-    def teacher(name, now: Time.zone.now)
+    def teacher(name, lessons:, now: Time.zone.now)
       today = now.to_date
-      lessons = Timeline.lessons.select { |lesson| lesson[:teacher].to_s == name }
       today_lessons = lessons_on(lessons, today).sort_by { |lesson| lesson[:startTime].to_s }
       next_lesson = today_lessons.find { |lesson| upcoming?(lesson) && !past?(lesson, now) } ||
                     today_lessons.find { |lesson| in_progress?(lesson, now) }

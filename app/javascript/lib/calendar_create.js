@@ -46,12 +46,10 @@ export function checkTeacherAvailability(teacher, date, startTime, endTime, less
       return { kind: "outside_hours", message: "outside_hours", hours }
     }
   }
-  const name = teacherName(teacher)
-  const conflict = (lessons || []).find((lesson) => {
+    const conflict = (lessons || []).find((lesson) => {
     if (ignoreId && String(lesson.id) === String(ignoreId)) return false
     if (inactiveStatus(lesson.status)) return false
-    const sameTeacher = String(lesson.teacherId || "") === String(teacher.id) || lesson.teacher === name
-    if (!sameTeacher) return false
+    if (String(lesson.teacherId || "") !== String(teacher.id)) return false
     if (lesson.date !== date) return false
     return rangesOverlap(startTime, endTime, lesson.startTime, lesson.endTime)
   })

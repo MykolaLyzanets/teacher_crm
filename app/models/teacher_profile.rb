@@ -6,6 +6,7 @@ class TeacherProfile < ApplicationRecord
   LESSON_DURATIONS = [30, 45, 60, 90].freeze
   LESSON_FORMATS = %w[online in_person hybrid].freeze
   CALENDAR_COLORS = { olive: 0, slate: 1, amber: 2, plum: 3, terra: 4, teal: 5 }.freeze
+  DEFAULT_TIMEZONE = 'Europe/Kyiv'
 
   enum status: STATUSES
   enum preferred_contact_method: CONTACT_METHODS, _prefix: :contact
@@ -16,6 +17,10 @@ class TeacherProfile < ApplicationRecord
   belongs_to :user, inverse_of: :teacher_profile
   belongs_to :workspace, inverse_of: :teacher_profiles
   has_many :student_profiles, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :nullify
+  has_many :taught_subjects, class_name: 'Subject', foreign_key: :teacher_id, inverse_of: :teacher_profile,
+                             dependent: :destroy
+  has_many :lesson_types, through: :taught_subjects
+  has_many :lessons, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :restrict_with_error
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
@@ -25,6 +30,10 @@ class TeacherProfile < ApplicationRecord
 
   def display_label
     display_name.presence || [first_name, last_name].compact_blank.join(' ').presence || 'Teacher'
+  end
+
+  def time_zone
+    Time.find_zone(timezone.presence) || Time.find_zone(DEFAULT_TIMEZONE)
   end
 
   def photo_url

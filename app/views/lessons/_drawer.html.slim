@@ -1,84 +1,111 @@
-.lessons-page__drawer-wrap.lessons-page__drawer-wrap--hidden data-lessons-target="drawer"
-  button.lessons-page__drawer-backdrop type="button" aria-label=t('app.lessons.close_details') data-action="lessons#closeView"
-  aside.lessons-page__drawer role="dialog" aria-modal="true" aria-labelledby="lesson-record-title"
-    .lessons-page__drawer-head
+.danlio-modal.danlio-modal--lg hidden="hidden" data-lessons-target="drawer"
+  button.danlio-modal__backdrop type="button" aria-label=t('app.lessons.close_details') data-action="lessons#closeView"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="lesson-details-title"
+    .danlio-modal__head
       div
-        h2#lesson-record-title.lessons-page__drawer-title data-lessons-target="drawerTitle"
-        p.lessons-page__muted data-lessons-target="drawerSubtitle"
+        h2#lesson-details-title.danlio-modal__title data-lessons-target="drawerTitle"
+        p.danlio-modal__desc data-lessons-target="drawerSubtitle"
+        .lessons-page__show-badges
+          span.status-badge data-lessons-target="drawerBadge" data-action="mouseenter->lessons#showCancelTip mouseleave->lessons#hideCancelTip"
       .lessons-page__drawer-tools
+        button.danlio-modal__close type="button" aria-label=t('app.lessons.edit_title') data-lessons-target="drawerEdit" data-action="lessons#openEdit"
+          = lesson_icon 'edit', size: 20
         .lessons-page__drawer-more
-          button.lessons-page__icon-btn type="button" aria-label=t('app.lessons.more_title') data-action="lessons#toggleDrawerMenu"
+          button.danlio-modal__close type="button" aria-label=t('app.lessons.more_title') aria-expanded="false" data-action="lessons#toggleDrawerMenu"
             = lesson_icon 'dots', size: 20
           .lessons-page__menu.lessons-page__menu--hidden data-lessons-target="drawerMenu"
             button.lessons-page__menu-item type="button" data-lessons-target="drawerCancelItem" data-action="lessons#askCancelFromDrawer" = t('app.lessons.cancel_lesson')
-            button.lessons-page__menu-item type="button" data-action="lessons#correctOutcome" = t('app.lessons.correct_outcome')
+            button.lessons-page__menu-item type="button" data-lessons-target="drawerCorrectItem" data-action="lessons#correctOutcome" = t('app.lessons.correct_outcome')
             button.lessons-page__menu-item.lessons-page__menu-item--danger type="button" data-action="lessons#askDeleteFromDrawer" = t('app.lessons.delete_lesson')
-        button.lessons-page__icon-btn type="button" aria-label=t('app.lessons.close') data-action="lessons#closeView"
+        button.danlio-modal__close type="button" aria-label=t('app.lessons.close') data-action="lessons#closeView" data-modal-focus="true"
           = lesson_icon 'x', size: 20
-    .lessons-page__drawer-body
-      p.lessons-page__drawer-missing hidden="hidden" data-lessons-target="drawerMissing" = t('app.lessons.not_found')
-      .lessons-page__drawer-content data-lessons-target="drawerContent"
-        span.status-badge data-lessons-target="drawerBadge"
-        .lessons-page__detail
-          .lessons-page__detail-label
-            = lesson_icon 'calendar', size: 18
-            span = t('app.lessons.date_time')
-          p data-lessons-target="drawerDate"
-          p data-lessons-target="drawerTime"
-        .lessons-page__detail
-          p.lessons-page__detail-kicker = t('app.lessons.col_teacher')
-          p data-lessons-target="drawerTeacher"
-        .lessons-page__detail
-          p.lessons-page__detail-kicker = t('app.common.student')
-          p data-lessons-target="drawerParty"
-        .lessons-page__detail
-          p.lessons-page__detail-kicker = t('app.lessons.col_price')
-          p data-lessons-target="drawerPrice"
-        .lessons-page__detail
-          .lessons-page__detail-label
-            span data-lessons-target="drawerVideoIcon"
-              = lesson_icon 'video', size: 18
-            span hidden="hidden" data-lessons-target="drawerPinIcon"
-              = lesson_icon 'pin', size: 18
-            span = t('app.lessons.format')
-          p data-lessons-target="drawerFormat"
-          a.lessons-page__link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerMeeting" = t('app.lessons.join_meeting')
-          p.lessons-page__muted data-lessons-target="drawerPlace"
-        .lessons-page__detail data-lessons-target="drawerNotesRow"
-          p.lessons-page__detail-kicker = t('app.lessons.notes')
-          p.lessons-page__notes data-lessons-target="drawerNotes"
-    .lessons-page__drawer-foot data-lessons-target="drawerFoot"
-      button.lessons-page__secondary-btn type="button" data-action="lessons#openEdit"
-        = lesson_icon 'edit', size: 18
-        span = t('app.lessons.edit_title')
-      button.lessons-page__primary-btn type="button" data-action="lessons#openOutcome" = t('app.lessons.confirm_outcome')
 
-  .lessons-page__confirm.lessons-page__confirm--hidden data-lessons-target="outcome"
-    .lessons-page__confirm-card
-      h2.lessons-page__confirm-title = t('app.lessons.outcome_title')
-      p.lessons-page__muted = t('app.lessons.outcome_text')
-      .lessons-page__outcome-choices
-        button.lessons-page__outcome type="button" data-outcome="completed" data-action="lessons#chooseOutcome"
-          strong = t('app.lessons.outcome_completed')
-          span = t('app.lessons.outcome_completed_text')
-        button.lessons-page__outcome type="button" data-outcome="not_happened" data-action="lessons#chooseOutcome"
-          strong = t('app.lessons.outcome_missed')
-          span = t('app.lessons.outcome_missed_text')
-      .lessons-page__complete data-lessons-target="completeFields"
-        label
-          span = t('app.lessons.attendance')
-          select data-lessons-target="attendance"
-            option value="present" = t('app.lessons.attendance_present')
-            option value="late" = t('app.lessons.attendance_late')
-            option value="absent" = t('app.lessons.attendance_absent')
-        label
-          span = t('app.lessons.duration')
-          input type="number" min="15" step="5" value="60" data-lessons-target="duration"
-        label
-          span = t('app.lessons.teacher_note')
-          textarea rows="2" data-lessons-target="teacherNote"
-        label
-          span = t('app.lessons.progress_note')
-          textarea rows="2" data-lessons-target="progressNote"
-      .lessons-page__confirm-actions
-        button.lessons-page__secondary-btn type="button" data-action="lessons#closeOutcome" = t('app.common.cancel')
+    .danlio-modal__body.lessons-page__show-body
+      p.lessons-page__drawer-missing hidden="hidden" data-lessons-target="drawerMissing" = t('app.lessons.not_found')
+      .lessons-page__show-content data-lessons-target="drawerContent"
+        .lessons-page__show-status data-lessons-target="drawerStatus"
+          button.danlio-modal__btn.danlio-modal__btn--primary.lessons-page__show-status-btn type="button" hidden="hidden" data-lessons-target="drawerOutcomeBtn" data-action="lessons#openOutcome" = t('app.lessons.confirm_outcome')
+          .lessons-page__show-banner.lessons-page__show-banner--olive hidden="hidden" data-lessons-target="drawerCompletedBanner" = t('app.lessons.completed_banner')
+          .lessons-page__show-banner.lessons-page__show-banner--rose hidden="hidden" data-lessons-target="drawerCancelledBanner" = t('app.lessons.cancelled_banner')
+
+        section.lessons-page__show-section
+          h3.lessons-page__show-kicker data-lessons-target="drawerParticipantsTitle" = t('app.lessons.participants')
+          .lessons-page__show-people data-lessons-target="drawerParticipants"
+
+        section.lessons-page__show-section
+          h3.lessons-page__show-kicker = t('app.lessons.date_and_location')
+          .lessons-page__info-row
+            span.lessons-page__info-icon = lesson_icon 'calendar', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.date')
+              p.lessons-page__info-value data-lessons-target="drawerDate"
+          .lessons-page__info-row
+            span.lessons-page__info-icon = lesson_icon 'clock', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.time')
+              p.lessons-page__info-value data-lessons-target="drawerTime"
+          .lessons-page__info-row data-lessons-target="drawerTypeRow"
+            span.lessons-page__info-icon = lesson_icon 'tag', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.lesson_type')
+              p.lessons-page__info-value data-lessons-target="drawerType"
+          .lessons-page__info-row data-lessons-target="drawerPriceRow"
+            span.lessons-page__info-icon = lesson_icon 'cash', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.col_price')
+              p.lessons-page__info-value data-lessons-target="drawerPrice"
+          .lessons-page__info-row
+            span.lessons-page__info-icon = lesson_icon 'world', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.timezone')
+              p.lessons-page__info-value data-lessons-target="drawerTimezone"
+          .lessons-page__info-row data-lessons-target="drawerMeetingRow"
+            span.lessons-page__info-icon = lesson_icon 'video', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.meeting')
+              a.lessons-page__info-link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerMeeting"
+              p.lessons-page__info-value data-lessons-target="drawerMeetingHint"
+          .lessons-page__info-row data-lessons-target="drawerPlaceRow"
+            span.lessons-page__info-icon = lesson_icon 'pin', size: 18
+            div
+              p.lessons-page__info-label = t('app.lessons.location')
+              a.lessons-page__info-link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerPlaceLink"
+              p.lessons-page__info-value data-lessons-target="drawerPlace"
+
+        section.lessons-page__show-section
+          h3.lessons-page__show-kicker = t('app.lessons.notes')
+          .lessons-page__show-note data-lessons-target="drawerNotesRow"
+            p.lessons-page__notes data-lessons-target="drawerNotes"
+          p.lessons-page__muted data-lessons-target="drawerNotesEmpty" = t('app.lessons.no_notes')
+
+.lessons-page__confirm.lessons-page__confirm--hidden data-lessons-target="outcome"
+  .lessons-page__confirm-card
+    h2.lessons-page__confirm-title = t('app.lessons.outcome_title')
+    p.lessons-page__muted = t('app.lessons.outcome_text')
+    .lessons-page__outcome-choices
+      button.lessons-page__outcome.is-selected type="button" data-outcome="completed" data-action="lessons#chooseOutcome"
+        strong = t('app.lessons.outcome_completed')
+        span = t('app.lessons.outcome_completed_text')
+      button.lessons-page__outcome type="button" data-outcome="not_happened" data-action="lessons#chooseOutcome"
+        strong = t('app.lessons.outcome_missed')
+        span = t('app.lessons.outcome_missed_text')
+    .lessons-page__complete data-lessons-target="completeFields"
+      label
+        span = t('app.lessons.attendance')
+        select data-lessons-target="attendance"
+          option value="present" = t('app.lessons.attendance_present')
+          option value="late" = t('app.lessons.attendance_late')
+          option value="absent" = t('app.lessons.attendance_absent')
+      label
+        span = t('app.lessons.duration')
+        input type="number" min="15" step="5" value="60" data-lessons-target="duration"
+      label
+        span = t('app.lessons.teacher_note')
+        textarea rows="2" data-lessons-target="teacherNote"
+      label
+        span = t('app.lessons.progress_note')
+        textarea rows="2" data-lessons-target="progressNote"
+    p.lessons-page__form-error hidden="hidden" data-lessons-target="outcomeError" role="alert"
+    .lessons-page__confirm-actions
+      button.lessons-page__secondary-btn type="button" data-action="lessons#closeOutcome" = t('app.common.cancel')
+      button.lessons-page__primary-btn type="button" data-lessons-target="outcomeSubmit" data-action="lessons#submitOutcome" = t('app.common.confirm')

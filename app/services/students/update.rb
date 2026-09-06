@@ -64,8 +64,16 @@ module Students
         persist_photo
         user.save!
         student_profile.save!
+        cancel_lessons_if_inactive
       end
       invite_user!
+    end
+
+    def cancel_lessons_if_inactive
+      return unless student_profile.saved_change_to_status?
+      return unless student_profile.paused? || student_profile.archived?
+
+      Lessons::CancelForStudent.new(student_profile:, cause: student_profile.status).call
     end
 
     def assign_teacher

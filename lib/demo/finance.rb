@@ -92,11 +92,16 @@ module Demo
     end
 
     def next_lesson_for_student(student)
-      name = Catalog.student_name(student)
-      Timeline.lessons
-              .select { |lesson| lesson[:student].to_s == name && %w[confirmed pending].include?(lesson[:status].to_s) }
-              .select { |lesson| lesson[:date].to_s >= Date.current.iso8601 }
-              .min_by { |lesson| [lesson[:date].to_s, lesson[:startTime].to_s] }
+      return unless student.is_a?(StudentProfile)
+
+      Lesson.confirmed
+            .joins(:students)
+            .where(student_profiles: { id: student.id })
+            .where('starts_at >= ?', Time.current)
+            .order(:starts_at)
+            .includes(:teacher_profile, :subject, :lesson_type, :students)
+            .first
+            &.as_catalog
     end
 
     def workspace_overview

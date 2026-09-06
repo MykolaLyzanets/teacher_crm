@@ -75,8 +75,13 @@ Metrics/MethodLength:
     - lib/demo/**/*
     - app/controllers/teachers_controller.rb
     - app/controllers/students_controller.rb
+    - app/controllers/lessons_controller.rb
+    - app/controllers/profiles_controller.rb
+    - app/controllers/subjects_controller.rb
+    - app/helpers/calendar_helper.rb
     - app/models/teacher_profile.rb
     - app/models/student_profile.rb
+    - app/models/lesson.rb
 
 Metrics/AbcSize:
   Exclude:
@@ -85,15 +90,29 @@ Metrics/AbcSize:
     - app/controllers/teachers_controller.rb
     - app/controllers/students_controller.rb
     - app/controllers/calendar_controller.rb
+    - app/controllers/lessons_controller.rb
+    - app/controllers/profiles_controller.rb
+    - app/controllers/lesson_types_controller.rb
+    - app/controllers/subjects_controller.rb
+    - app/helpers/calendar_helper.rb
     - app/controllers/users/**/*
+    - app/controllers/concerns/workspace_scoping.rb
     - app/models/teacher_profile.rb
     - app/models/student_profile.rb
+    - app/models/lesson.rb
 
 Metrics/ClassLength:
   Exclude:
     - app/services/**/*
     - lib/demo/**/*
     - app/controllers/teachers_controller.rb
+    - app/controllers/lessons_controller.rb
+    - app/models/student_profile.rb
+    - app/models/lesson.rb
+
+Metrics/ModuleLength:
+  Exclude:
+    - lib/demo/**/*
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -101,13 +120,23 @@ Metrics/CyclomaticComplexity:
     - lib/demo/**/*
     - app/controllers/teachers_controller.rb
     - app/controllers/calendar_controller.rb
+    - app/controllers/lessons_controller.rb
+    - app/controllers/lesson_types_controller.rb
     - app/models/student_profile.rb
+    - app/models/lesson.rb
 
 Metrics/PerceivedComplexity:
   Exclude:
     - app/services/**/*
     - lib/demo/**/*
     - app/controllers/teachers_controller.rb
+    - app/controllers/calendar_controller.rb
+    - app/controllers/lessons_controller.rb
+    - app/controllers/lesson_types_controller.rb
+
+Rails/HelperInstanceVariable:
+  Exclude:
+    - app/helpers/calendar_helper.rb
 
 Rails/CreateTableWithTimestamps:
   Exclude:

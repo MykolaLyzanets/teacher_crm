@@ -10,8 +10,7 @@
 - content_for :title, "#{editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')} | danlio"
 
 .teachers-page.teachers-page--form data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teachers-editing-value=editing data-teachers-name-value=teacher_display_name(teacher)
-  .lt-scope data-controller="lesson-types" data-lesson-types-mode-value="teacher" data-lesson-types-i18n-value=app_i18n_json('app.lesson_types') data-lesson-types-teacher-id-value=teacher[:id].to_s data-lesson-types-teacher-email-value=teacher[:email].to_s data-lesson-types-require-active-value=(teacher[:status].to_s == 'active' || teacher[:status].blank?) data-lesson-types-default-currency-value="UAH" data-lesson-types-dialog-url-value=settings_lesson_type_dialog_path data-lesson-types-delete-dialog-url-value=settings_lesson_type_delete_dialog_path data-lesson-types-subject-delete-dialog-url-value=settings_lesson_subject_delete_dialog_path
-    = render 'lesson_types/seed'
+  .lt-scope data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id])
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path
       = icon_tag 'chevron-right', size: 16
@@ -31,7 +30,7 @@
         = link_to t('app.common.cancel'), cancel_path, class: 'teachers-page__secondary-btn', data: { action: 'teachers#confirmLeave' }
         button.teachers-page__primary-btn type="submit" form="teacher-form" data-teachers-target="submitBtn" = editing ? t('app.teachers.save_teacher') : t('app.teachers.create_teacher')
 
-    = form_with url: form_url, method: form_method, multipart: true, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateSubmit submit->lesson-types#validateAccess input->teachers#markDirty change->teachers#markDirty' } } do
+    = form_with url: form_url, method: form_method, multipart: true, html: { id: 'teacher-form', class: 'teachers-page__form', novalidate: true, data: { action: 'submit->teachers#validateSubmit' } } do
       section.teachers-page__card
         h2 = t('app.teachers.basic_info')
         p.teachers-page__section-sub = t('app.teachers.basic_info_sub')
@@ -84,7 +83,7 @@
             span
               = t('app.teachers.teacher_status')
               span.teachers-page__req *
-            select name="status" required=true data-teachers-target="formStatus" data-action="change->teachers#syncLessonTypeRequirement blur->teachers#markTouched"
+            select name="status" required=true data-teachers-target="formStatus" data-action="blur->teachers#markTouched"
               option value="active" selected=(teacher[:status].to_s == 'active' || teacher[:status].blank?) = t('app.statuses.active')
               option value="invited" selected=(teacher[:status].to_s == 'invited') = t('app.statuses.invited')
               option value="on_leave" selected=(teacher[:status].to_s == 'on_leave') = t('app.statuses.on_leave')
@@ -134,8 +133,8 @@
             p.lt-teaching__label = t('app.lesson_types.lessons_pricing')
             p.teachers-page__hint = t('app.lesson_types.lessons_pricing_hint')
           p.lt-field-error hidden="hidden" data-lesson-types-target="listError"
-          .lt-access-list data-lesson-types-target="accessList"
-          = render 'lesson_types/add_lesson'
+          input type="hidden" name="lesson_catalog" value=(teacher[:lessonCatalog].presence || '[]') data-lesson-types-target="draftPayload"
+          = render 'lesson_types/manager', heading: :h2, title: nil, description: nil, show_toast: false
 
       section.teachers-page__card
         h2 = t('app.teachers.availability')

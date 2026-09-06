@@ -51,6 +51,9 @@ ua:
       user: Користувач
       student_profile: Учень
       teacher_profile: Викладач
+      subject: Предмет
+      lesson_type: Тип уроку
+      lesson: Урок
     attributes:
       user:
         email: Email
@@ -63,6 +66,30 @@ ua:
       teacher_profile:
         first_name: Імʼя
         last_name: Прізвище
+      subject:
+        name: Назва
+        teacher_id: Викладач
+      lesson_type:
+        name: Назва
+        kind: Категорія
+        mode: Формат
+        default_duration_minutes: Тривалість
+      lesson:
+        teacher_id: Викладач
+        subject: Предмет
+        lesson_type: Тип уроку
+        starts_at: Початок
+        ends_at: Завершення
+        status: Статус
+        location: Формат
+        students: Учні
+        meeting_link: Посилання
+        location_text: Місце
+        notes: Нотатки
+        attendance: Відвідуваність
+        actual_duration_minutes: Тривалість
+        teacher_note: Нотатка викладача
+        student_progress_note: Нотатка про прогрес
     errors:
       messages:
         taken: уже використовується
@@ -73,6 +100,55 @@ ua:
             email:
               taken: уже використовується
               blank: не може бути порожнім
+        subject:
+          attributes:
+            name:
+              taken: уже використовується для цього викладача
+        lesson_type:
+          attributes:
+            name:
+              taken: уже використовується для цього предмета
+        lesson:
+          attributes:
+            base:
+              teacher_overlap: Викладач уже має підтверджений урок у цей час
+              student_overlap: Учень уже має підтверджений урок у цей час
+            ends_at:
+              before_start: має бути пізніше за початок
+            subject:
+              teacher_mismatch: має належати вибраному викладачу
+              inactive: неактивний і не може використовуватися для нового уроку
+            lesson_type:
+              subject_mismatch: має належати вибраному предмету
+              inactive: неактивний і не може використовуватися для нового уроку
+            students:
+              individual_count: індивідуальний урок потребує рівно одного учня
+              group_count: груповий урок потребує щонайменше одного учня
+              workspace_mismatch: мають належати до того самого простору, що й викладач
+  activemodel:
+    errors:
+      models:
+        lessons/create:
+          attributes:
+            base:
+              students_invalid: Один або кілька учнів не знайдені
+              teacher_overlap: Викладач уже має підтверджений урок у цей час
+        lessons/schedule:
+          attributes:
+            base:
+              no_occurrences: Оберіть коректний період повторення
+              all_conflicts: Усі повторення конфліктують з наявними уроками
+              override_forbidden: Не можна створити урок, який перетинається з наявним
+            override_reason:
+              blank: Додайте причину, чому створюєте урок попри конфлікт
+        lessons/record_outcome:
+          attributes:
+            base:
+              invalid_outcome: Оберіть, чи відбувся урок
+              not_confirmed: Для цього уроку вже записано результат
+              not_recorded: Для цього уроку ще немає записаного результату
+            attendance:
+              blank: Оберіть відвідуваність
 
   header:
     product: Product

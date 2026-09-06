@@ -21,14 +21,12 @@ class CalendarController < AppController
   private
 
   def load_catalog
-    @lessons = Array(Demo::Catalog.lessons).map(&:with_indifferent_access)
-    db_teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
-    db_students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
-    @teachers = current_workspace.present? ? db_teachers : (db_teachers.presence || Demo::Catalog.teachers)
-    @students = current_workspace.present? ? db_students : (db_students.presence || Demo::Catalog.active_students)
+    @lessons = catalog_lessons
+    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
 
     @teacher_names = @teachers.map { |teacher| teacher_display_name(teacher) }.uniq.sort
-    @student_names = @lessons.map { |lesson| lesson[:student].to_s }.compact_blank.uniq.sort
+    @student_names = @students.map { |student| student_display_name(student) }.compact_blank.uniq.sort
     @preset_teacher_id = params[:teacherId].presence || params[:teacher_id].presence
     @preset_student_id = params[:studentId].presence || params[:student_id].presence
     @lessons_json = @lessons.to_json
@@ -54,7 +52,7 @@ class CalendarController < AppController
     hour, minute = start.to_s.split(':').map(&:to_i)
     hour = 10 if hour.nil?
     minute ||= 0
-    format('%<hour>02d:%<minute>02d', hour: [hour + 1, 23].min, minute: minute)
+    format('%<hour>02d:%<minute>02d', hour: [hour + 1, 23].min, minute:)
   end
 
   def solo_teacher_id
@@ -74,5 +72,10 @@ class CalendarController < AppController
     teacher[:displayName].presence ||
       [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ').presence ||
       'Teacher'
+  end
+
+  def student_display_name(student)
+    student[:preferredName].presence ||
+      [student[:firstName], student[:lastName]].compact_blank.join(' ').presence
   end
 end

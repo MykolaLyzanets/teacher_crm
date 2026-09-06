@@ -26,6 +26,9 @@ en:
       user: User
       student_profile: Student
       teacher_profile: Teacher
+      subject: Subject
+      lesson_type: Lesson type
+      lesson: Lesson
     attributes:
       user:
         email: Email
@@ -38,6 +41,30 @@ en:
       teacher_profile:
         first_name: First name
         last_name: Last name
+      subject:
+        name: Name
+        teacher_id: Teacher
+      lesson_type:
+        name: Name
+        kind: Kind
+        mode: Mode
+        default_duration_minutes: Duration
+      lesson:
+        teacher_id: Teacher
+        subject: Subject
+        lesson_type: Lesson type
+        starts_at: Start time
+        ends_at: End time
+        status: Status
+        location: Location
+        students: Students
+        meeting_link: Meeting link
+        location_text: Place
+        notes: Notes
+        attendance: Attendance
+        actual_duration_minutes: Duration
+        teacher_note: Teacher note
+        student_progress_note: Progress note
     errors:
       messages:
         taken: has already been taken
@@ -48,6 +75,55 @@ en:
             email:
               taken: has already been taken
               blank: can't be blank
+        subject:
+          attributes:
+            name:
+              taken: has already been taken for this teacher
+        lesson_type:
+          attributes:
+            name:
+              taken: has already been taken for this subject
+        lesson:
+          attributes:
+            base:
+              teacher_overlap: The teacher already has a confirmed lesson at this time
+              student_overlap: The student already has a confirmed lesson at this time
+            ends_at:
+              before_start: must be later than the start time
+            subject:
+              teacher_mismatch: must belong to the selected teacher
+              inactive: is inactive and cannot be used for a new lesson
+            lesson_type:
+              subject_mismatch: must belong to the selected subject
+              inactive: is inactive and cannot be used for a new lesson
+            students:
+              individual_count: an individual lesson requires exactly one student
+              group_count: a group lesson requires at least one student
+              workspace_mismatch: must belong to the same workspace as the teacher
+  activemodel:
+    errors:
+      models:
+        lessons/create:
+          attributes:
+            base:
+              students_invalid: One or more students could not be found
+              teacher_overlap: The teacher already has a confirmed lesson at this time
+        lessons/schedule:
+          attributes:
+            base:
+              no_occurrences: Choose a valid repeat range
+              all_conflicts: Every repeated lesson conflicts with an existing one
+              override_forbidden: You cannot create a lesson that overlaps an existing one
+            override_reason:
+              blank: Add a reason for overriding this conflict
+        lessons/record_outcome:
+          attributes:
+            base:
+              invalid_outcome: Choose whether the lesson took place
+              not_confirmed: This lesson already has a recorded outcome
+              not_recorded: This lesson does not have a recorded outcome
+            attendance:
+              blank: Select attendance
 
   header:
     product: Product

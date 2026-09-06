@@ -18,10 +18,6 @@
       a.danlio-modal__close href=close_path aria-label=t('app.calendar.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="create_lesson"
         = icon_tag 'x', size: 20
     .danlio-modal__body
-      textarea.sr-only hidden="hidden" readonly="readonly" tabindex="-1" aria-hidden="true" data-calendar-target="studentsSeed"
-        = @students.to_json
-      textarea.sr-only hidden="hidden" readonly="readonly" tabindex="-1" aria-hidden="true" data-calendar-target="teachersSeed"
-        = @teachers.to_json
       input type="hidden" value="individual" data-calendar-target="draftType"
       input type="hidden" value="online" data-calendar-target="draftLocation"
       input type="hidden" value=teacher_id data-calendar-target="draftTeacher"
@@ -55,6 +51,31 @@
           .calendar-page__notice-actions
             button.calendar-page__mini-btn type="button" data-action="calendar#keepSelectedTeacher" = t('app.calendar.use_selected_teacher')
             button.calendar-page__mini-btn.calendar-page__mini-btn--olive type="button" data-action="calendar#useAssignedTeacher" = t('app.calendar.use_assigned_teacher')
+
+      label.calendar-page__field data-calendar-target="lessonField"
+        span
+          = t('app.calendar.lesson')
+          abbr.calendar-page__req title="required" *
+        p.calendar-page__muted data-calendar-target="subjectHint" = t('app.calendar.select_teacher_first')
+        .calendar-page__notice hidden="hidden" data-calendar-target="subjectEmpty"
+          p.calendar-page__notice-row
+            = icon_tag 'alert-triangle', size: 16
+            span = t('app.calendar.lesson_empty')
+          a.calendar-page__notice-link href=settings_lesson_types_path hidden="hidden" data-calendar-target="manageLessonsLink" = t('app.calendar.manage_lessons')
+        select hidden="hidden" data-calendar-target="draftSubject" data-action="change->calendar#onSubjectChange"
+          option value="" = t('app.calendar.select_lesson')
+
+      label.calendar-page__field data-calendar-target="lessonTypeField"
+        span
+          = t('app.calendar.lesson_type')
+          abbr.calendar-page__req title="required" *
+        p.calendar-page__muted data-calendar-target="lessonTypeHint" = t('app.calendar.lesson_type_need_lesson')
+        p.calendar-page__muted hidden="hidden" data-calendar-target="lessonTypeEmpty" = t('app.calendar.lesson_type_empty_subject')
+        select hidden="hidden" data-calendar-target="draftLessonType" data-action="change->calendar#onLessonTypeChange"
+          option value="" = t('app.calendar.select_lesson_type')
+        p.calendar-page__hint data-calendar-target="lessonTypeHelp" hidden="hidden" = t('app.calendar.lesson_type_help')
+
+      .calendar-page__notice hidden="hidden" data-calendar-target="lessonTypeChanged"
 
       .calendar-page__stack data-calendar-target="studentWrap"
         label.calendar-page__field
@@ -101,31 +122,6 @@
       label.calendar-page__check hidden="hidden" data-calendar-target="assignPermanentWrap"
         input type="checkbox" data-calendar-target="assignPermanent" data-action="change->calendar#syncDrawerFields"
         span = t('app.calendar.assign_permanently')
-
-      label.calendar-page__field data-calendar-target="lessonField"
-        span
-          = t('app.calendar.lesson')
-          abbr.calendar-page__req title="required" *
-        p.calendar-page__muted data-calendar-target="subjectHint" = t('app.calendar.select_teacher_first')
-        .calendar-page__notice hidden="hidden" data-calendar-target="subjectEmpty"
-          p.calendar-page__notice-row
-            = icon_tag 'alert-triangle', size: 16
-            span = t('app.calendar.lesson_empty')
-          a.calendar-page__notice-link href=settings_lesson_types_path hidden="hidden" data-calendar-target="manageLessonsLink" = t('app.calendar.manage_lessons')
-        select hidden="hidden" data-calendar-target="draftSubject" data-action="change->calendar#onSubjectChange"
-          option value="" = t('app.calendar.select_lesson')
-
-      label.calendar-page__field data-calendar-target="lessonTypeField"
-        span
-          = t('app.calendar.lesson_type')
-          abbr.calendar-page__req title="required" *
-        p.calendar-page__muted data-calendar-target="lessonTypeHint" = t('app.calendar.lesson_type_need_lesson')
-        p.calendar-page__muted hidden="hidden" data-calendar-target="lessonTypeEmpty" = t('app.calendar.lesson_type_empty_subject')
-        select hidden="hidden" data-calendar-target="draftLessonType" data-action="change->calendar#onLessonTypeChange"
-          option value="" = t('app.calendar.select_lesson_type')
-        p.calendar-page__hint data-calendar-target="lessonTypeHelp" hidden="hidden" = t('app.calendar.lesson_type_help')
-
-      .calendar-page__notice hidden="hidden" data-calendar-target="lessonTypeChanged"
 
       label.calendar-page__field
         span
@@ -196,7 +192,7 @@
             = icon_tag 'map-pin', size: 18
             input type="text" placeholder=t('app.calendar.place_placeholder') data-calendar-target="draftPlace" data-action="change->calendar#syncDrawerFields"
 
-      label.calendar-page__field
+      label.calendar-page__field data-calendar-target="repeatField"
         span = t('app.calendar.repeat')
         select data-calendar-target="draftRepeat" data-action="change->calendar#syncDrawerFields"
           option value="none" = t('app.calendar.repeat_none')

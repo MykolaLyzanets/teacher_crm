@@ -66,8 +66,47 @@ module Teachers
         user.save!
         persist_photo
         teacher_profile.save!
+        persist_lesson_catalog
       end
       invite_user if send_invitation?
+    end
+
+    def persist_lesson_catalog
+      parsed_lesson_catalog.each do |entry|
+        name = entry[:name].to_s.strip
+        next if name.blank?
+
+        subject = teacher_profile.taught_subjects.create!(name:, is_active: true)
+        Array(entry[:lessonTypes] || entry[:lesson_types]).each do |type_entry|
+          attrs = type_entry.to_h.with_indifferent_access
+          type_name = attrs[:name].to_s.strip
+          next if type_name.blank?
+
+          kind = attrs[:kind].to_s.presence_in(LessonType.kinds.keys) || 'individual'
+          mode = attrs[:mode].to_s.presence_in(LessonType.modes.keys) || 'individual'
+          duration = integer_or_nil(attrs[:defaultDurationMinutes] || attrs[:default_duration_minutes]) || 60
+          flag = attrs.key?(:isActive) ? attrs[:isActive] : attrs[:is_active]
+          active = flag.nil? ? true : ActiveModel::Type::Boolean.new.cast(flag)
+
+          subject.lesson_types.create!(
+            name: type_name,
+            kind:,
+            mode:,
+            default_duration_minutes: duration,
+            is_active: active
+          )
+        end
+      end
+    end
+
+    def parsed_lesson_catalog
+      raw = params[:lesson_catalog]
+      return [] if raw.blank?
+
+      data = raw.is_a?(String) ? JSON.parse(raw) : raw
+      Array(data).first(30).map { |item| item.to_h.with_indifferent_access }
+    rescue JSON::ParserError, TypeError
+      []
     end
 
     def invite_user

@@ -1312,6 +1312,11 @@
       min-height: 96px;
       padding: 10px 12px;
     }
+
+    .calendar-page__icon-input input,
+    .calendar-page__picker-search input {
+      padding-left: 40px;
+    }
   }
 
   &__fields-row {

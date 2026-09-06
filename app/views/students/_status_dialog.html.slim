@@ -1,0 +1,30 @@
+.danlio-modal.danlio-modal--sm data-controller="modal"
+  a.danlio-modal__backdrop href=status_dialog_students_path() tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="status_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="change-status-title"
+    .danlio-modal__head
+      div
+        h2#change-status-title.danlio-modal__title = t('app.students.status_dialog_title')
+        p.danlio-modal__desc = @student_ids.size > 1 ? t('app.students.status_dialog_text') : t('app.students.status_dialog_text_one')
+      a.danlio-modal__close href=status_dialog_students_path() aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="status_dialog"
+        = icon_tag 'x', size: 20
+    = form_with url: bulk_status_students_path(), method: :patch, html: { class: 'danlio-modal__form', data: { turbo: false } } do
+      - @student_ids.each do |id|
+        input type="hidden" name="student_ids[]" value=id
+      - focus_status = @selected_status.presence || 'active'
+      .danlio-modal__body
+        ul.students-page__picker-list role="listbox" aria-label=t('app.students.status')
+          - StudentProfile.statuses.each_key do |value|
+            - current = @selected_status.to_s == value.to_s
+            li
+              label.students-page__picker-btn
+                input.sr-only type="radio" name="status" value=value required="required" checked=(true if current) data-modal-focus=(true if value.to_s == focus_status.to_s)
+                .students-page__picker-copy
+                  .students-page__picker-name
+                    span.status-badge class="status-badge--#{student_status_tone(value)}" = student_status_label(value)
+                    - if current
+                      span.students-page__picker-current = t('app.students.assign_current')
+                span.students-page__picker-mark aria-hidden="true"
+                  = icon_tag 'check', size: 18
+        .students-page__picker-actions
+          a.danlio-modal__btn.danlio-modal__btn--secondary href=status_dialog_students_path() data-turbo="true" data-turbo-frame="status_dialog" = t('app.common.cancel')
+          button.danlio-modal__btn.danlio-modal__btn--primary type="submit" = t('app.students.change_status')

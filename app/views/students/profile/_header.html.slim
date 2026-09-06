@@ -5,11 +5,22 @@ section.students-page__hero
       div
         .students-page__hero-title
           h1 = name
-          span class="status-badge status-badge--#{student_status_tone(student[:status])}" = student_status_label(student[:status])
         - if student[:email].present?
           p.students-page__hero-email = student[:email]
         p.students-page__hero-course = student_subject_line(student)
     .students-page__hero-actions
+      - current_status = student[:status].to_s.presence || 'active'
+      = form_with url: student_path(student[:id]), method: :patch, html: { class: 'students-page__status-form' } do
+        = hidden_field_tag :status_only, '1'
+        = hidden_field_tag :status, current_status, data: { students_target: 'statusValue' }
+        .students-page__status-menu
+          button.students-page__status-btn type="button" aria-label=t('app.students.status') aria-haspopup="listbox" aria-expanded="false" data-students-target="statusButton" data-action="click->students#toggleStatusMenu:stop"
+            span.status-badge class="status-badge--#{student_status_tone(current_status)}" data-students-target="statusBadge" = student_status_label(current_status)
+            = icon_tag 'chevron-down', size: 16
+          .students-page__status-panel hidden="hidden" role="listbox" data-students-target="statusMenu" data-action="click->students#stopStatusMenu:stop"
+            - StudentProfile.statuses.each_key do |value|
+              button.students-page__status-option class=('is-current' if current_status == value.to_s) type="button" role="option" aria-selected=(current_status == value.to_s ? 'true' : 'false') data-status=value data-label=student_status_label(value) data-tone=student_status_tone(value) data-action="click->students#chooseStatus:stop"
+                span.status-badge class="status-badge--#{student_status_tone(value)}" = student_status_label(value)
       = link_to edit_student_path(student[:id]), class: 'students-page__ghost-btn' do
         = icon_tag 'pencil', size: 18
         span = t('app.students.edit_student')

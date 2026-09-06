@@ -73,9 +73,14 @@ export default class extends Controller {
     "inviteCheckbox",
     "menu",
     "menuButton",
+    "statusValue",
+    "statusButton",
+    "statusMenu",
+    "statusBadge",
     "lessonRow",
     "lessonsEmpty",
-    "lessonsTable"
+    "lessonsTable",
+    "cancelTip"
   ]
 
   static values = {
@@ -88,7 +93,10 @@ export default class extends Controller {
     this.touched = new Set()
     this.photoUrl = ""
     this.boundCloseMenu = this.closeMenu.bind(this)
+    this.boundCloseStatusMenu = this.closeStatusMenu.bind(this)
     document.addEventListener("click", this.boundCloseMenu)
+    window.addEventListener("resize", this.boundCloseStatusMenu)
+    window.addEventListener("scroll", this.boundCloseStatusMenu, true)
     if (this.hasRowTarget) this.filter()
     if (this.hasInitialsPreviewTarget) this.updateInitials()
     if (this.hasNotesTarget) this.updateNotesCount()
@@ -96,6 +104,9 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("click", this.boundCloseMenu)
+    window.removeEventListener("resize", this.boundCloseStatusMenu)
+    window.removeEventListener("scroll", this.boundCloseStatusMenu, true)
+    this.hideCancelTip()
     window.clearTimeout(this.toastTimer)
   }
 
@@ -257,6 +268,7 @@ export default class extends Controller {
 
   toggleMenu(event) {
     event.stopPropagation()
+    this.closeStatusMenu()
     if (!this.hasMenuTarget) return
     const open = this.menuTarget.hidden
     this.menuTarget.hidden = !open
@@ -268,6 +280,93 @@ export default class extends Controller {
   closeMenu() {
     if (this.hasMenuTarget) this.menuTarget.hidden = true
     if (this.hasMenuButtonTarget) this.menuButtonTarget.setAttribute("aria-expanded", "false")
+    this.closeStatusMenu()
+  }
+
+  toggleStatusMenu(event) {
+    event.stopPropagation()
+    if (!this.hasStatusMenuTarget) return
+    if (this.hasMenuTarget) this.menuTarget.hidden = true
+    if (this.hasMenuButtonTarget) this.menuButtonTarget.setAttribute("aria-expanded", "false")
+    const open = this.statusMenuTarget.hidden
+    this.statusMenuTarget.hidden = !open
+    if (this.hasStatusButtonTarget) {
+      this.statusButtonTarget.setAttribute("aria-expanded", String(open))
+    }
+    if (open) this.positionStatusMenu()
+  }
+
+  positionStatusMenu() {
+    if (!this.hasStatusMenuTarget || !this.hasStatusButtonTarget) return
+    const menu = this.statusMenuTarget
+    const rect = this.statusButtonTarget.getBoundingClientRect()
+    const gap = 8
+    menu.style.position = "fixed"
+    menu.style.left = `${Math.max(12, rect.left)}px`
+    menu.style.right = "auto"
+    menu.style.marginTop = "0"
+    menu.style.zIndex = "80"
+    const spaceBelow = window.innerHeight - rect.bottom
+    const height = menu.offsetHeight
+    if (spaceBelow < height + gap + 8 && rect.top > height + gap) {
+      menu.style.top = `${Math.max(12, rect.top - height - gap)}px`
+    } else {
+      menu.style.top = `${rect.bottom + gap}px`
+    }
+  }
+
+  closeStatusMenu() {
+    if (this.hasStatusMenuTarget) this.statusMenuTarget.hidden = true
+    if (this.hasStatusButtonTarget) this.statusButtonTarget.setAttribute("aria-expanded", "false")
+    this.hideCancelTip()
+  }
+
+  showCancelTip(event) {
+    const reason = (event.currentTarget.dataset.cancelReason || "").trim()
+    if (!reason || !this.hasCancelTipTarget) return
+    const tip = this.cancelTipTarget
+    tip.textContent = reason
+    tip.hidden = false
+    const rect = event.currentTarget.getBoundingClientRect()
+    const gap = 8
+    const width = tip.offsetWidth
+    const height = tip.offsetHeight
+    let top = rect.top - height - gap
+    if (top < 8) top = rect.bottom + gap
+    let left = rect.left + (rect.width / 2) - (width / 2)
+    left = Math.min(Math.max(8, left), window.innerWidth - width - 8)
+    tip.style.top = `${top}px`
+    tip.style.left = `${left}px`
+  }
+
+  hideCancelTip() {
+    if (!this.hasCancelTipTarget) return
+    this.cancelTipTarget.hidden = true
+  }
+
+  stopStatusMenu() {}
+
+  chooseStatus(event) {
+    const button = event.currentTarget
+    const value = button.dataset.status
+    if (!value || !this.hasStatusValueTarget) return
+    if (this.statusValueTarget.value === value) {
+      this.closeStatusMenu()
+      return
+    }
+
+    this.statusValueTarget.value = value
+    if (this.hasStatusBadgeTarget) {
+      this.statusBadgeTarget.textContent = button.dataset.label || button.textContent.trim()
+      this.statusBadgeTarget.className = `status-badge status-badge--${button.dataset.tone || "neutral"}`
+    }
+    this.statusMenuTarget?.querySelectorAll(".students-page__status-option").forEach((option) => {
+      const current = option.dataset.status === value
+      option.classList.toggle("is-current", current)
+      option.setAttribute("aria-selected", String(current))
+    })
+    this.closeStatusMenu()
+    button.closest("form")?.requestSubmit()
   }
 
   shareMaterial(event) {

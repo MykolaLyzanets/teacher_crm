@@ -4,12 +4,6 @@ module Demo
   module Timeline
     module_function
 
-    def lessons
-      Catalog.lessons.map { |lesson| shift_record(lesson, %i[date]) }
-    rescue ArgumentError, TypeError
-      Catalog.lessons
-    end
-
     def homework
       Catalog.homework.map do |item|
         shift_record(item, %i[assignedDate dueDate resubmissionDueDate], %i[submittedAt reviewedAt])
@@ -21,14 +15,7 @@ module Demo
     end
 
     def date_offset
-      dates = Catalog.lessons.filter_map do |lesson|
-        Date.iso8601(lesson[:date].to_s)
-      rescue ArgumentError, TypeError
-        nil
-      end
-      return 0 if dates.empty?
-
-      Date.current - dates.min
+      0
     end
 
     def shift_date(value)

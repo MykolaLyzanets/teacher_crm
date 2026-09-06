@@ -294,6 +294,9 @@
     }
 
     form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin: 0;
     }
 
@@ -637,6 +640,78 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+  }
+
+  &__status-form {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__status-menu {
+    position: relative;
+  }
+
+  &__status-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 12px 0 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    img {
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    &:hover {
+      background: #f7f8f3;
+    }
+
+    &:focus-visible,
+    &[aria-expanded="true"] {
+      outline: none;
+      border-color: var(--olive);
+      box-shadow: 0 0 0 4px rgba(102, 115, 74, 0.1);
+    }
+  }
+
+  &__status-panel {
+    position: absolute;
+    left: 0;
+    z-index: 80;
+    margin-top: 8px;
+    min-width: 180px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    padding: 4px 0;
+    box-shadow: 0 12px 30px rgba(65, 75, 50, 0.12);
+  }
+
+  &__status-option {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover,
+    &.is-current {
+      background: #f7f8f3;
+    }
   }
 
   &__ghost-btn {
@@ -2245,6 +2320,21 @@
   &__lesson-list span {
     color: var(--text-muted);
   }
+}
+
+.students-page__cancel-tip {
+  position: fixed;
+  z-index: 80;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #3d4238;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(65, 75, 50, 0.18);
+  pointer-events: none;
 }
 
 .status-badge {

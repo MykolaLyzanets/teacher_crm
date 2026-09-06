@@ -14,33 +14,6 @@ module Demo
       @teachers ||= load_json('teachers.json')
     end
 
-    LEGACY_LESSON_TYPE_NAMES = {
-      'individual' => 'Individual lesson',
-      'group' => 'Group lesson',
-      'trial' => 'Trial lesson',
-      'consultation' => 'Consultation'
-    }.freeze
-
-    LEGACY_LESSON_TYPE_IDS = {
-      'Individual lesson' => 'lt-individual',
-      'Group lesson' => 'lt-group',
-      'Trial lesson' => 'lt-trial',
-      'Speaking club' => 'lt-speaking-club',
-      'Consultation' => 'lt-consultation'
-    }.freeze
-
-    def lessons
-      @lessons ||= load_json('lessons.json').map { |lesson| annotate_lesson_type(lesson) }
-    end
-
-    def lesson_types
-      @lesson_types ||= lesson_types_payload[:lessonTypes]
-    end
-
-    def teacher_lesson_type_links
-      @teacher_lesson_type_links ||= lesson_types_payload[:links]
-    end
-
     def transactions
       @transactions ||= load_json('transactions.json')
     end
@@ -112,22 +85,8 @@ module Demo
     end
 
     def reload!
-      @students = @teachers = @lessons = @transactions = @pricing = @notifications = @earnings = @payouts = nil
-      @homework = @materials = @progress = @notes = @lesson_types_payload = @lesson_types = @teacher_lesson_type_links = nil
-    end
-
-    def lesson_types_seed
-      {
-        lessonTypes: lesson_types,
-        links: teacher_lesson_type_links,
-        lessons: lessons.map do |lesson|
-          {
-            lessonTypeId: lesson[:lessonTypeId],
-            lessonTypeName: lesson[:lessonTypeName],
-            type: lesson[:type]
-          }
-        end
-      }
+      @students = @teachers = @transactions = @pricing = @notifications = nil
+      @earnings = @payouts = @homework = @materials = @progress = @notes = nil
     end
 
     def load_json(filename)
@@ -135,16 +94,6 @@ module Demo
       JSON.parse(File.read(path), object_class: ActiveSupport::HashWithIndifferentAccess)
     end
 
-    def lesson_types_payload
-      @lesson_types_payload ||= load_json('lesson_types.json')
-    end
-
-    def annotate_lesson_type(lesson)
-      name = lesson[:lessonTypeName].presence || LEGACY_LESSON_TYPE_NAMES[lesson[:type].to_s]
-      id = lesson[:lessonTypeId].presence || LEGACY_LESSON_TYPE_IDS[name]
-      lesson.merge(lessonTypeName: name, lessonTypeId: id)
-    end
-
-    private_class_method :load_json, :lesson_types_payload, :annotate_lesson_type
+    private_class_method :load_json
   end
 end

@@ -17,9 +17,11 @@ module Demo
       end.sort_by { |item| item[:sharedAt].to_s }.reverse
     end
 
-    def lessons_for_student(student)
-      name = Catalog.student_name(student)
-      Timeline.lessons.select { |lesson| lesson[:student].to_s == name }
+    def lessons_for_student(student_profile)
+      return [] if student_profile.blank?
+
+      lessons = student_profile.lessons.includes(:teacher_profile, :subject, :lesson_type, :students)
+      lessons.order(:starts_at).map(&:as_catalog)
     end
 
     def progress_for(student_id)

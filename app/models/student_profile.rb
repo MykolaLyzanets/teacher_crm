@@ -15,6 +15,8 @@ class StudentProfile < ApplicationRecord
   belongs_to :teacher_profile, foreign_key: :teacher_id, optional: true, inverse_of: :student_profiles
   belongs_to :assigned_by_user, class_name: 'User', foreign_key: :assigned_by, optional: true,
                                 inverse_of: :assigned_student_profiles
+  has_and_belongs_to_many :lessons, join_table: :lessons_students, foreign_key: :student_id,
+                                    association_foreign_key: :lesson_id
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true

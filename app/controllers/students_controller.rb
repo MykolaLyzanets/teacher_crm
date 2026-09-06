@@ -3,7 +3,7 @@
 class StudentsController < AppController
   helper LessonsHelper
   helper FinanceHelper
-  before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign unassign unassign_dialog delete_dialog]
+  before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign status_dialog bulk_status unassign unassign_dialog delete_dialog]
   before_action :require_assign_permission!, only: %i[assign_dialog assign unassign unassign_dialog]
   before_action :set_student_record, only: %i[show edit update destroy unassign unassign_dialog]
 
@@ -18,23 +18,20 @@ class StudentsController < AppController
     @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @teacher = @student_record&.teacher_profile&.as_catalog
     @catalog_student = Demo::Catalog.match_student(@student) if @student
-    student_name = @student ? [@student[:preferredName].presence || @student[:firstName], @student[:lastName]].compact_blank.join(' ') : nil
     @student_homework = []
     @student_notes = []
     @student_progress = nil
     @finance = nil
     @pricing = nil
     @balance_cents = 0
+    @student_lessons = Demo::Portal.lessons_for_student(@student_record)
     if @catalog_student
       @finance = Demo::Finance.portal_finance(@catalog_student[:id])
       @pricing = Demo::Finance.pricing_for(@catalog_student[:id])
       @balance_cents = Demo::Finance.balance_cents(@catalog_student[:id])
-      @student_lessons = Demo::Portal.lessons_for_student(@catalog_student)
       @student_homework = Demo::Portal.homework_for(@catalog_student[:id])
       @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
       @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
-    else
-      @student_lessons = Demo::Timeline.lessons.select { |lesson| lesson[:student].to_s == student_name }
     end
     @profile_tab = student_profile_tab
   end
@@ -71,6 +68,7 @@ class StudentsController < AppController
 
   def update
     return if @student_record.blank?
+    return update_status if params[:status_only].present?
 
     service = Students::Update.new(student_profile: @student_record, actor: current_user, params: student_params)
     if service.save
@@ -127,6 +125,39 @@ class StudentsController < AppController
     render :assign_dialog, layout: (turbo_frame_request? ? false : 'app')
   end
 
+  def status_dialog
+    @student_ids = student_profiles_scope.where(id: Array(params[:student_ids])).ids
+    if @student_ids.empty?
+      return redirect_to students_path unless turbo_frame_request?
+
+      render :status_dialog, layout: false
+      return
+    end
+
+    statuses = student_profiles_scope.where(id: @student_ids).distinct.pluck(:status)
+    @selected_status = statuses.one? ? statuses.first : nil
+    render :status_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def bulk_status
+    service = Students::BulkUpdateStatus.new(
+      student_scope: student_profiles_scope,
+      student_ids: params[:student_ids],
+      status: params[:status]
+    )
+    if service.save
+      notice =
+        if service.count == 1
+          I18n.t('app.students.updated', name: service.name)
+        else
+          I18n.t('app.students.status_updated_many', count: service.count)
+        end
+      redirect_to students_path, notice:
+    else
+      redirect_to students_path, alert: service.error_messages.to_sentence
+    end
+  end
+
   def unassign_dialog
     if @student_record.blank?
       return redirect_to students_path unless turbo_frame_request?
@@ -171,6 +202,17 @@ class StudentsController < AppController
   end
 
   private
+
+  def update_status
+    service = Students::UpdateStatus.new(student_profile: @student_record, status: params[:status])
+    name = @student_record.display_label
+    if service.save
+      notice = service.became_archived? ? I18n.t('app.students.archived', name:) : I18n.t('app.students.updated', name:)
+      redirect_to student_path(service.student_profile), notice:
+    else
+      redirect_to student_path(@student_record), alert: service.error_messages.to_sentence
+    end
+  end
 
   def student_params
     permitted = params.permit(

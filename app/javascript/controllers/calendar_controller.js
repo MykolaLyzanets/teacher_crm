@@ -9,15 +9,7 @@ import {
   teacherName
 } from "../lib/calendar_create"
 import { closeModal } from "../lib/modal"
-import {
-  formatMoney,
-  formatPriceInput,
-  getBookableLessonTypesForTeacher,
-  initLessonTypesStore,
-  lessonTypeNameForLesson,
-  priceSuffix,
-  uniqueLessonTypeNames
-} from "../lib/lesson_types_store"
+import { formatMoney, formatPriceInput } from "../lib/money"
 
 const MONTH_KEYS = [
   "january", "february", "march", "april", "may", "june",
@@ -151,12 +143,13 @@ export default class extends Controller {
     "detailsLocation",
     "detailsNotes",
     "detailsNotesRow",
+    "detailsDuplicate",
+    "detailsCancel",
     "overflow",
     "overflowTitle",
     "overflowList",
     "createLink",
-    "studentsSeed",
-    "teachersSeed"
+    "repeatField"
   ]
 
   static values = {
@@ -166,7 +159,6 @@ export default class extends Controller {
     teacherId: String,
     studentId: String,
     i18n: Object,
-    lessonTypesSeed: Object,
     showPrice: { type: Boolean, default: false },
     canOverride: { type: Boolean, default: false },
     canManageTeachers: { type: Boolean, default: false },
@@ -175,7 +167,11 @@ export default class extends Controller {
     timezone: String,
     createUrl: String,
     dismissUrl: String,
-    embedded: { type: Boolean, default: false }
+    lessonsUrl: String,
+    subjectsUrl: String,
+    lessonTypesUrl: String,
+    embedded: { type: Boolean, default: false },
+    editId: String
   }
 
   monthName(index) {
@@ -212,9 +208,17 @@ export default class extends Controller {
     this.pendingDraft = null
     this.lessonType = "individual"
     this.selectedLessonTypeId = ""
-    initLessonTypesStore(this.lessonTypesSeedValue || {})
+    this.currentLessonTypes = []
+    this.saving = false
+    this._subjectsCache = new Map()
+    this._typesCache = new Map()
     this.boundPointer = this.onPointerDown.bind(this)
     document.addEventListener("mousedown", this.boundPointer)
+
+    if (!this.embeddedValue) {
+      this.boundLessonSaved = this.onLessonSaved.bind(this)
+      window.addEventListener("calendar:lesson-saved", this.boundLessonSaved)
+    }
 
     if (this.embeddedValue) return
 
@@ -222,18 +226,16 @@ export default class extends Controller {
     this.render()
     this.boundKeydown = this.onKeydown.bind(this)
     this.boundResize = this.render.bind(this)
-    this.boundLessonsChanged = this.onEmbeddedLessonsChanged.bind(this)
     document.addEventListener("keydown", this.boundKeydown)
     window.addEventListener("resize", this.boundResize)
-    document.addEventListener("calendar:lessons-changed", this.boundLessonsChanged)
     this.openCreateFromQuery()
   }
 
   disconnect() {
     document.removeEventListener("mousedown", this.boundPointer)
+    if (this.boundLessonSaved) window.removeEventListener("calendar:lesson-saved", this.boundLessonSaved)
     if (this.boundKeydown) document.removeEventListener("keydown", this.boundKeydown)
     if (this.boundResize) window.removeEventListener("resize", this.boundResize)
-    if (this.boundLessonsChanged) document.removeEventListener("calendar:lessons-changed", this.boundLessonsChanged)
     if (this.hasDrawerTarget) closeModal(this.drawerTarget)
   }
 
@@ -413,7 +415,7 @@ export default class extends Controller {
     this.closePickers()
   }
 
-  selectTeacher(id, choice = "selected") {
+  async selectTeacher(id, choice = "selected") {
     if (this.hasDraftTeacherTarget) this.draftTeacherTarget.value = id || ""
     this.teacherChoice = id ? choice : null
     this.studentIds = []
@@ -432,8 +434,8 @@ export default class extends Controller {
       if (location === "online" && !this.draftMeetingTarget.value) this.draftMeetingTarget.value = teacher.defaultMeetingLink
     }
     this.syncTeacherUi()
-    this.rebuildSubjects(teacher)
-    this.rebuildLessonTypeSelect("")
+    await this.rebuildSubjects(teacher)
+    await this.rebuildLessonTypeSelect("")
     this.syncLessonTypeUi()
     this.syncDrawerFields()
   }
@@ -563,6 +565,7 @@ export default class extends Controller {
     if (params.end) payload.end = params.end
     if (teacherId) payload.teacher_id = teacherId
     if (studentId) payload.student_id = studentId
+    if (params.lesson_id) payload.lesson_id = params.lesson_id
     Object.entries(payload).forEach(([key, value]) => {
       if (value == null || value === "") url.searchParams.delete(key)
       else url.searchParams.set(key, value)
@@ -591,36 +594,17 @@ export default class extends Controller {
     })
   }
 
-  onEmbeddedLessonsChanged(event) {
-    if (this.embeddedValue) return
-    const lessons = event.detail?.lessons
-    if (Array.isArray(lessons)) {
-      this.lessons = lessons
-      this.render()
-    }
-    if (event.detail?.message) this.showToast(event.detail.message)
-  }
-
   drawerTargetConnected() {
     window.requestAnimationFrame(() => this.hydrateDrawer())
   }
 
-  hydrateDrawer() {
+  async hydrateDrawer() {
     if (!this.hasDrawerTarget) return
-    this.ingestDrawerCatalog()
     if (this.hasTimezoneLabelTarget) {
       const zone = this.timezoneValue || "Europe/Kyiv"
       this.timezoneLabelTarget.textContent = `${this.t("calendar", "workspace_timezone")}: ${zone.replaceAll("_", " ")}`
     }
-    if (this.pendingDraft || pendingCreateDraft) {
-      const pending = this.pendingDraft || pendingCreateDraft
-      this.pendingDraft = null
-      pendingCreateDraft = null
-      this.editingId = pending.editingId || null
-      this.fillDraft(pending.lesson)
-      this.setDrawerMode(pending.mode)
-      return
-    }
+    if (await this.hydratePendingDraft()) return
     this.editingId = null
     const studentId = this.drawerTarget.dataset.studentId || this.studentIdValue || ""
     const teacherId = this.resolvedTeacherId()
@@ -634,36 +618,33 @@ export default class extends Controller {
     if (studentId && teacherId && String(this.studentRecord(studentId)?.teacherId || "") === String(teacherId)) {
       this.teacherChoice = "auto"
     }
-    this.rebuildSubjects(this.teacherRecord(teacherId))
+    await this.rebuildSubjects(this.teacherRecord(teacherId))
     this.autoSelectSingleSubject()
-    this.rebuildLessonTypeSelect()
+    await this.rebuildLessonTypeSelect()
     this.autoSelectSingleLessonType()
     this.autoSelectSingleStudent()
     this.setDrawerMode("create")
   }
 
-  ingestDrawerCatalog() {
-    const students = this.parseSeedJson(this.seedValue("studentsSeed"))
-    const teachers = this.parseSeedJson(this.seedValue("teachersSeed"))
-    if (Array.isArray(students)) this.studentsValue = students
-    if (Array.isArray(teachers)) this.teachersValue = teachers
-  }
-
-  seedValue(name) {
-    const has = this[`has${name.charAt(0).toUpperCase()}${name.slice(1)}Target`]
-    if (!has) return ""
-    const target = this[`${name}Target`]
-    return target.value || target.textContent || ""
-  }
-
-  parseSeedJson(raw) {
-    const text = String(raw || "").trim()
-    if (!text) return null
-    try {
-      return JSON.parse(text)
-    } catch {
-      return null
+  async hydratePendingDraft() {
+    const pending = this.pendingDraft || pendingCreateDraft
+    this.pendingDraft = null
+    pendingCreateDraft = null
+    if (pending?.lesson) {
+      this.editingId = pending.editingId || null
+      await this.fillDraft(pending.lesson)
+      this.setDrawerMode(pending.mode || (this.editingId ? "edit" : "create"))
+      return true
     }
+
+    const editId = this.editIdValue
+    if (!editId) return false
+    const lesson = this.lessons.find((item) => String(item.id) === String(editId))
+    if (!lesson) return false
+    this.editingId = editId
+    await this.fillDraft(lesson)
+    this.setDrawerMode("edit")
+    return true
   }
 
   resolvedTeacherId() {
@@ -718,7 +699,7 @@ export default class extends Controller {
     return Number(teacher?.defaultLessonDurationMinutes) || 60
   }
 
-  onSubjectChange() {
+  async onSubjectChange() {
     this.selectedLessonTypeId = ""
     this.priceTouched = false
     if (this.hasDraftPriceTarget) this.draftPriceTarget.value = ""
@@ -726,17 +707,18 @@ export default class extends Controller {
     if (this.hasDraftStartTarget && this.hasDraftEndTarget) {
       this.draftEndTarget.value = minutesToTime(timeToMinutes(this.draftStartTarget.value) + this.teacherDuration(teacher))
     }
-    this.rebuildLessonTypeSelect("")
+    await this.rebuildLessonTypeSelect("")
+    this.autoSelectSingleLessonType()
     this.syncDrawerFields()
   }
 
   onLessonTypeChange() {
     const id = this.hasDraftLessonTypeTarget ? this.draftLessonTypeTarget.value : ""
     this.selectedLessonTypeId = id
-    const bookable = this.bookableTypesForCurrentTeacher().find((item) => item.lessonType.id === id)
-    if (bookable) {
-      this.applyLessonTypeMode(bookable.lessonType.mode)
-      this.applyLessonTypeDefaults(bookable)
+    const selected = this.currentLessonType()
+    if (selected) {
+      this.applyLessonTypeMode(selected.mode)
+      this.applyLessonTypeDefaults(selected)
     }
     this.syncDrawerFields()
   }
@@ -748,71 +730,70 @@ export default class extends Controller {
     this.syncLessonTypeUi()
   }
 
-  applyLessonTypeDefaults(bookable) {
-    const duration = Number(bookable.lessonType.defaultDurationMinutes) || 60
+  applyLessonTypeDefaults(type) {
+    const duration = Number(type?.defaultDurationMinutes) || 60
     if (this.hasDraftStartTarget && this.hasDraftEndTarget) {
       this.draftEndTarget.value = minutesToTime(timeToMinutes(this.draftStartTarget.value) + duration)
     }
-    if (!this.priceTouched && this.hasDraftPriceTarget) {
-      this.draftPriceTarget.value = formatPriceInput(bookable.effectivePriceCents)
-    }
-    if (!this.priceTouched && this.hasDraftCurrencyTarget) {
-      this.draftCurrencyTarget.value = bookable.effectiveCurrency || "UAH"
-    }
   }
 
-  bookableTypesForCurrentTeacher() {
-    const teacher = this.teacherRecord(this.draftTeacherId())
-    if (!teacher) return []
-    const subject = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : ""
-    return getBookableLessonTypesForTeacher(teacher.id, teacher.email).filter((item) => !subject || item.lessonType.subjectName === subject)
+  currentLessonType() {
+    return this.currentLessonTypes.find((item) => String(item.id) === String(this.selectedLessonTypeId))
+  }
+
+  selectedSubjectName() {
+    if (!this.hasDraftSubjectTarget) return ""
+    const option = this.draftSubjectTarget.selectedOptions[0]
+    return option && option.value ? option.textContent.trim() : ""
   }
 
   populateLessonTypeFilter() {
     if (!this.hasFilterLessonTypeTarget) return
     const current = this.filterLessonTypeTarget.value
-    const names = uniqueLessonTypeNames()
+    const names = [...new Set(this.lessons.map((lesson) => lessonTypeNameForLesson(lesson)).filter(Boolean))].sort((a, b) => a.localeCompare(b))
     this.filterLessonTypeTarget.innerHTML = `<option value="">${escapeHtml(this.t("calendar", "all_types"))}</option>` +
       names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")
     this.filterLessonTypeTarget.value = names.includes(current) ? current : ""
   }
 
-  rebuildLessonTypeSelect(preferredId) {
+  async rebuildLessonTypeSelect(preferredId, fallback = null, applyDefaults = true) {
     if (!this.hasDraftLessonTypeTarget) return
     const teacher = this.teacherRecord(this.draftTeacherId())
-    const subject = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : ""
-    const bookable = teacher && subject ? getBookableLessonTypesForTeacher(teacher.id, teacher.email).filter((item) => item.lessonType?.subjectName === subject) : []
-    if (this.hasLessonTypeHintTarget) this.lessonTypeHintTarget.hidden = Boolean(teacher && subject)
-    if (this.hasLessonTypeEmptyTarget) {
-      this.lessonTypeEmptyTarget.hidden = !teacher || !subject || bookable.length > 0
-      this.lessonTypeEmptyTarget.textContent = String(this.t("calendar", "lesson_type_empty_subject")).replace("%{subject}", subject)
+    const subjectId = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : ""
+    const types = teacher && subjectId ? [...await this.fetchLessonTypes(subjectId)] : []
+    if (preferredId && fallback && !types.some((item) => String(item.id) === String(preferredId))) {
+      types.push({
+        id: fallback.lessonTypeId || preferredId,
+        name: fallback.lessonTypeName || this.t("calendar", "custom"),
+        mode: fallback.type,
+        defaultDurationMinutes: Math.max(0, timeToMinutes(fallback.endTime) - timeToMinutes(fallback.startTime)) || 60
+      })
     }
-    this.draftLessonTypeTarget.hidden = bookable.length === 0
+    this.currentLessonTypes = types
+    if (this.hasLessonTypeHintTarget) this.lessonTypeHintTarget.hidden = Boolean(teacher && subjectId)
+    if (this.hasLessonTypeEmptyTarget) {
+      this.lessonTypeEmptyTarget.hidden = !teacher || !subjectId || types.length > 0
+      this.lessonTypeEmptyTarget.textContent = String(this.t("calendar", "lesson_type_empty_subject")).replace("%{subject}", this.selectedSubjectName())
+    }
+    this.draftLessonTypeTarget.hidden = types.length === 0
     if (this.hasLessonTypeHelpTarget) {
-      this.lessonTypeHelpTarget.hidden = bookable.length === 0
+      this.lessonTypeHelpTarget.hidden = types.length === 0
       this.lessonTypeHelpTarget.textContent = this.t("calendar", this.showPriceValue ? "lesson_type_help" : "lesson_type_help_plain")
     }
-    const free = this.t("calendar", "free")
     this.draftLessonTypeTarget.innerHTML = `<option value="">${escapeHtml(this.t("calendar", "select_lesson_type"))}</option>` +
-      bookable.map((item) => {
-        const base = `${item.lessonType.name} · ${item.lessonType.defaultDurationMinutes} ${this.t("calendar", "min")}`
-        const price = item.lessonType.isFree || item.effectivePriceCents === 0
-          ? free
-          : `${formatMoney(item.effectivePriceCents, item.effectiveCurrency)}${priceSuffix(item.lessonType.priceType)}`
-        const label = this.showPriceValue ? `${base} · ${price}` : base
-        return `<option value="${escapeHtml(item.lessonType.id)}">${escapeHtml(label)}</option>`
+      types.map((item) => {
+        const label = `${item.name} · ${item.defaultDurationMinutes} ${this.t("calendar", "min")}`
+        return `<option value="${escapeHtml(item.id)}">${escapeHtml(label)}</option>`
       }).join("")
-    const nextId = preferredId && bookable.some((item) => item.lessonType.id === preferredId) ? preferredId : ""
+    const nextId = preferredId && types.some((item) => String(item.id) === String(preferredId)) ? String(preferredId) : ""
     this.draftLessonTypeTarget.value = nextId
     this.selectedLessonTypeId = nextId
-    if (nextId) {
-      const selected = bookable.find((item) => item.lessonType.id === nextId)
-      if (selected) {
-        this.applyLessonTypeMode(selected.lessonType.mode)
-        this.applyLessonTypeDefaults(selected)
-      }
+    const selected = types.find((item) => String(item.id) === nextId)
+    if (selected) {
+      this.applyLessonTypeMode(selected.mode)
+      if (applyDefaults) this.applyLessonTypeDefaults(selected)
     }
-    return bookable.find((item) => item.lessonType.id === nextId)
+    return selected
   }
 
   syncTeacherUi() {
@@ -898,14 +879,19 @@ export default class extends Controller {
     if (this.hasGroupCountTarget) this.groupCountTarget.textContent = this.studentIds.length ? ` · ${this.studentIds.length}` : ""
   }
 
-  rebuildSubjects(teacher) {
+  async rebuildSubjects(teacher, preferredId = "", preferredName = "") {
     if (!this.hasDraftSubjectTarget) return
-    const bookable = teacher ? getBookableLessonTypesForTeacher(teacher.id, teacher.email) : []
-    const subjects = [...new Set(bookable.map((item) => item.lessonType?.subjectName).filter(Boolean))]
+    const subjects = teacher ? [...await this.fetchSubjects(teacher.id)] : []
+    if (preferredId && !subjects.some((item) => String(item.id) === String(preferredId))) {
+      subjects.push({ id: preferredId, name: preferredName || String(preferredId) })
+    }
     const current = this.draftSubjectTarget.value
     this.draftSubjectTarget.innerHTML = `<option value="">${escapeHtml(this.t("calendar", "select_lesson"))}</option>` +
-      subjects.map((subject) => `<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`).join("")
-    this.draftSubjectTarget.value = subjects.includes(current) ? current : ""
+      subjects.map((subject) => `<option value="${escapeHtml(subject.id)}">${escapeHtml(subject.name)}</option>`).join("")
+    const nextId = preferredId && subjects.some((item) => String(item.id) === String(preferredId))
+      ? String(preferredId)
+      : (subjects.some((item) => String(item.id) === String(current)) ? current : "")
+    this.draftSubjectTarget.value = nextId
     this.draftSubjectTarget.hidden = subjects.length === 0
     if (this.hasSubjectHintTarget) {
       this.subjectHintTarget.hidden = Boolean(teacher)
@@ -916,8 +902,8 @@ export default class extends Controller {
 
   onStartChange() {
     const teacher = this.teacherRecord(this.draftTeacherId())
-    const bookable = this.bookableTypesForCurrentTeacher().find((item) => item.lessonType.id === this.selectedLessonTypeId)
-    const duration = Number(bookable?.lessonType.defaultDurationMinutes) || this.teacherDuration(teacher)
+    const selected = this.currentLessonType()
+    const duration = Number(selected?.defaultDurationMinutes) || this.teacherDuration(teacher)
     if (this.hasDraftStartTarget && this.hasDraftEndTarget) {
       this.draftEndTarget.value = minutesToTime(timeToMinutes(this.draftStartTarget.value) + duration)
     }
@@ -985,8 +971,10 @@ export default class extends Controller {
     this.syncFormatUi()
     this.syncTeacherUi()
     this.syncLessonTypeUi()
+    const editing = Boolean(this.editingId)
     const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
-    if (this.hasRepeatExtraTarget) this.repeatExtraTarget.hidden = repeat === "none"
+    if (this.hasRepeatFieldTarget) this.repeatFieldTarget.hidden = editing
+    if (this.hasRepeatExtraTarget) this.repeatExtraTarget.hidden = editing || repeat === "none"
     if (this.hasCustomDaysTarget) this.customDaysTarget.hidden = repeat !== "custom"
     if (this.hasRepeatSummaryTarget && repeat !== "none") {
       const dates = generateOccurrenceDates(this.draftDateTarget?.value, repeat, this.draftRepeatEndTarget?.value, this.customWeekdays)
@@ -1044,23 +1032,32 @@ export default class extends Controller {
   syncLessonTypeChangeNotice() {
     if (!this.hasLessonTypeChangedTarget) return
     const original = this.originalLesson
-    const changed = Boolean(this.editingId && original && this.selectedLessonTypeId && this.selectedLessonTypeId !== original.lessonTypeId)
-    this.lessonTypeChangedTarget.hidden = !changed
-    if (!changed) return
-    const bookable = this.bookableTypesForCurrentTeacher().find((item) => item.lessonType.id === this.selectedLessonTypeId)
+    const selectedId = String(this.selectedLessonTypeId || "")
+    const originalId = String(original?.lessonTypeId || "")
+    const idChanged = Boolean(this.editingId && original && selectedId && selectedId !== originalId)
+    if (!idChanged) {
+      this.lessonTypeChangedTarget.hidden = true
+      return
+    }
     const min = this.t("calendar", "min")
+    const bookable = this.currentLessonType()
     const previousDuration = Math.max(0, timeToMinutes(original.endTime) - timeToMinutes(original.startTime))
     const previousPrice = this.showPriceValue && original.priceCents != null
       ? ` · ${original.priceCents === 0 ? this.t("calendar", "free") : formatMoney(original.priceCents, original.currency || "UAH")}`
       : ""
-    const nextDuration = Number(bookable?.lessonType.defaultDurationMinutes) || previousDuration
+    const nextDuration = Number(bookable?.defaultDurationMinutes) || previousDuration
     const nextCents = parsePriceAmount(this.hasDraftPriceTarget ? this.draftPriceTarget.value : "")
     const nextCurrency = this.hasDraftCurrencyTarget ? this.draftCurrencyTarget.value : original.currency
     const nextPrice = this.showPriceValue && nextCents != null
       ? ` · ${nextCents === 0 ? this.t("calendar", "free") : formatMoney(nextCents, nextCurrency || "UAH")}`
       : ""
     const previousLabel = `${original.lessonTypeName || this.t("calendar", "custom")} · ${previousDuration} ${min}${previousPrice}`
-    const nextLabel = `${bookable?.lessonType.name || this.t("calendar", "custom")} · ${nextDuration} ${min}${nextPrice}`
+    const nextLabel = `${bookable?.name || this.t("calendar", "custom")} · ${nextDuration} ${min}${nextPrice}`
+    if (previousLabel === nextLabel) {
+      this.lessonTypeChangedTarget.hidden = true
+      return
+    }
+    this.lessonTypeChangedTarget.hidden = false
     this.lessonTypeChangedTarget.innerHTML = `<p class="calendar-page__notice-title">${escapeHtml(this.t("calendar", "lesson_type_change"))}</p>
       <p>${escapeHtml(this.t("calendar", "lesson_type_previous").replace("%{label}", previousLabel))}</p>
       <p>${escapeHtml(this.t("calendar", "lesson_type_new").replace("%{label}", nextLabel))}</p>
@@ -1077,7 +1074,7 @@ export default class extends Controller {
     if (!this.selectedLessonTypeId) return false
     if (timeToMinutes(end) <= timeToMinutes(start)) return false
     if (this.lessonType === "group") {
-      if (this.studentIds.length < 2) return false
+      if (this.studentIds.length < 1) return false
     } else if (this.studentIds.length !== 1) return false
     const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
     if (repeat !== "none" && !this.editingId) {
@@ -1104,24 +1101,24 @@ export default class extends Controller {
       return
     }
     const selectedTeacher = teacherName(this.teacherRecord(this.draftTeacherId()))
-    const subject = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : ""
+    const subject = this.selectedSubjectName()
     const when = `${formatLessonDayShort(this.draftDateTarget.value)} · ${formatTimeRange(this.draftStartTarget.value, this.draftEndTarget.value)}`
     const cents = parsePriceAmount(this.hasDraftPriceTarget ? this.draftPriceTarget.value : "")
     const currency = this.hasDraftCurrencyTarget ? this.draftCurrencyTarget.value : "EUR"
     const price = this.showPriceValue && cents != null ? formatMoneyLabel(cents, currency) : ""
-    const bookable = this.bookableTypesForCurrentTeacher().find((item) => item.lessonType.id === this.selectedLessonTypeId)
+    const selected = this.currentLessonType()
     const group = this.lessonType === "group" || this.studentIds.length > 1
     const headline = group
       ? `${this.t("calendar", "group_lesson")} · ${this.studentIds.length}`
       : this.t("calendar", "individual_lesson")
-    const typeLine = bookable ? `${bookable.lessonType.name} · ${bookable.lessonType.defaultDurationMinutes} ${this.t("calendar", "min")}` : ""
+    const typeLine = selected ? `${selected.name} · ${selected.defaultDurationMinutes} ${this.t("calendar", "min")}` : ""
     const people = group ? selectedTeacher : `${this.studentLabel(this.studentIds[0])} · ${selectedTeacher}`
     this.summaryTarget.hidden = false
     this.summaryTarget.innerHTML = `<p>${escapeHtml(headline)}</p>${typeLine ? `<p>${escapeHtml(typeLine)}</p>` : ""}${subject ? `<p>${escapeHtml(subject)}</p>` : ""}<p>${escapeHtml(people)}</p><p>${escapeHtml(when)}</p>${price ? `<p class="calendar-page__summary-price">${escapeHtml(price)}</p>` : ""}`
   }
 
   buildTitle() {
-    const subject = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value.trim() : ""
+    const subject = this.selectedSubjectName()
     const group = this.lessonType === "group" || this.studentIds.length > 1
     if (group) return subject ? `${subject} · ${this.t("calendar", "group_lesson")}` : this.t("calendar", "group_lesson")
     const name = this.studentLabel(this.studentIds[0])
@@ -1136,73 +1133,186 @@ export default class extends Controller {
     return this.studentLabel(this.studentIds[0]) || this.t("common", "student")
   }
 
-  submitCreate() {
-    if (!this.requiredFieldsOk()) return
-    const date = this.draftDateTarget.value
-    const location = this.hasDraftLocationTarget ? this.draftLocationTarget.value : "online"
-    const meetingLink = this.hasDraftMeetingTarget ? this.draftMeetingTarget.value.trim() : ""
-    const locationText = this.hasDraftPlaceTarget ? this.draftPlaceTarget.value.trim() : ""
-    const notes = this.hasDraftNotesTarget ? this.draftNotesTarget.value.trim() : ""
-    const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
-    const repeatEnd = this.hasDraftRepeatEndTarget ? this.draftRepeatEndTarget.value : ""
-    const cents = parsePriceAmount(this.hasDraftPriceTarget ? this.draftPriceTarget.value : "")
+  async submitCreate() {
+    if (!this.requiredFieldsOk() || this.saving) return
+    this.saving = true
+    if (this.hasDrawerSubmitTarget) this.drawerSubmitTarget.disabled = true
+    this.showFormError("")
+    try {
+      const lesson = await this.persistLesson()
+      this.applySavedLesson(lesson)
+      if (!this.hostReloadsAfterSave()) this.closeCreate()
+    } catch (error) {
+      this.showFormError(error.message || this.t("calendar", "save_failed"))
+    } finally {
+      this.saving = false
+      this.syncSubmit()
+    }
+  }
+
+  lessonPayload() {
     const payload = {
-      title: this.buildTitle(),
-      subject: this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : "",
-      student: this.partyLabel(),
-      teacher: teacherName(this.teacherRecord(this.draftTeacherTarget.value)) || this.t("common", "teacher"),
-      teacherId: this.draftTeacherTarget.value,
-      studentId: this.studentIds[0] || "",
-      studentIds: [...this.studentIds],
-      date,
-      startTime: this.draftStartTarget.value,
-      endTime: this.draftEndTarget.value,
-      type: this.lessonType,
-      status: "confirmed",
-      location,
-      meetingLink: location === "online" ? meetingLink : undefined,
-      locationText: location === "in_person" ? locationText : undefined,
-      notes: notes || undefined,
-      priceCents: cents,
-      currency: this.hasDraftCurrencyTarget ? this.draftCurrencyTarget.value : "EUR",
+      teacherId: this.draftTeacherId(),
+      subjectId: this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : "",
       lessonTypeId: this.selectedLessonTypeId,
-      lessonTypeName: this.bookableTypesForCurrentTeacher().find((item) => item.lessonType.id === this.selectedLessonTypeId)?.lessonType.name
+      studentIds: this.studentIds,
+      date: this.hasDraftDateTarget ? this.draftDateTarget.value : "",
+      startTime: this.hasDraftStartTarget ? this.draftStartTarget.value : "",
+      endTime: this.hasDraftEndTarget ? this.draftEndTarget.value : "",
+      location: this.hasDraftLocationTarget ? this.draftLocationTarget.value : "online",
+      meetingLink: this.hasDraftMeetingTarget ? this.draftMeetingTarget.value : "",
+      locationText: this.hasDraftPlaceTarget ? this.draftPlaceTarget.value : "",
+      notes: this.hasDraftNotesTarget ? this.draftNotesTarget.value : ""
     }
+    if (this.hasDraftPriceTarget) payload.priceCents = parsePriceAmount(this.draftPriceTarget.value)
+    if (this.hasDraftCurrencyTarget) payload.currency = this.draftCurrencyTarget.value
+    if (!this.editingId) this.assignRepeatPayload(payload)
+    this.assignOverridePayload(payload)
+    return payload
+  }
 
-    let toastMessage = ""
-    if (this.editingId) {
-      this.lessons = this.lessons.map((lesson) =>
-        lesson.id === this.editingId ? { ...lesson, ...payload } : lesson
-      )
-      toastMessage = this.t("calendar", "updated")
-    } else {
-      let created = expandRepeat({ ...payload, id: `local-${Date.now()}` }, repeat, repeatEnd, this.customWeekdays)
-      if (this.hasSkipConflictTarget && this.skipConflictTarget.checked) {
-        created = created.filter((lesson) => {
-          const teacher = this.teacherRecord(lesson.teacherId)
-          const availability = checkTeacherAvailability(teacher, lesson.date, lesson.startTime, lesson.endTime, this.lessons, null)
-          const conflicts = findStudentConflicts(lesson.studentIds, lesson.date, lesson.startTime, lesson.endTime, this.lessons, null)
-          return availability.kind !== "booked" && conflicts.length === 0
-        })
-      }
-      this.lessons.push(...created)
-      if (this.hasAssignPermanentTarget && this.assignPermanentTarget.checked && payload.studentId && payload.teacherId) {
-        const student = this.studentRecord(payload.studentId)
-        if (student) student.teacherId = payload.teacherId
-      }
-      if (created.length > 1) {
-        toastMessage = this.t("calendar", "created_many").replace("%{count}", created.length)
-      } else if (created.length === 1) {
-        toastMessage = this.t("calendar", "created")
-      }
+  assignRepeatPayload(payload) {
+    const repeat = this.hasDraftRepeatTarget ? this.draftRepeatTarget.value : "none"
+    if (!repeat || repeat === "none") return
+    payload.repeat = repeat
+    payload.repeatEnd = this.hasDraftRepeatEndTarget ? this.draftRepeatEndTarget.value : ""
+    if (repeat === "custom") payload.weekdays = [...this.customWeekdays]
+    if (this.hasSkipConflictTarget && this.skipConflictTarget.checked) payload.skipConflicts = true
+  }
+
+  assignOverridePayload(payload) {
+    if (!this.hasOverrideConflictTarget || !this.overrideConflictTarget.checked) return
+    payload.overrideConflict = true
+    payload.overrideReason = this.hasOverrideReasonTarget ? this.overrideReasonTarget.value.trim() : ""
+  }
+
+  async persistLesson() {
+    const editing = Boolean(this.editingId)
+    const base = String(this.lessonsUrlValue || "/lessons").replace(/\/$/, "")
+    const url = editing ? `${base}/${encodeURIComponent(this.editingId)}` : base
+    const response = await fetch(url, {
+      method: editing ? "PATCH" : "POST",
+      credentials: "same-origin",
+      headers: this.apiHeaders(true),
+      body: JSON.stringify(this.lessonPayload())
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = Array.isArray(data.errors) ? data.errors.filter(Boolean).join(" ") : (data.error || this.t("calendar", "save_failed"))
+      throw new Error(message || this.t("calendar", "save_failed"))
     }
+    return data
+  }
 
-    this.selectedDate = parseDateKey(date)
-    this.cursor = this.view === "month" || this.view === "agenda" ? this.cursor : new Date(this.selectedDate)
-    this.dispatch("lessons-changed", { detail: { lessons: this.lessons, message: toastMessage } })
-    this.showToast(toastMessage)
-    this.closeCreate()
+  applySavedLesson(result) {
+    const lessons = this.unpackLessons(result)
+    if (!lessons.length) return
+    if (this.embeddedValue) {
+      window.dispatchEvent(new CustomEvent("calendar:lesson-saved", {
+        detail: {
+          lesson: lessons[0],
+          lessons,
+          skippedDates: result.skippedDates || [],
+          editing: Boolean(this.editingId)
+        }
+      }))
+      return
+    }
+    lessons.forEach((item) => this.replaceLesson(item))
+    this.populateLessonTypeFilter()
     this.render()
+    this.showToast(this.saveToast(lessons, result.skippedDates, this.editingId))
+  }
+
+  unpackLessons(result) {
+    if (Array.isArray(result?.lessons) && result.lessons.length) return result.lessons
+    return result?.id ? [result] : []
+  }
+
+  saveToast(lessons, skippedDates, editing) {
+    if (editing) return this.t("calendar", "updated")
+    const skipped = Array.isArray(skippedDates) ? skippedDates.length : 0
+    if (skipped) {
+      return this.t("calendar", "created_skipped")
+        .replace("%{count}", String(lessons.length))
+        .replace("%{skipped}", String(skipped))
+    }
+    if (lessons.length > 1) return this.t("calendar", "created_many").replace("%{count}", String(lessons.length))
+    return this.t("calendar", "created")
+  }
+
+  hostReloadsAfterSave() {
+    return this.embeddedValue && Boolean(document.querySelector("[data-controller~='lessons']"))
+  }
+
+  onLessonSaved(event) {
+    const lessons = this.unpackLessons(event.detail || {})
+    if (!lessons.length) return
+    lessons.forEach((item) => this.replaceLesson(item))
+    this.populateLessonTypeFilter()
+    this.render()
+    this.showToast(this.saveToast(lessons, event.detail?.skippedDates, event.detail?.editing))
+  }
+
+  replaceLesson(lesson) {
+    if (!lesson?.id) return
+    const index = this.lessons.findIndex((item) => String(item.id) === String(lesson.id))
+    if (index >= 0) this.lessons.splice(index, 1, lesson)
+    else this.lessons.push(lesson)
+  }
+
+  upsertLesson(lesson) {
+    this.replaceLesson(lesson)
+    this.populateLessonTypeFilter()
+    this.render()
+  }
+
+  apiHeaders(jsonBody = false) {
+    const headers = { Accept: "application/json" }
+    if (jsonBody) headers["Content-Type"] = "application/json"
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
+    if (token) headers["X-CSRF-Token"] = token
+    return headers
+  }
+
+  async fetchSubjects(teacherId) {
+    if (!teacherId) return []
+    const key = String(teacherId)
+    if (this._subjectsCache.has(key)) return this._subjectsCache.get(key)
+    const list = await this.fetchList(this.expandUrl(this.subjectsUrlValue, key))
+    this._subjectsCache.set(key, list)
+    return list
+  }
+
+  async fetchLessonTypes(subjectId) {
+    if (!subjectId) return []
+    const key = String(subjectId)
+    if (this._typesCache.has(key)) return this._typesCache.get(key)
+    const list = await this.fetchList(this.expandUrl(this.lessonTypesUrlValue, key))
+    this._typesCache.set(key, list)
+    return list
+  }
+
+  expandUrl(template, id) {
+    return String(template || "").replace("__ID__", encodeURIComponent(id))
+  }
+
+  async fetchList(url) {
+    if (!url) return []
+    try {
+      const response = await fetch(url, { credentials: "same-origin", headers: this.apiHeaders() })
+      if (!response.ok) return []
+      const data = await response.json().catch(() => [])
+      return Array.isArray(data) ? data : []
+    } catch {
+      return []
+    }
+  }
+
+  showFormError(message) {
+    if (!this.hasFormErrorTarget) return
+    this.formErrorTarget.hidden = !message
+    this.formErrorTarget.textContent = message || ""
   }
 
   selectDay(event) {
@@ -1215,14 +1325,18 @@ export default class extends Controller {
     this.render()
   }
 
+  findLessonById(id) {
+    return this.lessons.find((item) => String(item.id) === String(id))
+  }
+
   openLesson(event) {
     event.preventDefault()
     event.stopPropagation()
     event.stopImmediatePropagation()
     const id = event.currentTarget.dataset.lessonId
-    const lesson = this.lessons.find((item) => String(item.id) === String(id))
+    const lesson = this.findLessonById(id)
     if (!lesson) return
-    this.activeLessonId = id
+    this.activeLessonId = String(lesson.id)
     this.closeOverflow()
     this.renderDetails(lesson)
   }
@@ -1233,7 +1347,7 @@ export default class extends Controller {
   }
 
   editLesson() {
-    const lesson = this.lessons.find((item) => item.id === this.activeLessonId)
+    const lesson = this.findLessonById(this.activeLessonId)
     if (!lesson) return
     this.closeLesson()
     pendingCreateDraft = { lesson, mode: "edit", editingId: lesson.id }
@@ -1242,13 +1356,14 @@ export default class extends Controller {
       start: lesson.startTime,
       end: lesson.endTime,
       teacher_id: lesson.teacherId,
-      student_id: lesson.studentId
+      student_id: lesson.studentId,
+      lesson_id: lesson.id
     })
   }
 
   duplicateLesson() {
-    const lesson = this.lessons.find((item) => item.id === this.activeLessonId)
-    if (!lesson) return
+    const lesson = this.findLessonById(this.activeLessonId)
+    if (!lesson || lesson.status === "cancelled") return
     this.closeLesson()
     pendingCreateDraft = {
       lesson: {
@@ -1270,12 +1385,10 @@ export default class extends Controller {
   }
 
   cancelLesson() {
+    const lesson = this.findLessonById(this.activeLessonId)
+    if (!lesson || lesson.status === "cancelled" || lesson.status === "completed") return
     if (!window.confirm(this.t("calendar", "cancel_confirm"))) return
-    this.lessons = this.lessons.map((lesson) =>
-      lesson.id === this.activeLessonId ? { ...lesson, status: "cancelled" } : lesson
-    )
     this.closeLesson()
-    this.render()
   }
 
   showOverflow(event) {
@@ -1496,6 +1609,9 @@ export default class extends Controller {
       this.detailsNotesRowTarget.hidden = !lesson.notes
     }
     if (this.hasDetailsNotesTarget) this.detailsNotesTarget.textContent = lesson.notes || ""
+    const cancelled = lesson.status === "cancelled"
+    if (this.hasDetailsDuplicateTarget) this.detailsDuplicateTarget.hidden = cancelled
+    if (this.hasDetailsCancelTarget) this.detailsCancelTarget.hidden = cancelled || lesson.status === "completed"
     this.detailsTarget.hidden = false
   }
 
@@ -1521,7 +1637,7 @@ export default class extends Controller {
     return this.i18nValue?.calendar?.[type] || type
   }
 
-  fillDraft(lesson) {
+  async fillDraft(lesson) {
     this.originalLesson = this.editingId ? {
       lessonTypeId: lesson.lessonTypeId || "",
       lessonTypeName: lesson.lessonTypeName || "",
@@ -1550,13 +1666,10 @@ export default class extends Controller {
     let teacherId = lesson.teacherId || ""
     if (this.lockTeacherValue && this.currentTeacherIdValue) teacherId = this.currentTeacherIdValue
     if (this.hasDraftTeacherTarget) this.draftTeacherTarget.value = teacherId
-    this.rebuildSubjects(this.teacherRecord(teacherId))
-    if (this.hasDraftSubjectTarget) this.draftSubjectTarget.value = lesson.subject || this.draftSubjectTarget.value
-    const selected = this.rebuildLessonTypeSelect(lesson.lessonTypeId)
+    await this.rebuildSubjects(this.teacherRecord(teacherId), lesson.subjectId, lesson.subject)
+    await this.rebuildLessonTypeSelect(lesson.lessonTypeId, lesson, false)
     if (this.hasDraftPriceTarget && lesson.priceCents != null) {
       this.draftPriceTarget.value = formatPriceInput(lesson.priceCents)
-    } else if (selected && !this.priceTouched) {
-      this.applyLessonTypeDefaults(selected)
     }
     if (this.hasDraftCurrencyTarget && lesson.currency) this.draftCurrencyTarget.value = lesson.currency
     this.syncLessonTypeUi()
@@ -1760,6 +1873,10 @@ function uniqueIds(ids) {
   return [...new Set((ids || []).filter(Boolean).map(String))]
 }
 
+function lessonTypeNameForLesson(lesson) {
+  return lesson?.lessonTypeName || ""
+}
+
 function parsePriceAmount(value) {
   const raw = String(value || "").trim().replace(",", ".")
   if (!raw) return null
@@ -1790,37 +1907,6 @@ function currentTimeTop(now) {
   const end = DAY_END_HOUR * 60
   if (minutes < start || minutes > end) return null
   return ((minutes - start) / 60) * HOUR_HEIGHT
-}
-
-function expandRepeat(lesson, repeat, endDate, weekdays = []) {
-  if (!repeat || repeat === "none" || !endDate) return [lesson]
-  const lessons = [lesson]
-  const end = parseDateKey(endDate)
-  if (repeat === "custom") {
-    const wanted = new Set((weekdays.length ? weekdays : [weekdayNameFromDate(parseDateKey(lesson.date))]).map(String))
-    let date = parseDateKey(lesson.date)
-    let index = 0
-    while (index < 60) {
-      date = addDays(date, 1)
-      if (date > end) break
-      if (!wanted.has(weekdayNameFromDate(date))) continue
-      index += 1
-      lessons.push({ ...lesson, id: `${lesson.id}-${index}`, date: toDateKey(date) })
-    }
-    return lessons
-  }
-  const step = repeat === "biweekly" ? 14 : 7
-  let date = parseDateKey(lesson.date)
-  for (let index = 0; index < 52; index += 1) {
-    date = addDays(date, step)
-    if (date > end) break
-    lessons.push({ ...lesson, id: `${lesson.id}-${index + 1}`, date: toDateKey(date) })
-  }
-  return lessons
-}
-
-function weekdayNameFromDate(date) {
-  return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()]
 }
 
 function eventHtml(lesson, density, controller) {

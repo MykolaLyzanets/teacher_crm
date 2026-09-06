@@ -39,6 +39,26 @@ module WorkspaceScoping
     StudentProfile.none
   end
 
+  def lessons_scope
+    scoped = Lesson.joins(:teacher_profile)
+    return scoped if current_user.admin?
+    return Lesson.none if current_workspace.blank?
+
+    scoped = scoped.where(teacher_profiles: { workspace_id: current_workspace.id })
+    return scoped unless current_user.teacher?
+
+    teacher_id = current_user.teacher_profile&.id
+    return Lesson.none if teacher_id.blank?
+
+    scoped.where(teacher_id:)
+  end
+
+  def catalog_lessons
+    lessons_scope.includes(:teacher_profile, :subject, :lesson_type, :students)
+                 .order(:starts_at)
+                 .map(&:as_catalog)
+  end
+
   def require_workspace!
     return if current_workspace.present?
 
