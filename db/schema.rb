@@ -12,7 +12,6 @@
 
 ActiveRecord::Schema[7.0].define(version: 2026_09_05_180003) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "btree_gist"
   enable_extension "plpgsql"
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -161,7 +160,6 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_05_180003) do
     t.text "override_reason"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index "teacher_id, tstzrange(starts_at, ends_at, '[)'::text)", name: "lessons_teacher_confirmed_no_overlap", where: "((status = 0) AND (allow_overlap = false))", using: :gist
     t.index ["lesson_type_id"], name: "index_lessons_on_lesson_type_id"
     t.index ["series_id"], name: "index_lessons_on_series_id"
     t.index ["subject_id"], name: "index_lessons_on_subject_id"

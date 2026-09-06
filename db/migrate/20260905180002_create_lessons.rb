@@ -2,8 +2,6 @@
 
 class CreateLessons < ActiveRecord::Migration[7.0]
   def up
-    enable_extension 'btree_gist' unless extension_enabled?('btree_gist')
-
     create_lessons_table
     add_lesson_constraints
   end
@@ -56,14 +54,5 @@ class CreateLessons < ActiveRecord::Migration[7.0]
     add_check_constraint :lessons, 'attendance IN (0, 1, 2, 3)', name: 'lessons_attendance_valid'
     add_check_constraint :lessons, 'actual_duration_minutes IS NULL OR actual_duration_minutes > 0',
                          name: 'lessons_actual_duration_positive'
-    execute <<~SQL.squish
-      ALTER TABLE lessons
-      ADD CONSTRAINT lessons_teacher_confirmed_no_overlap
-      EXCLUDE USING gist (
-        teacher_id WITH =,
-        tstzrange(starts_at, ends_at, '[)') WITH &&
-      )
-      WHERE (status = 0 AND allow_overlap = false)
-    SQL
   end
 end
