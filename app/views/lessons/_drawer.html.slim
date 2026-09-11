@@ -1,36 +1,67 @@
-.danlio-modal.danlio-modal--lg hidden="hidden" data-lessons-target="drawer"
-  button.danlio-modal__backdrop type="button" aria-label=t('app.lessons.close_details') data-action="lessons#closeView"
+- review = lesson_review_status(lesson)
+- students = Array(lesson[:students])
+- group = lesson[:type].to_s == 'group' || students.size > 1
+- homework = lesson_homework_status(lesson)
+- notes = lesson_note_cards(lesson)
+- activity = lesson_activity_items(lesson)
+- badge_label, badge_tone = lesson_drawer_badge(lesson)
+- online = lesson[:location].to_s == 'online'
+- meeting = lesson[:meetingLink].to_s.strip
+- place = lesson[:locationText].to_s.strip
+- minutes = lesson[:durationMinutes].presence || lesson_duration_minutes(lesson)
+- time_label = minutes.to_i.positive? ? "#{lesson[:timeRange]} · #{minutes} #{t('app.lessons.min')}" : lesson[:timeRange]
+- close_path = lesson_path(lesson[:id], dismiss: 1)
+- editable = lesson_editable?(lesson)
+- payment = can_view_finance? ? lesson_payment_summary(lesson) : nil
+
+.danlio-modal.danlio-modal--lg data-controller="modal lesson-drawer"
+  a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.lessons.close_details') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_details"
   .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="lesson-details-title"
     .danlio-modal__head
       div
-        h2#lesson-details-title.danlio-modal__title data-lessons-target="drawerTitle"
-        p.danlio-modal__desc data-lessons-target="drawerSubtitle"
+        h2#lesson-details-title.danlio-modal__title = lesson_drawer_title(lesson)
+        p.danlio-modal__desc = lesson_drawer_subtitle(lesson)
         .lessons-page__show-badges
-          span.status-badge data-lessons-target="drawerBadge" data-action="mouseenter->lessons#showCancelTip mouseleave->lessons#hideCancelTip"
+          span.status-badge class="status-badge--#{badge_tone}" = badge_label
       .lessons-page__drawer-tools
-        button.danlio-modal__close type="button" aria-label=t('app.lessons.edit_title') data-lessons-target="drawerEdit" data-action="lessons#openEdit"
-          = lesson_icon 'edit', size: 20
+        - if editable
+          = link_to lesson_edit_dialog_path(lesson), class: 'danlio-modal__close', aria: { label: t('app.lessons.edit_title') }, data: calendar_create_turbo_data do
+            = lesson_icon 'edit', size: 20
         .lessons-page__drawer-more
-          button.danlio-modal__close type="button" aria-label=t('app.lessons.more_title') aria-expanded="false" data-action="lessons#toggleDrawerMenu"
+          button.danlio-modal__close type="button" aria-label=t('app.lessons.more_title') aria-expanded="false" data-action="lesson-drawer#toggleMenu"
             = lesson_icon 'dots', size: 20
-          .lessons-page__menu.lessons-page__menu--hidden data-lessons-target="drawerMenu"
-            button.lessons-page__menu-item type="button" data-lessons-target="drawerCancelItem" data-action="lessons#askCancelFromDrawer" = t('app.lessons.cancel_lesson')
-            button.lessons-page__menu-item type="button" data-lessons-target="drawerCorrectItem" data-action="lessons#correctOutcome" = t('app.lessons.correct_outcome')
-            button.lessons-page__menu-item.lessons-page__menu-item--danger type="button" data-action="lessons#askDeleteFromDrawer" = t('app.lessons.delete_lesson')
-        button.danlio-modal__close type="button" aria-label=t('app.lessons.close') data-action="lessons#closeView" data-modal-focus="true"
+          .lessons-page__menu.lessons-page__menu--hidden data-lesson-drawer-target="menu"
+            = link_to t('app.lessons.share_material'), materials_path, class: 'lessons-page__menu-item'
+            = link_to t('app.lessons.duplicate_lesson_action'), lesson_duplicate_dialog_path(lesson), class: 'lessons-page__menu-item', data: calendar_create_turbo_data
+            - if lesson[:upcoming]
+              = link_to t('app.lessons.cancel_lesson'), cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item', data: lesson_dialog_turbo
+            - if %w[completed cancelled].include?(review)
+              = button_to t('app.lessons.correct_outcome'), outcome_lesson_path(lesson[:id]), method: :patch, params: { outcome: 'confirmed' }, class: 'lessons-page__menu-item', form: { data: { turbo: false } }
+            = link_to t('app.lessons.delete_lesson'), delete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item lessons-page__menu-item--danger', data: lesson_dialog_turbo
+        = link_to close_path, class: 'danlio-modal__close', aria: { label: t('app.lessons.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_details', modal_focus: true } do
           = lesson_icon 'x', size: 20
 
     .danlio-modal__body.lessons-page__show-body
-      p.lessons-page__drawer-missing hidden="hidden" data-lessons-target="drawerMissing" = t('app.lessons.not_found')
-      .lessons-page__show-content data-lessons-target="drawerContent"
-        .lessons-page__show-status data-lessons-target="drawerStatus"
-          button.danlio-modal__btn.danlio-modal__btn--primary.lessons-page__show-status-btn type="button" hidden="hidden" data-lessons-target="drawerOutcomeBtn" data-action="lessons#openOutcome" = t('app.lessons.confirm_outcome')
-          .lessons-page__show-banner.lessons-page__show-banner--olive hidden="hidden" data-lessons-target="drawerCompletedBanner" = t('app.lessons.completed_banner')
-          .lessons-page__show-banner.lessons-page__show-banner--rose hidden="hidden" data-lessons-target="drawerCancelledBanner" = t('app.lessons.cancelled_banner')
+      .lessons-page__show-content
+        - if %w[confirmed pending].include?(lesson[:status].to_s) || review == 'completed' || review == 'cancelled'
+          .lessons-page__show-status
+            - if %w[confirmed pending].include?(lesson[:status].to_s)
+              = link_to t('app.lessons.confirm_lesson_outcome'), outcome_dialog_lesson_path(lesson[:id]), class: 'lessons-page__primary-btn lessons-page__show-status-btn', data: lesson_dialog_turbo
+            - if review == 'completed'
+              .lessons-page__show-banner.lessons-page__show-banner--olive = t('app.lessons.completed_banner')
+            - if review == 'cancelled'
+              .lessons-page__show-banner.lessons-page__show-banner--rose = lesson_cancel_reason(lesson).presence || t('app.lessons.cancelled_banner')
 
         section.lessons-page__show-section
-          h3.lessons-page__show-kicker data-lessons-target="drawerParticipantsTitle" = t('app.lessons.participants')
-          .lessons-page__show-people data-lessons-target="drawerParticipants"
+          h3.lessons-page__show-kicker = group ? t('app.lessons.participants_count', count: students.size) : t('app.lessons.participants')
+          .lessons-page__show-people
+            = render 'person', person: { name: lesson[:teacher].presence || t('app.common.teacher'), meta: lesson[:teacherRole].presence || t('app.common.teacher'), initials: lesson[:teacherInitials], photo: lesson[:teacherPhoto], url: lesson[:teacherUrl] }
+            - if students.present?
+              - students.each do |student|
+                - meta = [student[:grade], (t('app.lessons.assigned_teacher') if student[:assigned])].compact.join(' · ')
+                = render 'person', person: { name: student[:name], meta:, initials: student[:initials], photo: student[:photo], url: student[:url] }
+            - else
+              .lessons-page__person = lesson[:party].presence || t('app.common.student')
 
         section.lessons-page__show-section
           h3.lessons-page__show-kicker = t('app.lessons.date_and_location')
@@ -38,74 +69,134 @@
             span.lessons-page__info-icon = lesson_icon 'calendar', size: 18
             div
               p.lessons-page__info-label = t('app.lessons.date')
-              p.lessons-page__info-value data-lessons-target="drawerDate"
+              p.lessons-page__info-value = lesson[:dateLong]
           .lessons-page__info-row
             span.lessons-page__info-icon = lesson_icon 'clock', size: 18
             div
               p.lessons-page__info-label = t('app.lessons.time')
-              p.lessons-page__info-value data-lessons-target="drawerTime"
-          .lessons-page__info-row data-lessons-target="drawerTypeRow"
-            span.lessons-page__info-icon = lesson_icon 'tag', size: 18
-            div
-              p.lessons-page__info-label = t('app.lessons.lesson_type')
-              p.lessons-page__info-value data-lessons-target="drawerType"
-          .lessons-page__info-row data-lessons-target="drawerPriceRow"
-            span.lessons-page__info-icon = lesson_icon 'cash', size: 18
-            div
-              p.lessons-page__info-label = t('app.lessons.col_price')
-              p.lessons-page__info-value data-lessons-target="drawerPrice"
+              p.lessons-page__info-value = time_label
+          - if lesson[:typeLabel].present?
+            .lessons-page__info-row
+              span.lessons-page__info-icon = lesson_icon 'tag', size: 18
+              div
+                p.lessons-page__info-label = t('app.lessons.lesson_type')
+                p.lessons-page__info-value = lesson[:typeLabel]
+          - if can_view_finance? && (lesson[:price].present? || !lesson[:priceCents].nil?)
+            .lessons-page__info-row
+              span.lessons-page__info-icon = lesson_icon 'cash', size: 18
+              div
+                p.lessons-page__info-label = t('app.lessons.col_price')
+                p.lessons-page__info-value = lesson[:priceCents].to_i.zero? ? t('app.lessons.free') : lesson[:price]
           .lessons-page__info-row
             span.lessons-page__info-icon = lesson_icon 'world', size: 18
             div
               p.lessons-page__info-label = t('app.lessons.timezone')
-              p.lessons-page__info-value data-lessons-target="drawerTimezone"
-          .lessons-page__info-row data-lessons-target="drawerMeetingRow"
-            span.lessons-page__info-icon = lesson_icon 'video', size: 18
-            div
-              p.lessons-page__info-label = t('app.lessons.meeting')
-              a.lessons-page__info-link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerMeeting"
-              p.lessons-page__info-value data-lessons-target="drawerMeetingHint"
-          .lessons-page__info-row data-lessons-target="drawerPlaceRow"
-            span.lessons-page__info-icon = lesson_icon 'pin', size: 18
-            div
-              p.lessons-page__info-label = t('app.lessons.location')
-              a.lessons-page__info-link href="#" target="_blank" rel="noreferrer" hidden="hidden" data-lessons-target="drawerPlaceLink"
-              p.lessons-page__info-value data-lessons-target="drawerPlace"
+              p.lessons-page__info-value = lesson[:timezone].presence || '—'
+          - if online
+            .lessons-page__info-row
+              span.lessons-page__info-icon = lesson_icon 'video', size: 18
+              div
+                p.lessons-page__info-label = t('app.lessons.meeting')
+                - if meeting.present?
+                  a.lessons-page__info-link href=meeting target="_blank" rel="noreferrer" = t('app.lessons.join_online')
+                - else
+                  p.lessons-page__info-value = t('app.lessons.meeting_pending')
+          - else
+            .lessons-page__info-row
+              span.lessons-page__info-icon = lesson_icon 'pin', size: 18
+              div
+                p.lessons-page__info-label = t('app.lessons.location')
+                - if place.present?
+                  a.lessons-page__info-link href="https://maps.google.com/?q=#{ERB::Util.url_encode(place)}" target="_blank" rel="noreferrer" = place
+                - else
+                  p.lessons-page__info-value = t('app.common.in_person')
+
+        section.lessons-page__show-section
+          .lessons-page__section-head
+            h3.lessons-page__show-kicker
+              span.lessons-page__section-icon = lesson_icon 'clipboard', size: 16
+              = t('app.lessons.homework')
+          - if homework[:assigned]
+            .lessons-page__note-card
+              p.lessons-page__note-card-title = homework[:title].presence || t('app.lessons.homework')
+              - homework_meta = []
+              - homework_meta << t('app.lessons.homework_due', date: format_lesson_day_short(homework[:dueDate])) if homework[:dueDate].present?
+              - homework_meta << t('app.lessons.homework_assigned_by', name: homework[:teacher]) if homework[:teacher].present?
+              p.lessons-page__muted = homework_meta.join(' · ')
+              = link_to homework_path, class: 'lessons-page__text-link' do
+                span = t('app.lessons.view_homework')
+          - else
+            .lessons-page__empty-card
+              span.lessons-page__empty-card-icon = lesson_icon 'clipboard', size: 18
+              div
+                p.lessons-page__empty-card-title = review == 'completed' ? t('app.lessons.homework_not_assigned_yet') : t('app.lessons.homework_not_linked')
+                = link_to homework_path, class: 'lessons-page__text-link' do
+                  = lesson_icon 'plus', size: 16
+                  span = t('app.lessons.create_homework')
+
+        section.lessons-page__show-section
+          .lessons-page__section-head
+            h3.lessons-page__show-kicker
+              span.lessons-page__section-icon = lesson_icon 'folder', size: 16
+              = t('app.lessons.materials')
+          .lessons-page__empty-card.lessons-page__empty-card--center
+            p.lessons-page__muted = t('app.lessons.no_materials')
+            .lessons-page__empty-card-actions
+              = link_to materials_path, class: 'lessons-page__primary-btn lessons-page__compact-btn' do
+                = lesson_icon 'upload', size: 16
+                span = t('app.lessons.add_material')
+              = link_to materials_path, class: 'lessons-page__secondary-btn lessons-page__compact-btn' do
+                = lesson_icon 'folder-plus', size: 16
+                span = t('app.lessons.share_existing')
 
         section.lessons-page__show-section
           h3.lessons-page__show-kicker = t('app.lessons.notes')
-          .lessons-page__show-note data-lessons-target="drawerNotesRow"
-            p.lessons-page__notes data-lessons-target="drawerNotes"
-          p.lessons-page__muted data-lessons-target="drawerNotesEmpty" = t('app.lessons.no_notes')
+          - if notes.present?
+            ul.lessons-page__note-list
+              - notes.each do |note|
+                li.lessons-page__note-card
+                  p.lessons-page__note-card-title = note[:title]
+                  p.lessons-page__note-card-body = note[:body]
+                  - if note[:meta].present?
+                    p.lessons-page__muted = note[:meta]
+          - else
+            p.lessons-page__muted = t('app.lessons.no_notes')
 
-.lessons-page__confirm.lessons-page__confirm--hidden data-lessons-target="outcome"
-  .lessons-page__confirm-card
-    h2.lessons-page__confirm-title = t('app.lessons.outcome_title')
-    p.lessons-page__muted = t('app.lessons.outcome_text')
-    .lessons-page__outcome-choices
-      button.lessons-page__outcome.is-selected type="button" data-outcome="completed" data-action="lessons#chooseOutcome"
-        strong = t('app.lessons.outcome_completed')
-        span = t('app.lessons.outcome_completed_text')
-      button.lessons-page__outcome type="button" data-outcome="not_happened" data-action="lessons#chooseOutcome"
-        strong = t('app.lessons.outcome_missed')
-        span = t('app.lessons.outcome_missed_text')
-    .lessons-page__complete data-lessons-target="completeFields"
-      label
-        span = t('app.lessons.attendance')
-        select data-lessons-target="attendance"
-          option value="present" = t('app.lessons.attendance_present')
-          option value="late" = t('app.lessons.attendance_late')
-          option value="absent" = t('app.lessons.attendance_absent')
-      label
-        span = t('app.lessons.duration')
-        input type="number" min="15" step="5" value="60" data-lessons-target="duration"
-      label
-        span = t('app.lessons.teacher_note')
-        textarea rows="2" data-lessons-target="teacherNote"
-      label
-        span = t('app.lessons.progress_note')
-        textarea rows="2" data-lessons-target="progressNote"
-    p.lessons-page__form-error hidden="hidden" data-lessons-target="outcomeError" role="alert"
-    .lessons-page__confirm-actions
-      button.lessons-page__secondary-btn type="button" data-action="lessons#closeOutcome" = t('app.common.cancel')
-      button.lessons-page__primary-btn type="button" data-lessons-target="outcomeSubmit" data-action="lessons#submitOutcome" = t('app.common.confirm')
+        - if payment
+          section.lessons-page__show-section
+            .lessons-page__section-head
+              h3.lessons-page__show-kicker = t('app.lessons.payment')
+              span.lessons-page__admin-lock
+                = lesson_icon 'lock', size: 14
+                = t('app.lessons.admin_only')
+            .lessons-page__payment-card
+              .lessons-page__payment-head
+                span.lessons-page__section-icon = lesson_icon 'credit-card', size: 18
+                span = t('app.lessons.lesson_price')
+              dl.lessons-page__complete-dl
+                div
+                  dt = t('app.lessons.lesson_price')
+                  dd = payment[:price]
+                div
+                  dt = t('app.lessons.charge')
+                  dd = payment[:charge]
+                div
+                  dt = t('app.lessons.payment_status')
+                  dd = payment[:status]
+                - if payment[:balance]
+                  div
+                    dt = t('app.lessons.balance_after')
+                    dd = payment[:balance]
+              - if editable
+                = link_to t('app.lessons.edit_lesson_price'), lesson_edit_dialog_path(lesson), class: 'lessons-page__text-link', data: calendar_create_turbo_data
+
+        section.lessons-page__show-section
+          h3.lessons-page__show-kicker = t('app.lessons.activity')
+          - if activity.present?
+            ul.lessons-page__activity
+              - activity.each do |item|
+                li
+                  p.lessons-page__activity-label = item[:label]
+                  p.lessons-page__activity-meta = [item[:user], format_lesson_activity_time(item[:at])].compact_blank.join(' · ')
+          - else
+            p.lessons-page__muted = t('app.lessons.no_activity')

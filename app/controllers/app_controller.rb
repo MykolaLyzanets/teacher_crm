@@ -10,7 +10,7 @@ class AppController < ApplicationController
 
   helper_method :app_page_stylesheet, :can_manage_teachers?, :can_assign_teacher?,
                 :can_view_finance?, :can_manage_payments?, :can_override_schedule?,
-                :staff_notifications, :unread_staff_count
+                :staff_notifications, :unread_staff_count, :lesson_modal_request?
 
   private
 
@@ -19,12 +19,16 @@ class AppController < ApplicationController
       'students' => 'students',
       'teachers' => 'teachers',
       'dashboard' => 'dashboard',
-      'lessons' => 'lessons',
       'payments' => 'payments',
       'pages' => 'placeholder',
       'settings' => 'settings',
       'profiles' => 'settings'
     }[controller_name]
+  end
+
+  def lesson_modal_request?
+    controller_name == 'lessons' &&
+      %w[show complete_dialog cancel_dialog delete_dialog outcome_dialog].include?(action_name)
   end
 
   def redirect_students_to_portal

@@ -516,7 +516,7 @@ ua:
       contact_sub: Контактні дані для робочого простору.
       email: Email-адреса
       email_option: Email
-      email_hint: Необовʼязковий контактний email викладача.
+      email_hint: Контактний email викладача.
       phone: Номер телефону
       phone_option: Телефон
       preferred_contact: Бажаний спосіб звʼязку
@@ -737,7 +737,7 @@ ua:
       repeat_weekly_summary: "Повторюється щотижня (%{count} уроків) до %{until}."
       repeat_biweekly_summary: "Повторюється щодва тижні (%{count} уроків)."
       repeat_custom_summary: "Повторюється у вибрані дні (%{count} уроків) до %{until}."
-      lesson_price: Ціна уроку · Необовʼязкова зміна
+      lesson_price: Ціна уроку
       currency: Валюта
       price_hint: Підставляється з вибраного типу уроку. Зміна стосується лише цього уроку.
       select_lesson_type: Оберіть тип уроку
@@ -789,6 +789,13 @@ ua:
       copy: копія
       cancel_lesson: Скасувати урок
       cancel_confirm: Скасувати цей урок? Пізніше його можна буде переглянути.
+      cancel_title: Скасувати урок?
+      cancel_text: Урок буде позначено як скасований і збережено в історії.
+      cancel_reason: Причина скасування
+      cancel_reason_placeholder: Чому цей урок скасовується?
+      cancel_reason_blank: Вкажіть причину скасування.
+      describe_reason_blank: Опишіть причину скасування.
+      cancelled_toast: Урок скасовано без нарахування.
       more: ще
       need_title_date: Вкажіть назву та дату.
       created: Урок створено.
@@ -901,6 +908,7 @@ ua:
       tabs_aria: Статус уроку
       tab_all: Усі
       tab_upcoming: Майбутні
+      tab_outcome_required: Потрібен результат
       tab_completed: Завершені
       tab_cancelled: Скасовані
       col_when: Дата і час
@@ -909,6 +917,7 @@ ua:
       col_subject: Предмет
       col_price: Ціна
       col_status: Статус
+      col_outcome: Результат / ДЗ
       col_actions: Дії
       empty_title: Уроків ще немає
       empty_text: Заплануйте перший урок — він зʼявиться тут.
@@ -924,26 +933,94 @@ ua:
       delete_lesson: Видалити урок
       cancel_title: Скасувати урок?
       cancel_text: Урок буде позначено як скасований і збережено в історії.
+      cancel_reason: Причина скасування
+      cancel_reason_select: Оберіть причину
+      cancel_reason_placeholder: Чому цей урок скасовується?
+      cancel_reason_blank: Оберіть причину скасування.
+      describe_reason: Опишіть причину
+      describe_reason_placeholder: Додайте деталі…
+      describe_reason_blank: Опишіть причину скасування.
+      cancel_reasons:
+        student_advance: Учень скасував заздалегідь
+        student_late: Учень скасував занадто пізно
+        student_no_show: Учень не прийшов
+        teacher_cancelled: Скасував викладач
+        technical: Технічна проблема
+        emergency: Надзвичайна ситуація / поважна причина
+        other: Інше
+      missed_title: Урок не відбувся
+      missed_text: Урок залишається в історії. Його не видалено назавжди.
+      keep_lesson: Залишити урок
+      cancel_without_charge: Скасувати урок без нарахування
+      cancel_and_charge: Скасувати урок і нарахувати %{amount}
+      charge_question: Нараховувати оплату за цей урок?
+      charge_no: Ні, не нараховувати
+      charge_no_hint: "Баланс: без змін"
+      charge_yes: Так, нарахувати повну ціну
+      financial_summary: Фінансове зведення
+      balance_unchanged: "Баланс учня: без змін"
+      amount_charged: "Нараховано: %{amount}"
+      internal_note: Внутрішня нотатка (необовʼязково)
+      internal_note_placeholder: Бачить лише команда…
+      cancelled_by: Скасував
+      series_cancel_hint: Цей урок є частиною серії. Скасується лише ця подія.
+      complete_lesson: Завершити урок
+      complete_text: Підтвердіть відвідуваність і збережіть деталі завершення.
+      complete_and_charge: Завершити урок і нарахувати %{amount}
+      complete_saving: Збереження…
+      actual_duration: Фактична тривалість (хв)
+      attendance_attended: Присутній
+      attendance_late: Запізнився
+      attendance_absent: Відсутній
+      attendance_excused: Поважна причина
+      attendance_status: "Відвідуваність: %{status}"
+      teacher_note: Нотатка викладача
+      teacher_note_placeholder: Внутрішня нотатка про урок…
+      progress_note: Нотатка про прогрес учня
+      progress_note_placeholder: Нотатка про прогрес, видима там, де дозволено…
+      homework_for_lesson: Домашнє до цього уроку
+      homework_for_lesson_text: Призначте практику зараз або поверніться до цього пізніше.
+      create_homework: Створити домашнє
+      skip_homework: Пропустити зараз
+      homework_optional: Необовʼязково — домашнє ніколи не блокує завершення уроку.
+      lesson_charge_label: "Нарахування за урок:"
+      full_lesson_price: Повна ціна уроку.
+      excused_no_charge: Відсутність з поважної причини за замовчуванням не нараховується.
+      absent_charge_policy: Згідно з політикою скасування (пізнє скасування / відсутність).
+      no_charge: Без нарахування
+      current_balance: Поточний баланс
+      balance_after: Баланс після
+      balance_credit: "%{amount} кредит"
+      balance_due: "%{amount} до сплати"
+      teacher_earns: Викладач отримує %{amount} за цей урок
+      negative_balance_warning: Балансу учня недостатньо. Баланс стане відʼємним.
+      proceed_negative: Продовжити з відʼємним балансом
+      duration_blank: Вкажіть фактичну тривалість у хвилинах.
+      completed_charged_toast: Урок завершено, нараховано %{amount}.
+      student_absent: Учень відсутній
+      homework_assigned: Домашнє призначено
+      homework_not_assigned: Домашнє не призначено
+      add_homework: Додати домашнє
+      view_homework: Переглянути домашнє
+      edit_homework: Редагувати домашнє
       delete_title: Видалити урок?
       delete_text: Видалити цей урок назавжди? Цю дію не можна скасувати.
-      cancelled_toast: Урок скасовано.
+      cancelled_toast: Урок скасовано без нарахування.
       deleted_toast: Урок видалено.
       completed_toast: Урок позначено як завершений.
       mark_completed: Позначити завершеним
       confirm_outcome: Підтвердити результат
+      confirm_lesson_outcome: Підтвердити результат уроку
+      not_now: Не зараз
+      continue: Продовжити
       outcome_title: Підтвердіть результат уроку
-      outcome_text: Урок завершився. Він відбувся?
+      outcome_text: "%{title} завершився. Він відбувся?"
       outcome_completed: Урок відбувся
       outcome_completed_text: Зафіксуйте відвідуваність, нарахуйте оплату та за потреби додайте домашнє.
       outcome_missed: Урок не відбувся
       outcome_missed_text: Оберіть причину скасування і чи нараховувати оплату.
       attendance: Відвідуваність
-      attendance_present: Присутній
-      attendance_late: Запізнився
-      attendance_absent: Відсутній
       duration: Тривалість (хв)
-      teacher_note: Нотатка викладача
-      progress_note: Нотатка про прогрес
       correct_outcome: Виправити результат
       corrected_toast: Результат уроку виправлено.
       close_details: Закрити деталі уроку
@@ -968,6 +1045,42 @@ ua:
       join_online: Приєднатися до онлайн-уроку
       meeting_pending: Посилання на зустріч зʼявиться тут.
       no_notes: Нотаток ще немає.
+      note_teacher: Нотатка викладача
+      note_student: Нотатка, видима учню
+      homework: Домашнє
+      homework_not_linked: До цього уроку ще не привʼязано домашнє.
+      homework_not_assigned_yet: Домашнє ще не призначено.
+      homework_due: "Термін %{date}"
+      homework_assigned_by: "Призначив %{name}"
+      materials: Матеріали
+      no_materials: Для цього уроку матеріалів немає.
+      add_material: Додати матеріал
+      share_existing: Поділитися наявним
+      share_material: Поділитися матеріалом
+      duplicate_lesson_action: Дублювати
+      payment: Оплата
+      admin_only: Видно лише адміністраторам
+      lesson_price: Ціна уроку
+      charge: Нарахування
+      payment_status: Статус оплати
+      edit_lesson_price: Редагувати ціну уроку
+      created_on_completion: Створиться після завершення
+      pending_completion: Очікує завершення
+      paid_from_balance: Сплачено з балансу
+      no_charge_applied: Нарахування не застосовано
+      charge_created: "Створено %{date}"
+      activity: Активність
+      no_activity: Поки що немає активності.
+      activity_created: Урок створено
+      activity_confirmed: Урок підтверджено
+      activity_completed: Урок завершено
+      activity_cancelled: Урок скасовано
+      status_confirmed: Підтверджено
+      status_completed: Завершено
+      status_cancelled: Скасовано
+      status_pending: Очікує
+      status_cancelled_charged: "Скасовано · Нараховано"
+      status_cancelled_not_charged: "Скасовано · Без нарахування"
       view_profile: Переглянути профіль
       assigned_teacher: Призначений викладач
       individual_lesson: Індивідуальний урок
@@ -995,6 +1108,9 @@ ua:
       homework:
         title: Домашні завдання
         description: Призначайте та перевіряйте домашні в одному місці.
+      materials:
+        title: Матеріали
+        description: Завантажуйте та діліться матеріалами з учнями.
       payments:
         title: Оплати
         description: Рахунки, баланси та статус оплат.

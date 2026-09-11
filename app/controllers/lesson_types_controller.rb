@@ -10,7 +10,7 @@ class LessonTypesController < AppController
 
     types = subject.lesson_types.order(:name)
     types = types.where(is_active: true) unless include_inactive?
-    render json: types.map { |lesson_type| lesson_type_json(lesson_type) }
+    render json: types.map(&:as_catalog)
   end
 
   def create
@@ -19,7 +19,7 @@ class LessonTypesController < AppController
 
     lesson_type = subject.lesson_types.new(lesson_type_attrs)
     if lesson_type.save
-      render json: lesson_type_json(lesson_type), status: :created
+      render json: lesson_type.as_catalog, status: :created
     else
       render json: { errors: lesson_type.errors.full_messages }, status: :unprocessable_entity
     end
@@ -30,7 +30,7 @@ class LessonTypesController < AppController
     return if performed?
 
     if lesson_type.update(lesson_type_attrs)
-      render json: lesson_type_json(lesson_type)
+      render json: lesson_type.as_catalog
     else
       render json: { errors: lesson_type.errors.full_messages }, status: :unprocessable_entity
     end
@@ -75,9 +75,21 @@ class LessonTypesController < AppController
     attrs[:mode] = params[:mode] if params[:mode].present?
     duration = params[:default_duration_minutes].presence || params[:defaultDurationMinutes]
     attrs[:default_duration_minutes] = duration if duration.present?
+    attrs[:price_cents] = price_cents_param if params.key?(:price_cents) || params.key?(:priceCents)
+    currency = params[:currency]
+    attrs[:currency] = currency if currency.present? || params.key?(:currency)
     flag = cast_active_param
     attrs[:is_active] = flag unless flag.nil?
     attrs
+  end
+
+  def price_cents_param
+    raw = params.key?(:price_cents) ? params[:price_cents] : params[:priceCents]
+    return if raw.nil? || raw == ''
+
+    Integer(raw)
+  rescue ArgumentError, TypeError
+    raw
   end
 
   def cast_active_param
@@ -87,15 +99,4 @@ class LessonTypesController < AppController
     ActiveModel::Type::Boolean.new.cast(raw)
   end
 
-  def lesson_type_json(lesson_type)
-    {
-      id: lesson_type.id,
-      name: lesson_type.name,
-      kind: lesson_type.kind,
-      mode: lesson_type.mode,
-      defaultDurationMinutes: lesson_type.default_duration_minutes,
-      isActive: lesson_type.is_active,
-      subjectId: lesson_type.subject_id
-    }
-  end
 end

@@ -3,15 +3,17 @@
 class Lesson < ApplicationRecord
   STATUSES = { confirmed: 0, cancelled: 1, completed: 2 }.freeze
   LOCATIONS = { online: 0, in_person: 1 }.freeze
-  ATTENDANCES = { pending: 0, present: 1, late: 2, absent: 3 }.freeze
+  ATTENDANCES = { pending: 0, present: 1, late: 2, absent: 3, excused: 4 }.freeze
 
   enum status: STATUSES
   enum location: LOCATIONS, _prefix: true
   enum attendance: ATTENDANCES, _prefix: true
+  enum charge_decision: { no_charge: 0, charge: 1 }, _prefix: true
 
   belongs_to :teacher_profile, foreign_key: :teacher_id, inverse_of: :lessons
   belongs_to :subject, inverse_of: :lessons
   belongs_to :lesson_type, inverse_of: :lessons
+  belongs_to :cancelled_by, class_name: 'User', optional: true
   has_and_belongs_to_many :students,
                           class_name: 'StudentProfile',
                           join_table: :lessons_students,
@@ -32,6 +34,14 @@ class Lesson < ApplicationRecord
   validate :teacher_has_no_confirmed_overlap, unless: :allow_overlap?
   validate :student_has_no_confirmed_overlap, unless: :allow_overlap?
   validates :override_reason, presence: true, if: :allow_overlap?
+
+  def billed_price_cents
+    price_cents.nil? ? lesson_type&.price_cents : price_cents
+  end
+
+  def billed_currency
+    currency.presence || lesson_type&.currency
+  end
 
   def as_catalog
     zone = teacher_profile.time_zone
@@ -58,6 +68,8 @@ class Lesson < ApplicationRecord
       startTime: local_start.strftime('%H:%M'),
       endTime: local_end.strftime('%H:%M'),
       durationMinutes: ((local_end - local_start) / 60).to_i,
+      endsAt: ends_at.iso8601,
+      seriesId: series_id,
       timezone: zone.tzinfo.name,
       type: lesson_type&.mode,
       status:,
@@ -71,8 +83,17 @@ class Lesson < ApplicationRecord
       actualDurationMinutes: actual_duration_minutes,
       lessonTypeId: lesson_type_id,
       lessonTypeName: lesson_type&.name,
-      priceCents: price_cents,
-      currency:
+      compensationPercent: teacher_profile&.compensation_percent,
+      priceCents: billed_price_cents,
+      currency: billed_currency,
+      cancellationReasonCode: cancellation_reason_code,
+      cancellationOtherText: cancellation_other_text,
+      cancellationNote: cancellation_note,
+      cancelledBy: cancelled_by&.full_name,
+      cancelledById: cancelled_by_id,
+      chargeDecision: charge_decision,
+      chargedCents: charged_cents,
+      createdAt: created_at&.iso8601,
     }.with_indifferent_access
   end
 

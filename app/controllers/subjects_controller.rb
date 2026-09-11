@@ -90,17 +90,7 @@ class SubjectsController < AppController
     payload = { id: subject.id, name: subject.name, isActive: subject.is_active }
     return payload if types.nil?
 
-    payload[:lessonTypes] = types.map do |type|
-      {
-        id: type.id,
-        name: type.name,
-        kind: type.kind,
-        mode: type.mode,
-        defaultDurationMinutes: type.default_duration_minutes,
-        isActive: type.is_active,
-        subjectId: type.subject_id
-      }
-    end
+    payload[:lessonTypes] = types.map(&:as_catalog)
     payload
   end
 end

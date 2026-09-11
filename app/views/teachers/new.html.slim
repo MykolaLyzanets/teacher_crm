@@ -97,11 +97,12 @@
         p.teachers-page__section-sub = t('app.teachers.contact_sub')
         .teachers-page__fields
           label.teachers-page__field
-            span = t('app.teachers.email')
+            span
+              = t('app.teachers.email')
+              span.teachers-page__req *
             .teachers-page__input-icon
               = icon_tag 'mail', size: 18
-              input type="email" name="email" autocomplete="email" placeholder="olivia@example.com" value=teacher[:email] data-teachers-target="email" data-action="blur->teachers#markTouched"
-            span.teachers-page__hint = t('app.teachers.email_hint')
+              input type="email" name="email" required=true autocomplete="email" placeholder="olivia@example.com" value=teacher[:email] data-teachers-target="email" data-action="blur->teachers#markTouched"
             p.teachers-page__field-error hidden="hidden" data-error-for="email"
           label.teachers-page__field
             span = t('app.teachers.phone')

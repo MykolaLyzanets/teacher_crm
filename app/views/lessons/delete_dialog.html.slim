@@ -1,0 +1,17 @@
+= turbo_frame_tag 'lesson_dialog' do
+  - if @lesson.present?
+    - lesson = @lesson
+    - close_path = delete_dialog_lesson_path(lesson[:id], dismiss: 1)
+    .danlio-modal.danlio-modal--sm.danlio-modal--stack data-controller="modal"
+      a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_dialog"
+      .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="delete-lesson-title"
+        .danlio-modal__head
+          h2#delete-lesson-title.danlio-modal__title = t('app.lessons.delete_title')
+          = link_to close_path, class: 'danlio-modal__close', aria: { label: t('app.common.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_dialog', modal_focus: true } do
+            = lesson_icon 'x', size: 20
+        .danlio-modal__body
+          p.danlio-modal__copy = t('app.lessons.delete_text')
+          = form_with url: lesson_path(lesson[:id]), method: :delete, html: { data: { turbo: false } } do
+            .danlio-modal__actions
+              = link_to t('app.common.cancel'), close_path, class: 'danlio-modal__btn danlio-modal__btn--secondary', data: { turbo: true, turbo_frame: 'lesson_dialog' }
+              button.danlio-modal__btn.danlio-modal__btn--danger type="submit" = t('app.lessons.delete_lesson')

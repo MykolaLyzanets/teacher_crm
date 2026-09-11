@@ -2,11 +2,33 @@
 
 class LessonsController < AppController
   wrap_parameters false
-  before_action :ensure_api_workspace!, only: %i[create update outcome]
+  before_action :ensure_api_workspace!, only: %i[create update destroy outcome]
 
   def index
     @lessons = catalog_lessons
     @teacher_names = @lessons.map { |lesson| lesson[:teacher].to_s }.compact_blank.uniq.sort
+  end
+
+  def show
+    render_lesson_dialog(:show, 'lesson_details')
+  end
+
+  def complete_dialog
+    render_lesson_dialog(:complete_dialog)
+  end
+
+  def cancel_dialog
+    @cancel_reason = params[:reason].presence_in(LessonsHelper::CANCEL_REASON_KEYS) || 'student_advance'
+    @charge_decision = helpers.lesson_cancel_charge_default(@cancel_reason)
+    render_lesson_dialog(:cancel_dialog)
+  end
+
+  def delete_dialog
+    render_lesson_dialog(:delete_dialog)
+  end
+
+  def outcome_dialog
+    render_lesson_dialog(:outcome_dialog)
   end
 
   def create
@@ -29,27 +51,92 @@ class LessonsController < AppController
     persist_lesson(teacher, lesson:)
   end
 
+  def destroy
+    lesson = find_recorded_lesson
+    return if performed?
+
+    lesson.students.clear
+    lesson.destroy!
+    respond_to do |format|
+      format.json { head :no_content }
+      format.html { redirect_back fallback_location: lessons_path, notice: I18n.t('app.lessons.deleted_toast') }
+    end
+  end
+
   def outcome
+    lesson = find_recorded_lesson
+    return if performed?
+
+    service = Lessons::RecordOutcome.new(
+      lesson:,
+      params: outcome_params.merge(cancelled_by_id: current_user.id)
+    )
+    if service.save
+      respond_to do |format|
+        format.json { render json: service.lesson.as_catalog }
+        format.html { redirect_back fallback_location: lessons_path, notice: outcome_notice(service) }
+      end
+    else
+      respond_to do |format|
+        format.json { render json: { errors: service.error_messages }, status: :unprocessable_entity }
+        format.html { redirect_back fallback_location: lessons_path, alert: service.error_messages.to_sentence }
+      end
+    end
+  end
+
+  private
+
+  def render_lesson_dialog(view, frame = 'lesson_dialog')
+    @dialog_frame = frame
+    if params[:dismiss].present?
+      @lesson = nil
+      return render view, layout: dialog_layout
+    end
+
+    record = find_dialog_lesson
+    unless record
+      @lesson = nil
+      return redirect_to lessons_path, alert: I18n.t('app.lessons.not_found') unless turbo_frame_request?
+
+      return render view, layout: false
+    end
+
+    @lesson_record = record
+    @lesson = helpers.lesson_row_payload(record.as_catalog)
+    render view, layout: dialog_layout
+  end
+
+  def dialog_layout
+    turbo_frame_request? ? false : 'app'
+  end
+
+  def find_dialog_lesson
     lesson = lessons_scope.find_by(id: params[:id])
+    return if lesson.blank?
+    return if current_user.teacher? && current_user.teacher_profile&.id != lesson.teacher_id
+
+    lesson
+  end
+
+  def find_recorded_lesson
+    lesson = find_dialog_lesson
     if lesson.blank?
       render json: { error: 'Not found' }, status: :not_found
       return
     end
 
-    if current_user.teacher? && current_user.teacher_profile&.id != lesson.teacher_id
-      render json: { error: 'Not found' }, status: :not_found
-      return
-    end
-
-    service = Lessons::RecordOutcome.new(lesson:, params: outcome_params)
-    if service.save
-      render json: service.lesson.as_catalog
-    else
-      render json: { errors: service.error_messages }, status: :unprocessable_entity
-    end
+    lesson
   end
 
-  private
+  def outcome_notice(service)
+    if service.lesson.cancelled?
+      I18n.t('app.lessons.cancelled_toast')
+    elsif service.lesson.completed?
+      I18n.t('app.lessons.completed_toast')
+    else
+      I18n.t('app.lessons.corrected_toast')
+    end
+  end
 
   def persist_lesson(teacher, lesson: nil)
     if series_request? && lesson.blank?
@@ -232,14 +319,24 @@ class LessonsController < AppController
       :outcome, :attendance,
       :actual_duration_minutes, :actualDurationMinutes,
       :teacher_note, :teacherNote,
-      :student_progress_note, :studentProgressNote
+      :student_progress_note, :studentProgressNote,
+      :notes,
+      :reason_code, :reasonCode,
+      :other_reason_text, :otherReasonText,
+      :cancellation_note, :cancellationNote,
+      :charge_decision, :chargeDecision
     )
     {
       outcome: permitted[:outcome],
       attendance: permitted[:attendance],
       actual_duration_minutes: first_value(permitted, :actual_duration_minutes, :actualDurationMinutes),
       teacher_note: first_value(permitted, :teacher_note, :teacherNote),
-      student_progress_note: first_value(permitted, :student_progress_note, :studentProgressNote)
+      student_progress_note: first_value(permitted, :student_progress_note, :studentProgressNote),
+      notes: permitted[:notes],
+      reason_code: first_value(permitted, :reason_code, :reasonCode),
+      other_reason_text: first_value(permitted, :other_reason_text, :otherReasonText),
+      cancellation_note: first_value(permitted, :cancellation_note, :cancellationNote),
+      charge_decision: first_value(permitted, :charge_decision, :chargeDecision)
     }
   end
 

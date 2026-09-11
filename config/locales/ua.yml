@@ -149,6 +149,8 @@ ua:
               not_recorded: Для цього уроку ще немає записаного результату
             attendance:
               blank: Оберіть відвідуваність
+            actual_duration_minutes:
+              blank: Вкажіть фактичну тривалість у хвилинах.
 
   header:
     product: Product

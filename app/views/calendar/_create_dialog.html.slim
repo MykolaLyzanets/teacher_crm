@@ -3,8 +3,6 @@
 - end_value = @draft_end.presence || '11:00'
 - teacher_id = @draft_teacher_id.to_s
 - teacher_locked = @lock_teacher
-- locked_teacher = Array(@teachers).find { |teacher| teacher[:id].to_s == teacher_id }
-- locked_name = locked_teacher && (locked_teacher[:displayName].presence || [locked_teacher[:firstName], locked_teacher[:lastName]].compact_blank.join(' ').presence)
 - selected_student = Array(@students).find { |student| student[:id].to_s == @draft_student_id.to_s }
 - selected_student_name = selected_student && student_display_name(selected_student)
 - close_path = new_calendar_path(dismiss: 1)
@@ -22,35 +20,32 @@
       input type="hidden" value="online" data-calendar-target="draftLocation"
       input type="hidden" value=teacher_id data-calendar-target="draftTeacher"
 
-      .calendar-page__stack data-calendar-target="teacherLocked" hidden=(true unless teacher_locked)
-        p.calendar-page__label = t('app.calendar.teacher')
-        p.calendar-page__locked-name data-calendar-target="teacherLockedName" = locked_name.presence || t('app.calendar.you')
-
-      .calendar-page__stack data-calendar-target="teacherField" hidden=(true if teacher_locked)
-        label.calendar-page__field
-          span
-            = t('app.calendar.teacher')
-            abbr.calendar-page__req title="required" *
-          .calendar-page__picker data-calendar-target="teacherPicker"
-            button.calendar-page__picker-btn type="button" aria-expanded="false" data-calendar-target="teacherTrigger" data-action="click->calendar#toggleTeacherPicker"
-              span.calendar-page__picker-value
-                span.calendar-page__picker-icon
-                  = icon_tag 'user-check', size: 18
-                span.calendar-page__picker-label data-calendar-target="teacherLabel" = t('app.calendar.select_teacher')
-              span.calendar-page__picker-browse data-calendar-target="teacherBrowse" = t('app.calendar.browse')
-            .calendar-page__picker-menu hidden="hidden" data-calendar-target="teacherMenu"
-              .calendar-page__picker-search
-                = icon_tag 'search', size: 18
-                input type="search" placeholder=t('app.calendar.search_teachers') aria-label=t('app.calendar.search_teachers') data-calendar-target="teacherQuery" data-action="input->calendar#filterTeachers"
-              .calendar-page__picker-list role="listbox" aria-label=t('app.calendar.teacher') data-calendar-target="teacherList"
-              button.calendar-page__picker-clear type="button" hidden="hidden" data-calendar-target="teacherClear" data-action="calendar#clearTeacher" = t('app.calendar.clear_assignment')
-        p.calendar-page__hint hidden="hidden" data-calendar-target="teacherAutoHint" = t('app.calendar.teacher_auto')
-        p.calendar-page__hint hidden="hidden" data-calendar-target="teacherUnassignedHint" = t('app.calendar.teacher_unassigned')
-        .calendar-page__notice hidden="hidden" data-calendar-target="teacherMismatch"
-          p data-calendar-target="teacherMismatchText"
-          .calendar-page__notice-actions
-            button.calendar-page__mini-btn type="button" data-action="calendar#keepSelectedTeacher" = t('app.calendar.use_selected_teacher')
-            button.calendar-page__mini-btn.calendar-page__mini-btn--olive type="button" data-action="calendar#useAssignedTeacher" = t('app.calendar.use_assigned_teacher')
+      - unless teacher_locked
+        .calendar-page__stack data-calendar-target="teacherField"
+          label.calendar-page__field
+            span
+              = t('app.calendar.teacher')
+              abbr.calendar-page__req title="required" *
+            .calendar-page__picker data-calendar-target="teacherPicker"
+              button.calendar-page__picker-btn type="button" aria-expanded="false" data-calendar-target="teacherTrigger" data-action="click->calendar#toggleTeacherPicker"
+                span.calendar-page__picker-value
+                  span.calendar-page__picker-icon
+                    = icon_tag 'user-check', size: 18
+                  span.calendar-page__picker-label data-calendar-target="teacherLabel" = t('app.calendar.select_teacher')
+                span.calendar-page__picker-browse data-calendar-target="teacherBrowse" = t('app.calendar.browse')
+              .calendar-page__picker-menu hidden="hidden" data-calendar-target="teacherMenu"
+                .calendar-page__picker-search
+                  = icon_tag 'search', size: 18
+                  input type="search" placeholder=t('app.calendar.search_teachers') aria-label=t('app.calendar.search_teachers') data-calendar-target="teacherQuery" data-action="input->calendar#filterTeachers"
+                .calendar-page__picker-list role="listbox" aria-label=t('app.calendar.teacher') data-calendar-target="teacherList"
+                button.calendar-page__picker-clear type="button" hidden="hidden" data-calendar-target="teacherClear" data-action="calendar#clearTeacher" = t('app.calendar.clear_assignment')
+          p.calendar-page__hint hidden="hidden" data-calendar-target="teacherAutoHint" = t('app.calendar.teacher_auto')
+          p.calendar-page__hint hidden="hidden" data-calendar-target="teacherUnassignedHint" = t('app.calendar.teacher_unassigned')
+          .calendar-page__notice hidden="hidden" data-calendar-target="teacherMismatch"
+            p data-calendar-target="teacherMismatchText"
+            .calendar-page__notice-actions
+              button.calendar-page__mini-btn type="button" data-action="calendar#keepSelectedTeacher" = t('app.calendar.use_selected_teacher')
+              button.calendar-page__mini-btn.calendar-page__mini-btn--olive type="button" data-action="calendar#useAssignedTeacher" = t('app.calendar.use_assigned_teacher')
 
       label.calendar-page__field data-calendar-target="lessonField"
         span
@@ -61,7 +56,7 @@
           p.calendar-page__notice-row
             = icon_tag 'alert-triangle', size: 16
             span = t('app.calendar.lesson_empty')
-          a.calendar-page__notice-link href=settings_lesson_types_path hidden="hidden" data-calendar-target="manageLessonsLink" = t('app.calendar.manage_lessons')
+          a.calendar-page__notice-link href=teachers_path hidden="hidden" data-turbo-frame="_top" data-calendar-target="manageLessonsLink" = t('app.calendar.manage_lessons')
         select hidden="hidden" data-calendar-target="draftSubject" data-action="change->calendar#onSubjectChange"
           option value="" = t('app.calendar.select_lesson')
 
@@ -159,18 +154,11 @@
             abbr.calendar-page__req title="required" *
           textarea rows="3" placeholder=t('app.calendar.override_reason_placeholder') data-calendar-target="overrideReason" data-action="input->calendar#syncDrawerFields"
 
-      - if can_view_finance?
-        label.calendar-page__field data-calendar-target="priceField"
-          span = t('app.calendar.lesson_price')
-          .calendar-page__price
-            input type="text" inputmode="decimal" placeholder="500" data-calendar-target="draftPrice" data-action="input->calendar#onPriceChange"
-            select aria-label=t('app.calendar.currency') data-calendar-target="draftCurrency" data-action="change->calendar#onPriceChange"
-              option value="UAH" = "UAH"
-              option value="EUR" = "EUR"
-              option value="USD" = "USD"
-              option value="GBP" = "GBP"
-              option value="PLN" = "PLN"
-          p.calendar-page__hint = t('app.calendar.price_hint')
+      .calendar-page__stack data-calendar-target="priceField"
+        p.calendar-page__label = t('app.calendar.lesson_price')
+        p.calendar-page__price-value.is-empty data-calendar-target="priceValue" —
+        input type="hidden" data-calendar-target="draftPrice"
+        input type="hidden" value="UAH" data-calendar-target="draftCurrency"
 
       .calendar-page__stack
         p.calendar-page__label = t('app.calendar.lesson_format')

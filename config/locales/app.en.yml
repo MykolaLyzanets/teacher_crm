@@ -516,7 +516,7 @@ en:
       contact_sub: Add contact details used by the workspace.
       email: Email address
       email_option: Email
-      email_hint: Optional contact email for this teacher.
+      email_hint: Contact email for this teacher.
       phone: Phone number
       phone_option: Phone
       preferred_contact: Preferred contact method
@@ -735,7 +735,7 @@ en:
       repeat_weekly_summary: "Repeats every week (%{count} lessons) until %{until}."
       repeat_biweekly_summary: "Repeats every two weeks (%{count} lessons)."
       repeat_custom_summary: "Repeats on selected days (%{count} lessons) until %{until}."
-      lesson_price: Lesson price · Optional override
+      lesson_price: Lesson price
       currency: Currency
       price_hint: Defaults to the selected lesson type’s price. Overriding it applies only to this lesson and never changes the teacher’s lesson type.
       select_lesson_type: Select a lesson type
@@ -787,6 +787,13 @@ en:
       copy: copy
       cancel_lesson: Cancel lesson
       cancel_confirm: Cancel this lesson? This action can be reviewed later.
+      cancel_title: Cancel lesson?
+      cancel_text: The lesson will be marked as cancelled and kept in history.
+      cancel_reason: Cancellation reason
+      cancel_reason_placeholder: Why is this lesson being cancelled?
+      cancel_reason_blank: Enter a cancellation reason.
+      describe_reason_blank: Describe the cancellation reason.
+      cancelled_toast: Lesson cancelled without charge.
       more: more
       need_title_date: Please enter a title and date.
       created: Lesson created successfully.
@@ -895,6 +902,7 @@ en:
       tabs_aria: Lesson status
       tab_all: All
       tab_upcoming: Upcoming
+      tab_outcome_required: Outcome required
       tab_completed: Completed
       tab_cancelled: Cancelled
       col_when: Date & time
@@ -903,6 +911,7 @@ en:
       col_subject: Subject
       col_price: Price
       col_status: Status
+      col_outcome: Outcome / Homework
       col_actions: Actions
       empty_title: No lessons yet
       empty_text: Schedule your first lesson and it will appear here.
@@ -918,26 +927,94 @@ en:
       delete_lesson: Delete lesson
       cancel_title: Cancel lesson?
       cancel_text: The lesson will be marked as cancelled and kept in history.
+      cancel_reason: Cancellation reason
+      cancel_reason_select: Select a reason
+      cancel_reason_placeholder: Why is this lesson being cancelled?
+      cancel_reason_blank: Choose a cancellation reason.
+      describe_reason: Describe the reason
+      describe_reason_placeholder: Add details…
+      describe_reason_blank: Describe the cancellation reason.
+      cancel_reasons:
+        student_advance: Student cancelled in advance
+        student_late: Student cancelled too late
+        student_no_show: Student did not attend
+        teacher_cancelled: Teacher cancelled
+        technical: Technical problem
+        emergency: Emergency / valid reason
+        other: Other
+      missed_title: Lesson did not take place
+      missed_text: The lesson is kept in history. It is not permanently deleted.
+      keep_lesson: Keep lesson
+      cancel_without_charge: Cancel lesson without charge
+      cancel_and_charge: Cancel lesson and charge %{amount}
+      charge_question: Should the student be charged for this lesson?
+      charge_no: No, do not charge
+      charge_no_hint: "Balance: unchanged"
+      charge_yes: Yes, charge full price
+      financial_summary: Financial summary
+      balance_unchanged: "Student balance: unchanged"
+      amount_charged: "Amount charged: %{amount}"
+      internal_note: Internal note (optional)
+      internal_note_placeholder: Visible to staff only…
+      cancelled_by: Cancelled by
+      series_cancel_hint: This lesson is part of a series. Only this occurrence will be cancelled.
+      complete_lesson: Complete lesson
+      complete_text: Confirm attendance and save completion details.
+      complete_and_charge: Complete lesson and charge %{amount}
+      complete_saving: Saving…
+      actual_duration: Actual duration (minutes)
+      attendance_attended: Attended
+      attendance_late: Late
+      attendance_absent: Absent
+      attendance_excused: Excused
+      attendance_status: "Attendance: %{status}"
+      teacher_note: Teacher note
+      teacher_note_placeholder: Internal note about the lesson…
+      progress_note: Student progress note
+      progress_note_placeholder: Progress note visible where permitted…
+      homework_for_lesson: Homework for this lesson
+      homework_for_lesson_text: Assign practice now or return to it later.
+      create_homework: Create homework
+      skip_homework: Skip for now
+      homework_optional: Optional — homework never blocks lesson completion.
+      lesson_charge_label: "Lesson charge:"
+      full_lesson_price: Full lesson price.
+      excused_no_charge: Excused absences are not charged by default.
+      absent_charge_policy: According to cancellation policy (late cancel / absent).
+      no_charge: No charge
+      current_balance: Current balance
+      balance_after: Balance after
+      balance_credit: "%{amount} credit"
+      balance_due: "%{amount} due"
+      teacher_earns: Teacher earns %{amount} from this lesson
+      negative_balance_warning: Student balance is insufficient. The balance will become negative.
+      proceed_negative: Proceed with a negative balance
+      duration_blank: Enter the actual duration in minutes.
+      completed_charged_toast: Lesson completed and %{amount} charged.
+      student_absent: Student absent
+      homework_assigned: Homework assigned
+      homework_not_assigned: Homework not assigned
+      add_homework: Add homework
+      view_homework: View homework
+      edit_homework: Edit homework
       delete_title: Delete lesson?
       delete_text: Are you sure you want to permanently delete this lesson? This action cannot be undone.
-      cancelled_toast: Lesson cancelled.
+      cancelled_toast: Lesson cancelled without charge.
       deleted_toast: Lesson deleted.
       completed_toast: Lesson marked as completed.
       mark_completed: Mark as completed
       confirm_outcome: Confirm outcome
+      confirm_lesson_outcome: Confirm lesson outcome
+      not_now: Not now
+      continue: Continue
       outcome_title: Confirm lesson outcome
-      outcome_text: This lesson has ended. Did it take place?
+      outcome_text: "%{title} has ended. Did it take place?"
       outcome_completed: Lesson completed
       outcome_completed_text: Record attendance, charge the student, and optionally assign homework.
       outcome_missed: Lesson did not take place
       outcome_missed_text: Choose a cancellation reason and whether to charge the student.
       attendance: Attendance
-      attendance_present: Present
-      attendance_late: Late
-      attendance_absent: Absent
       duration: Duration (minutes)
-      teacher_note: Teacher note
-      progress_note: Progress note
       correct_outcome: Correct outcome
       corrected_toast: Lesson outcome corrected.
       close_details: Close lesson details
@@ -962,6 +1039,42 @@ en:
       join_online: Join online lesson
       meeting_pending: Meeting link will appear here.
       no_notes: No notes yet.
+      note_teacher: Teacher note
+      note_student: Student-visible note
+      homework: Homework
+      homework_not_linked: No homework linked to this lesson.
+      homework_not_assigned_yet: No homework assigned yet.
+      homework_due: "Due %{date}"
+      homework_assigned_by: "Assigned by %{name}"
+      materials: Materials
+      no_materials: No materials shared for this lesson.
+      add_material: Add material
+      share_existing: Share existing
+      share_material: Share material
+      duplicate_lesson_action: Duplicate
+      payment: Payment
+      admin_only: Visible to administrators only
+      lesson_price: Lesson price
+      charge: Charge
+      payment_status: Payment status
+      edit_lesson_price: Edit lesson price
+      created_on_completion: Created on completion
+      pending_completion: Pending completion
+      paid_from_balance: Paid from balance
+      no_charge_applied: No charge applied
+      charge_created: "Created %{date}"
+      activity: Activity
+      no_activity: No activity yet.
+      activity_created: Lesson created
+      activity_confirmed: Lesson confirmed
+      activity_completed: Lesson completed
+      activity_cancelled: Lesson cancelled
+      status_confirmed: Confirmed
+      status_completed: Completed
+      status_cancelled: Cancelled
+      status_pending: Pending
+      status_cancelled_charged: "Cancelled · Charged"
+      status_cancelled_not_charged: "Cancelled · Not charged"
       view_profile: View profile
       assigned_teacher: Assigned teacher
       individual_lesson: Individual lesson
@@ -989,6 +1102,9 @@ en:
       homework:
         title: Homework
         description: Assign and review student homework in one place.
+      materials:
+        title: Materials
+        description: Upload and share lesson materials with students.
       payments:
         title: Payments
         description: Manage invoices, balances and payment status.

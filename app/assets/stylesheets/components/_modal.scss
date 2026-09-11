@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
+  font-family: var(--font-sans);
 
   &[hidden] {
     display: none !important;
@@ -13,6 +14,10 @@
 
   &.is-open {
     display: flex !important;
+  }
+
+  &--stack {
+    z-index: 90;
   }
 }
 

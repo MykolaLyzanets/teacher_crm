@@ -11,7 +11,7 @@ RSpec.describe 'Subjects and lesson types API' do
     workspace = create(:workspace)
     teacher = create(:teacher_profile, workspace:)
     subject_record = create(:subject, teacher_profile: teacher, name: 'English')
-    active_type = create(:lesson_type, subject: subject_record, name: 'Individual')
+    active_type = create(:lesson_type, subject: subject_record, name: 'Individual', price_cents: 80_000, currency: 'UAH')
     create(:lesson_type, subject: subject_record, name: 'Archived', is_active: false)
     create(:subject, teacher_profile: teacher, name: 'Hidden', is_active: false)
     sign_in_owner(workspace)
@@ -29,7 +29,9 @@ RSpec.describe 'Subjects and lesson types API' do
             'id' => active_type.id,
             'name' => 'Individual',
             'isActive' => true,
-            'subjectId' => subject_record.id
+            'subjectId' => subject_record.id,
+            'priceCents' => 80_000,
+            'currency' => 'UAH'
           )
         )
       )
@@ -137,6 +139,26 @@ RSpec.describe 'Subjects and lesson types API' do
       'isActive' => true,
       'subjectId' => subject_record.id
     )
+  end
+
+  it 'stores a default price on a lesson type' do
+    workspace = create(:workspace)
+    teacher = create(:teacher_profile, workspace:)
+    subject_record = create(:subject, teacher_profile: teacher)
+    sign_in_owner(workspace)
+
+    post subject_lesson_types_path(subject_id: subject_record.id), params: {
+      name: 'Individual',
+      kind: 'individual',
+      mode: 'individual',
+      defaultDurationMinutes: 60,
+      priceCents: 50000,
+      currency: 'UAH'
+    }, as: :json
+
+    expect(response).to have_http_status(:created)
+    expect(response.parsed_body).to include('priceCents' => 50000, 'currency' => 'UAH')
+    expect(subject_record.lesson_types.last).to have_attributes(price_cents: 50000, currency: 'UAH')
   end
 
   it 'updates and deactivates a lesson type' do

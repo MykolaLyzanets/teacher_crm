@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PagesController < AppController
-  PAGE_KEYS = %w[homework reports messages].freeze
+  PAGE_KEYS = %w[homework materials reports messages].freeze
 
   def show
     key = params[:page].to_s.presence || params[:id].to_s
@@ -13,6 +13,7 @@ class PagesController < AppController
         description: I18n.t("app.pages.#{key}.description"),
         icon: {
             'homework' => 'homework',
+            'materials' => 'folder',
             'reports' => 'reports',
             'messages' => 'messages'
           }[key]

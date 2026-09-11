@@ -62,11 +62,19 @@ module Lessons
         attrs[:meeting_link] = @params[:meeting_link].to_s.strip.presence if @params.key?(:meeting_link)
         attrs[:location_text] = @params[:location_text].to_s.strip.presence if @params.key?(:location_text)
         attrs[:notes] = @params[:notes].to_s.strip.presence if @params.key?(:notes)
-        attrs[:price_cents] = coerce_price_cents if @params.key?(:price_cents)
-        attrs[:currency] = @params[:currency].presence if @params.key?(:currency)
+        assign_money(attrs)
         attrs[:series_id] = @params[:series_id] if @params[:series_id].present?
         apply_overlap_override(attrs)
       end
+    end
+
+    def assign_money(attrs)
+      attrs[:price_cents] = coerce_price_cents if @params.key?(:price_cents)
+      attrs[:currency] = @params[:currency].presence if @params.key?(:currency)
+      return unless @lesson.new_record?
+
+      attrs[:price_cents] = lesson_type&.price_cents if attrs[:price_cents].nil?
+      attrs[:currency] ||= lesson_type&.currency
     end
 
     def apply_overlap_override(attrs)
@@ -145,7 +153,7 @@ module Lessons
 
     def resolve_students
       ids = Array(@params[:student_ids]).flatten.compact_blank.map(&:to_i).uniq
-      found = StudentProfile.kept.where(id: ids).index_by(&:id)
+      found = StudentProfile.kept.bookable.where(id: ids).index_by(&:id)
       errors.add(:base, :students_invalid) if ids.size != found.size
       ids.filter_map { |id| found[id] }
     end

@@ -53,8 +53,14 @@ Rails.application.routes.draw do
     resources :lesson_types, only: :update
     get 'calendar', to: 'calendar#index'
     get 'calendar/new', to: 'calendar#new', as: :new_calendar
-    resources :lessons, only: %i[index create update] do
-      member { patch :outcome }
+    resources :lessons, only: %i[index show create update destroy] do
+      member do
+        patch :outcome
+        get :complete_dialog
+        get :cancel_dialog
+        get :delete_dialog
+        get :outcome_dialog
+      end
     end
     get 'payments', to: 'payments#index'
     get 'profile', to: 'profiles#show'
@@ -79,7 +85,7 @@ Rails.application.routes.draw do
       get 'notifications', to: 'student_portal#notifications'
     end
 
-    %w[homework reports messages].each do |page|
+    %w[homework materials reports messages].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page
     end
 

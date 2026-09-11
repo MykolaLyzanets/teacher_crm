@@ -129,6 +129,24 @@ RSpec.describe Lessons::Create do
     expect(service.errors.details[:base]).to include(hash_including(error: :students_invalid))
   end
 
+  it 'rejects paused students' do
+    teacher, subject_record, lesson_type, student = create_graph
+    student.update!(status: :paused)
+
+    service = create_lesson(
+      teacher,
+      subject_id: subject_record.id,
+      lesson_type_id: lesson_type.id,
+      student_ids: [student.id],
+      date: '2026-09-05',
+      start_time: '10:00',
+      end_time: '11:00'
+    )
+
+    expect(service.save).to be(false)
+    expect(service.errors.details[:base]).to include(hash_including(error: :students_invalid))
+  end
+
   it 'keeps TimeWithZone values instead of reinterpreting them' do
     teacher, subject_record, lesson_type, student = create_graph(timezone: 'America/New_York')
     starts_at = Time.find_zone('Europe/Kyiv').local(2026, 9, 5, 10, 0, 0)
@@ -164,6 +182,25 @@ RSpec.describe Lessons::Create do
 
     expect(service.save).to be(true)
     expect(service.lesson.price_cents).to eq(1500)
+    expect(service.lesson.currency).to eq('UAH')
+  end
+
+  it 'copies the lesson type price when none is provided' do
+    teacher, subject_record, lesson_type, student = create_graph
+    lesson_type.update!(price_cents: 80000, currency: 'UAH')
+
+    service = create_lesson(
+      teacher,
+      subject_id: subject_record.id,
+      lesson_type_id: lesson_type.id,
+      student_ids: [student.id],
+      date: '2026-09-05',
+      start_time: '10:00',
+      end_time: '11:00'
+    )
+
+    expect(service.save).to be(true)
+    expect(service.lesson.price_cents).to eq(80000)
     expect(service.lesson.currency).to eq('UAH')
   end
 

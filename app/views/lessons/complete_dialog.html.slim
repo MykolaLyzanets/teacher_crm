@@ -1,0 +1,112 @@
+= turbo_frame_tag 'lesson_dialog' do
+  - if @lesson.present?
+    - lesson = @lesson
+    - students = Array(lesson[:students])
+    - group = lesson[:type].to_s == 'group' && students.size > 1
+    - stored = lesson[:attendance].to_s
+    - attendance = %w[attended absent late excused].include?(stored) ? stored : (stored == 'present' ? 'attended' : 'attended')
+    - duration = lesson[:actualDurationMinutes].presence || lesson[:durationMinutes].presence || 60
+    - close_path = complete_dialog_lesson_path(lesson[:id], dismiss: 1)
+    .danlio-modal.danlio-modal--md.danlio-modal--stack data={ controller: 'modal lesson-outcome', lesson_outcome_lesson_value: lesson.to_json, lesson_outcome_url_value: outcome_lesson_path(lesson[:id]), lesson_outcome_homework_url_value: homework_path, lesson_outcome_i18n_value: app_i18n_json('app.lessons', 'app.common'), lesson_outcome_show_finance_value: can_view_finance?.to_s, lesson_outcome_can_manage_payments_value: can_manage_payments?.to_s }
+      a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_dialog"
+      .danlio-modal__card.lessons-page__confirm-card.lessons-page__confirm-card--complete role="dialog" aria-modal="true" aria-labelledby="complete-lesson-title"
+        .lessons-page__miss-head
+          div
+            h2#complete-lesson-title.lessons-page__confirm-title = t('app.lessons.complete_lesson')
+            p.lessons-page__muted = t('app.lessons.complete_text')
+          = link_to close_path, class: 'lessons-page__icon-btn', aria: { label: t('app.common.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_dialog', modal_focus: true } do
+            = lesson_icon 'x', size: 20
+
+        .lessons-page__complete-scroll
+          .lessons-page__complete-summary
+            p.lessons-page__complete-summary-title = lesson[:lessonTypeName].presence || lesson[:typeLabel].presence || lesson[:subject]
+            dl.lessons-page__complete-dl
+              div
+                dt = t('app.common.student')
+                dd = lesson[:party].presence || students.map { |item| item[:name] }.join(', ')
+              div
+                dt = t('app.common.teacher')
+                dd = lesson[:teacher].presence || '—'
+              div
+                dt = t('app.lessons.date')
+                dd = lesson[:dateLong].presence || lesson[:date]
+              div
+                dt = t('app.lessons.time')
+                dd = "#{lesson[:timeRange]} · #{duration} #{t('app.lessons.min')}"
+              - if lesson[:subject].present?
+                div
+                  dt = t('app.lessons.col_subject')
+                  dd = lesson[:subject]
+
+          .lessons-page__complete-block
+            p.lessons-page__complete-kicker = t('app.lessons.attendance')
+            input type="hidden" value=attendance data-lesson-outcome-target="attendance"
+            .lessons-page__attendance-pills role="radiogroup" aria-label=t('app.lessons.attendance') hidden=(true if group) data-lesson-outcome-target="attendancePills"
+              - %w[attended absent late excused].each do |status|
+                button.lessons-page__attendance-pill type="button" data-attendance=status data-action="lesson-outcome#chooseAttendance" class=('is-selected' if status == attendance)
+                  = t("app.lessons.attendance_#{status}")
+            .lessons-page__group-attendance hidden=(true unless group) data-lesson-outcome-target="groupAttendance"
+              - if group
+                - students.each do |student|
+                  .lessons-page__group-student
+                    p = student[:name]
+                    .lessons-page__group-pills
+                      - %w[attended absent late excused].each do |status|
+                        button.lessons-page__attendance-pill type="button" data-attendance=status data-student-id=student[:id] data-action="lesson-outcome#chooseAttendance" class=('is-selected' if status == attendance)
+                          = t("app.lessons.attendance_#{status}")
+
+          label.lessons-page__miss-field
+            span
+              = t('app.lessons.actual_duration')
+              abbr.lessons-page__req title="required" *
+            input type="number" min="1" step="1" value=duration data-lesson-outcome-target="duration" data-action="input->lesson-outcome#syncCompleteFinance"
+          label.lessons-page__miss-field
+            span = t('app.lessons.teacher_note')
+            textarea rows="3" placeholder=t('app.lessons.teacher_note_placeholder') data-lesson-outcome-target="teacherNote" = lesson[:teacherNote]
+          label.lessons-page__miss-field
+            span = t('app.lessons.progress_note')
+            textarea rows="3" placeholder=t('app.lessons.progress_note_placeholder') data-lesson-outcome-target="progressNote" = lesson[:studentProgressNote]
+
+          section.lessons-page__homework-box
+            .lessons-page__homework-box-head
+              span.lessons-page__homework-icon = lesson_icon 'clipboard', size: 18
+              div
+                h3 = t('app.lessons.homework_for_lesson')
+                p = t('app.lessons.homework_for_lesson_text')
+                .lessons-page__homework-actions
+                  button.lessons-page__homework-btn type="button" data-homework="create" data-lesson-outcome-target="homeworkBtn" data-action="lesson-outcome#chooseHomework"
+                    = lesson_icon 'plus', size: 16
+                    span = t('app.lessons.create_homework')
+                  button.lessons-page__homework-btn.is-selected type="button" data-homework="skip" data-lesson-outcome-target="homeworkBtn" data-action="lesson-outcome#chooseHomework"
+                    span = t('app.lessons.skip_homework')
+                p.lessons-page__homework-hint = t('app.lessons.homework_optional')
+
+          .lessons-page__finance-box hidden="hidden" data-lesson-outcome-target="financeBox"
+            p.lessons-page__finance-title = t('app.lessons.financial_summary')
+            p.lessons-page__finance-muted data-lesson-outcome-target="financeAttendance"
+            p.lessons-page__finance-charge
+              span = t('app.lessons.lesson_charge_label')
+              |  
+              strong data-lesson-outcome-target="financeCharge"
+            p.lessons-page__finance-muted data-lesson-outcome-target="financeChargeNote"
+            dl.lessons-page__complete-dl.lessons-page__complete-dl--finance hidden="hidden" data-lesson-outcome-target="financeBalanceWrap"
+              div
+                dt = t('app.lessons.current_balance')
+                dd data-lesson-outcome-target="financeCurrent"
+              div
+                dt = t('app.lessons.balance_after')
+                dd data-lesson-outcome-target="financeAfter"
+            p.lessons-page__finance-earns data-lesson-outcome-target="financeEarns"
+            .lessons-page__finance-warn hidden="hidden" data-lesson-outcome-target="financeNegative"
+              p
+                = lesson_icon 'alert-triangle', size: 16
+                span = t('app.lessons.negative_balance_warning')
+              label.lessons-page__finance-check hidden="hidden" data-lesson-outcome-target="negativeCheckWrap"
+                input type="checkbox" data-lesson-outcome-target="confirmNegative" data-action="change->lesson-outcome#syncCompleteFinance"
+                span = t('app.lessons.proceed_negative')
+
+          p.lessons-page__form-error hidden="hidden" data-lesson-outcome-target="formError" role="alert"
+
+        .lessons-page__confirm-actions
+          = link_to t('app.common.cancel'), close_path, class: 'lessons-page__secondary-btn', data: { turbo: true, turbo_frame: 'lesson_dialog' }
+          button.lessons-page__primary-btn type="button" data-lesson-outcome-target="submit" data-action="lesson-outcome#submitComplete" = t('app.lessons.complete_lesson')

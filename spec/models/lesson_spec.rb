@@ -285,7 +285,22 @@ RSpec.describe Lesson do
     )
     expect(catalog[:durationMinutes]).to be_positive
     expect(catalog[:timezone]).to be_present
+    expect(catalog[:endsAt]).to eq(lesson.ends_at.iso8601)
+    expect(catalog[:seriesId]).to eq(lesson.series_id)
+    expect(catalog).to include(:cancellationReasonCode, :cancelledBy, :chargeDecision, :chargedCents, :createdAt)
     expect(catalog[:attendance]).to eq('pending')
-    expect(catalog).to include(:teacherNote, :studentProgressNote, :actualDurationMinutes)
+    expect(catalog).to include(:teacherNote, :studentProgressNote, :actualDurationMinutes, :compensationPercent)
+  end
+
+  it 'uses the lesson type price when the lesson has none' do
+    lesson = create(:lesson, price_cents: nil, currency: nil)
+    lesson.lesson_type.update!(price_cents: 80_000, currency: 'UAH')
+
+    catalog = lesson.reload.as_catalog
+
+    expect(lesson.billed_price_cents).to eq(80_000)
+    expect(lesson.billed_currency).to eq('UAH')
+    expect(catalog[:priceCents]).to eq(80_000)
+    expect(catalog[:currency]).to eq('UAH')
   end
 end

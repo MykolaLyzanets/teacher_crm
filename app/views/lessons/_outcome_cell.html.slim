@@ -1,0 +1,27 @@
+- review ||= lesson_review_status(lesson)
+- homework = lesson_homework_status(lesson)
+
+.lessons-page__outcome-cell
+  .lessons-page__outcome-stack data-outcome-required="" hidden=(true unless lesson_needs_outcome?(lesson))
+    = link_to complete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__outcome-link', data: lesson_dialog_turbo do
+      = lesson_icon 'circle-check', size: 15
+      span = t('app.lessons.complete_lesson')
+    = link_to cancel_dialog_lesson_path(lesson[:id], reason: 'student_no_show'), class: 'lessons-page__outcome-link lessons-page__outcome-link--muted', data: lesson_dialog_turbo do
+      = lesson_icon 'user-off', size: 15
+      span = t('app.lessons.student_absent')
+
+  .lessons-page__outcome-homework data-outcome-homework="" hidden=(true unless review == 'completed')
+    span.status-badge class="status-badge--#{homework[:assigned] ? 'olive' : 'neutral'}" data-homework-badge=""
+      = homework[:assigned] ? t('app.lessons.homework_assigned') : t('app.lessons.homework_not_assigned')
+    .lessons-page__outcome-stack
+      = link_to homework_path, class: 'lessons-page__outcome-link', hidden: !homework[:assigned], data: { homework_assigned: true } do
+        = lesson_icon 'eye', size: 15
+        span = t('app.lessons.view_homework')
+      = link_to homework_path, class: 'lessons-page__outcome-link lessons-page__outcome-link--muted', hidden: !homework[:assigned], data: { homework_assigned: true } do
+        = lesson_icon 'pencil', size: 15
+        span = t('app.lessons.edit_homework')
+      = link_to homework_path, class: 'lessons-page__outcome-link', hidden: homework[:assigned], data: { homework_missing: true } do
+        = lesson_icon 'plus', size: 15
+        span = t('app.lessons.add_homework')
+
+  span.lessons-page__outcome-empty data-outcome-empty="" hidden=(true if lesson_needs_outcome?(lesson) || review == 'completed') —

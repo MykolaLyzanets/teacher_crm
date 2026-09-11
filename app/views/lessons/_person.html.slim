@@ -1,0 +1,12 @@
+article.lessons-page__person
+  span.lessons-page__avatar
+    - if person[:photo].present?
+      img src=person[:photo] alt=""
+    - else
+      = person[:initials].presence || '?'
+  .lessons-page__person-copy
+    p.lessons-page__person-name = person[:name]
+    - if person[:meta].present?
+      p.lessons-page__person-meta = person[:meta]
+  - if person[:url].present?
+    = link_to t('app.lessons.view_profile'), person[:url], class: 'lessons-page__person-link'

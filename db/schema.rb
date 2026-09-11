@@ -131,6 +131,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_05_180003) do
     t.boolean "is_active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "price_cents"
+    t.string "currency"
     t.index "subject_id, lower((name)::text)", name: "index_lesson_types_on_subject_id_lower_name", unique: true
     t.index ["subject_id"], name: "index_lesson_types_on_subject_id"
     t.check_constraint "default_duration_minutes > 0", name: "lesson_types_duration_positive"
@@ -160,13 +162,22 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_05_180003) do
     t.text "override_reason"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "cancellation_reason_code"
+    t.text "cancellation_other_text"
+    t.text "cancellation_note"
+    t.bigint "cancelled_by_id"
+    t.integer "charge_decision", default: 0, null: false
+    t.integer "charged_cents", default: 0, null: false
+    t.index ["cancelled_by_id"], name: "index_lessons_on_cancelled_by_id"
     t.index ["lesson_type_id"], name: "index_lessons_on_lesson_type_id"
     t.index ["series_id"], name: "index_lessons_on_series_id"
     t.index ["subject_id"], name: "index_lessons_on_subject_id"
     t.index ["teacher_id", "starts_at"], name: "index_lessons_on_teacher_id_and_starts_at"
     t.index ["teacher_id"], name: "index_lessons_on_teacher_id"
     t.check_constraint "actual_duration_minutes IS NULL OR actual_duration_minutes > 0", name: "lessons_actual_duration_positive"
-    t.check_constraint "attendance = ANY (ARRAY[0, 1, 2, 3])", name: "lessons_attendance_valid"
+    t.check_constraint "attendance = ANY (ARRAY[0, 1, 2, 3, 4])", name: "lessons_attendance_valid"
+    t.check_constraint "charge_decision = ANY (ARRAY[0, 1])", name: "lessons_charge_decision_valid"
+    t.check_constraint "charged_cents >= 0", name: "lessons_charged_cents_non_negative"
     t.check_constraint "location = ANY (ARRAY[0, 1])", name: "lessons_location_valid"
     t.check_constraint "starts_at < ends_at", name: "lessons_starts_before_ends"
     t.check_constraint "status = ANY (ARRAY[0, 1, 2])", name: "lessons_status_valid"
@@ -473,6 +484,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_05_180003) do
   add_foreign_key "lessons", "lesson_types"
   add_foreign_key "lessons", "subjects"
   add_foreign_key "lessons", "teacher_profiles", column: "teacher_id"
+  add_foreign_key "lessons", "users", column: "cancelled_by_id"
   add_foreign_key "lessons_students", "lessons"
   add_foreign_key "lessons_students", "student_profiles", column: "student_id"
   add_foreign_key "material_students", "materials"

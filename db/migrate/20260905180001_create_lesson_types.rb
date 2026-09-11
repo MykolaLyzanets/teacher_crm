@@ -9,6 +9,8 @@ class CreateLessonTypes < ActiveRecord::Migration[7.0]
       t.integer :mode, null: false
       t.integer :default_duration_minutes, null: false, default: 60
       t.boolean :is_active, null: false, default: true
+      t.integer :price_cents
+      t.string :currency
 
       t.timestamps
     end

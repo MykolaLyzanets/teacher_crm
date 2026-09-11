@@ -10,6 +10,7 @@ html lang="#{html_lang}"
     = stylesheet_link_tag "css/application.min", "data-turbo-track": "reload"
     = stylesheet_link_tag "css/app.min", "data-turbo-track": "reload"
     = stylesheet_link_tag "css/calendar.min", "data-turbo-track": "reload"
+    = stylesheet_link_tag "css/lessons.min", "data-turbo-track": "reload"
     - if app_page_stylesheet.present?
       = stylesheet_link_tag "css/#{app_page_stylesheet}.min", "data-turbo-track": "reload"
     = javascript_include_tag "application", "data-turbo-track": "reload", defer: true
@@ -40,3 +41,6 @@ html lang="#{html_lang}"
           = yield
         - unless controller_name == 'calendar' && action_name == 'new'
           = turbo_frame_tag 'create_lesson'
+        - unless lesson_modal_request?
+          = turbo_frame_tag 'lesson_details'
+          = turbo_frame_tag 'lesson_dialog'

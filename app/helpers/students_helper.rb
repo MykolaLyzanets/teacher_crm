@@ -327,6 +327,7 @@ module StudentsHelper
     return '—' if student_lesson_cancelled?(lesson)
 
     attendance = lesson[:attendance].to_s
+    attendance = 'attended' if attendance == 'present'
     return t('app.students.attendance_none') if attendance.blank?
 
     t("app.students.attendance.#{attendance}", default: attendance.humanize)

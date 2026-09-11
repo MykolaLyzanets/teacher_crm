@@ -24,6 +24,7 @@ class CalendarController < AppController
     @lessons = catalog_lessons
     @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @bookable_students = @students.select { |student| StudentProfile.bookable_status?(student[:status]) }
 
     @teacher_names = @teachers.map { |teacher| teacher_display_name(teacher) }.uniq.sort
     @student_names = @students.map { |student| student_display_name(student) }.compact_blank.uniq.sort
@@ -31,7 +32,7 @@ class CalendarController < AppController
     @preset_student_id = params[:studentId].presence || params[:student_id].presence
     @lessons_json = @lessons.to_json
     @current_teacher_id = current_user.teacher_profile&.id
-    @lock_teacher = current_user.teacher? || (current_workspace&.individual? && @current_teacher_id.present?)
+    @lock_teacher = current_user.teacher? || selectable_teachers.size <= 1
     @workspace_timezone = current_user.teacher_profile&.timezone.presence || 'Europe/Kyiv'
   end
 
@@ -41,11 +42,11 @@ class CalendarController < AppController
     @draft_end = params[:end].presence || end_from_start(@draft_start)
     @draft_teacher_id =
       if @lock_teacher
-        @current_teacher_id.to_s
+        @current_teacher_id.to_s.presence || solo_teacher_id
       else
         params[:teacher_id].presence || @preset_teacher_id.presence || solo_teacher_id
       end
-    @draft_student_id = params[:student_id].presence || @preset_student_id.presence || solo_student_id
+    @draft_student_id = bookable_student_id(params[:student_id].presence || @preset_student_id.presence || solo_student_id)
   end
 
   def end_from_start(start)
@@ -55,17 +56,32 @@ class CalendarController < AppController
     format('%<hour>02d:%<minute>02d', hour: [hour + 1, 23].min, minute:)
   end
 
-  def solo_teacher_id
-    return if @teachers.blank? || @teachers.size != 1
+  def selectable_teachers
+    Array(@teachers).reject { |teacher| teacher[:status].to_s == 'archived' }
+  end
 
-    @teachers.first[:id].to_s
+  def solo_teacher_id
+    list = selectable_teachers
+    return if list.size != 1
+
+    list.first[:id].to_s
+  end
+
+  def selectable_students
+    Array(@bookable_students)
+  end
+
+  def bookable_student_id(id)
+    return if id.blank?
+
+    selectable_students.find { |student| student[:id].to_s == id.to_s }&.fetch(:id, nil)&.to_s
   end
 
   def solo_student_id
-    active = Array(@students).reject { |student| student[:status].to_s == 'archived' }
-    return if active.size != 1
+    list = selectable_students
+    return if list.size != 1
 
-    active.first[:id].to_s
+    list.first[:id].to_s
   end
 
   def teacher_display_name(teacher)

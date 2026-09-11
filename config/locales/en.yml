@@ -124,6 +124,8 @@ en:
               not_recorded: This lesson does not have a recorded outcome
             attendance:
               blank: Select attendance
+            actual_duration_minutes:
+              blank: Enter the actual duration in minutes.
 
   header:
     product: Product

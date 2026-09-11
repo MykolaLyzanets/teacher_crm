@@ -1,0 +1,50 @@
+= turbo_frame_tag 'lesson_dialog' do
+  - if @lesson.present?
+    - lesson = @lesson
+    - close_path = cancel_dialog_lesson_path(lesson[:id], dismiss: 1)
+    - charging = @charge_decision == 'charge'
+    .danlio-modal.danlio-modal--md.danlio-modal--stack data={ controller: 'modal lesson-outcome', lesson_outcome_lesson_value: lesson.to_json, lesson_outcome_url_value: outcome_lesson_path(lesson[:id]), lesson_outcome_i18n_value: app_i18n_json('app.lessons', 'app.common'), lesson_outcome_show_finance_value: can_view_finance?.to_s, lesson_outcome_charge_value: @charge_decision }
+      a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_dialog"
+      .danlio-modal__card.lessons-page__confirm-card.lessons-page__confirm-card--miss role="dialog" aria-modal="true" aria-labelledby="cancel-lesson-title"
+        .lessons-page__miss-head
+          div
+            h2#cancel-lesson-title.lessons-page__confirm-title = t('app.lessons.missed_title')
+            p.lessons-page__muted = t('app.lessons.missed_text')
+          = link_to close_path, class: 'lessons-page__icon-btn', aria: { label: t('app.common.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_dialog', modal_focus: true } do
+            = lesson_icon 'x', size: 20
+        label.lessons-page__miss-field
+          span
+            = t('app.lessons.cancel_reason')
+            abbr.lessons-page__req title="required" *
+          select data-lesson-outcome-target="cancelReason" data-action="change->lesson-outcome#syncCancelReasonFields"
+            - lesson_cancel_reason_keys.each do |key|
+              option value=key selected=(true if key == @cancel_reason) = t("app.lessons.cancel_reasons.#{key}")
+        label.lessons-page__miss-field hidden=(true unless @cancel_reason == 'other') data-lesson-outcome-target="cancelOtherWrap"
+          span
+            = t('app.lessons.describe_reason')
+            abbr.lessons-page__req title="required" *
+          textarea rows="3" placeholder=t('app.lessons.describe_reason_placeholder') data-lesson-outcome-target="cancelOther"
+        .lessons-page__miss-field
+          span = t('app.lessons.charge_question')
+          .lessons-page__charge-grid
+            button.lessons-page__charge-card class=('is-selected' unless charging) type="button" data-charge="no_charge" data-lesson-outcome-target="chargeCard" data-action="lesson-outcome#chooseCharge"
+              p = t('app.lessons.charge_no')
+              span data-lesson-outcome-target="chargeNoHint" = t('app.lessons.charge_no_hint')
+            button.lessons-page__charge-card class=('is-selected' if charging) type="button" data-charge="charge" data-lesson-outcome-target="chargeCard" data-action="lesson-outcome#chooseCharge"
+              p = t('app.lessons.charge_yes')
+              span data-lesson-outcome-target="chargeYesHint"
+        label.lessons-page__miss-field
+          span = t('app.lessons.internal_note')
+          textarea rows="3" placeholder=t('app.lessons.internal_note_placeholder') data-lesson-outcome-target="cancelNote"
+        .lessons-page__miss-box
+          p.lessons-page__miss-box-label = t('app.lessons.cancelled_by')
+          p.lessons-page__miss-box-value = current_user_display_name
+        .lessons-page__miss-box data-lesson-outcome-target="chargeSummary"
+          p.lessons-page__miss-box-label = t('app.lessons.financial_summary')
+          p.lessons-page__miss-box-value data-lesson-outcome-target="chargeSummaryText"
+        - if lesson[:seriesId].present?
+          p.lessons-page__miss-series = t('app.lessons.series_cancel_hint')
+        p.lessons-page__form-error hidden="hidden" data-lesson-outcome-target="formError" role="alert"
+        .lessons-page__confirm-actions
+          = link_to t('app.lessons.keep_lesson'), close_path, class: 'lessons-page__secondary-btn', data: { turbo: true, turbo_frame: 'lesson_dialog' }
+          button.lessons-page__confirm-btn.lessons-page__confirm-btn--miss type="button" data-lesson-outcome-target="submit" data-action="lesson-outcome#submitCancel" = t('app.lessons.cancel_without_charge')

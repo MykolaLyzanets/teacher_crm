@@ -18,10 +18,10 @@ module CalendarHelper
   def calendar_page_data(embedded: false)
     data = {
       controller: 'calendar',
-      calendar_i18n_value: app_i18n_json('app.calendar', 'app.statuses', 'app.common'),
+      calendar_i18n_value: app_i18n_json('app.calendar', 'app.statuses', 'app.common', 'app.lessons'),
       calendar_lessons_value: @lessons_json,
       calendar_teachers_value: @teachers.to_json,
-      calendar_students_value: @students.to_json,
+      calendar_students_value: (embedded ? Array(@bookable_students) : @students).to_json,
       calendar_teacher_id_value: @preset_teacher_id.to_s,
       calendar_student_id_value: @preset_student_id.to_s,
       calendar_show_price_value: can_view_finance?.to_s,
@@ -34,7 +34,9 @@ module CalendarHelper
       calendar_dismiss_url_value: new_calendar_path(dismiss: 1),
       calendar_lessons_url_value: lessons_path,
       calendar_subjects_url_value: teacher_subjects_path(teacher_id: '__ID__'),
-      calendar_lesson_types_url_value: subject_lesson_types_path(subject_id: '__ID__')
+      calendar_lesson_types_url_value: subject_lesson_types_path(subject_id: '__ID__'),
+      calendar_teacher_url_value: teacher_path('__ID__'),
+      calendar_actor_value: current_user_display_name
     }
     data[:calendar_embedded_value] = true if embedded
     data[:calendar_edit_id_value] = params[:lesson_id].to_s if params[:lesson_id].present?

@@ -2,6 +2,7 @@
 
 class StudentProfile < ApplicationRecord
   STATUSES = { active: 0, trial: 1, paused: 2, archived: 3 }.freeze
+  BOOKABLE_STATUSES = %w[active trial].freeze
   GENDERS = %w[female male non_binary prefer_not].freeze
   RELATIONSHIPS = %w[mother father parent guardian other].freeze
   LOCATIONS = %w[online in_person hybrid].freeze
@@ -28,6 +29,15 @@ class StudentProfile < ApplicationRecord
   validate :teacher_matches_workspace
 
   scope :kept, -> { where(deleted_at: nil) }
+  scope :bookable, -> { where(status: BOOKABLE_STATUSES) }
+
+  def self.bookable_status?(value)
+    BOOKABLE_STATUSES.include?(value.to_s)
+  end
+
+  def bookable?
+    self.class.bookable_status?(status)
+  end
 
   def self.optional_date(value)
     raw = value.to_s.strip

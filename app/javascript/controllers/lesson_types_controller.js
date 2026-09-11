@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
 import { closeModal } from "../lib/modal"
+import { formatMoney, formatPriceInput, parsePriceAmount } from "../lib/money"
 
 const KIND_NAMES = {
   individual: "Individual",
@@ -285,7 +286,7 @@ export default class extends Controller {
           <p>${esc(item.name)}</p>
           <span class="status-badge status-badge--${statusClass}">${esc(status)}</span>
         </div>
-        <p class="lt-row__meta">${esc(mode)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}</p>
+        <p class="lt-row__meta">${esc(mode)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}${this.typePriceMeta(item)}</p>
       </div>
       <div class="lt-row__actions">
         <button type="button" class="lt-icon-btn" data-action="lesson-types#openEdit" data-id="${esc(item.id)}" aria-label="${esc(this.t("edit", "Edit"))}">${ICONS.pencil}</button>
@@ -300,6 +301,13 @@ export default class extends Controller {
       if (match) return { type: match, subject }
     }
     return {}
+  }
+
+  typePriceMeta(item) {
+    const cents = item?.priceCents ?? item?.price_cents
+    if (cents == null || cents === "") return ""
+    const label = Number(cents) === 0 ? this.t("free_lesson", "Free") : formatMoney(cents, item.currency || "UAH")
+    return ` · ${label}`
   }
 
   findSubject(id) {
@@ -506,11 +514,11 @@ export default class extends Controller {
     if (this.hasModeTarget) this.modeTarget.value = item?.mode || "individual"
     if (this.hasPriceTypeTarget) this.priceTypeTarget.value = "per_lesson"
     if (this.hasDurationTarget) this.durationTarget.value = item?.defaultDurationMinutes || 60
-    if (this.hasPriceTarget) this.priceTarget.value = ""
-    if (this.hasCurrencyTarget) this.currencyTarget.value = "UAH"
+    if (this.hasPriceTarget) this.priceTarget.value = item?.priceCents == null ? "" : formatPriceInput(item.priceCents)
+    if (this.hasCurrencyTarget) this.currencyTarget.value = item?.currency || "UAH"
     if (this.hasDescriptionTarget) this.descriptionTarget.value = ""
     if (this.hasActiveTarget) this.activeTarget.checked = item ? item.isActive !== false : true
-    if (this.hasFreeTarget) this.freeTarget.checked = false
+    if (this.hasFreeTarget) this.freeTarget.checked = item?.priceCents === 0
     this.clearDialogErrors()
     this.syncKindFields()
   }
@@ -588,6 +596,12 @@ export default class extends Controller {
       this.showFieldError("durationError", this.t("duration_invalid", "Enter a duration greater than zero."))
       invalid = true
     }
+    const isFree = this.hasFreeTarget && this.freeTarget.checked
+    const priceCents = isFree ? 0 : parsePriceAmount(this.hasPriceTarget ? this.priceTarget.value : "")
+    if (!isFree && (priceCents == null || priceCents < 0)) {
+      this.showFieldError("priceError", this.t("price_invalid", "Enter zero or a positive price."))
+      invalid = true
+    }
     if (!this.dialogSubjectId) {
       if (this.hasFormErrorTarget) {
         this.formErrorTarget.textContent = this.t("lesson_name_blank", "Enter a lesson name.")
@@ -602,6 +616,8 @@ export default class extends Controller {
       kind,
       mode: this.hasModeTarget ? this.modeTarget.value : "individual",
       defaultDurationMinutes: duration,
+      priceCents,
+      currency: this.hasCurrencyTarget ? this.currencyTarget.value : "UAH",
       isActive: this.hasActiveTarget ? this.activeTarget.checked : true
     }
 

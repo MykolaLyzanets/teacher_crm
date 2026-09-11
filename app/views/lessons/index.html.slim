@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.lessons.title')} | danlio"
 
-.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common') data-lessons-calendar-url-value=new_calendar_path data-lessons-url-value=lessons_path
+.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common')
   p.lessons-page__toast hidden="hidden" role="status" data-lessons-target="toast"
 
   .lessons-page__header
@@ -14,7 +14,7 @@
   section.lessons-page__panel
     .lessons-page__toolbar
       div.lessons-page__tabs role="tablist" aria-label=t('app.lessons.tabs_aria')
-        - %w[all upcoming completed cancelled].each do |tab|
+        - %w[all upcoming outcome_required completed cancelled].each do |tab|
           button.lessons-page__tab type="button" role="tab" aria-selected=(tab == 'all' ? 'true' : 'false') data-lessons-target="tab" data-tab=tab data-action="lessons#selectTab"
             = t("app.lessons.tab_#{tab}")
 
@@ -54,11 +54,10 @@
         span = t('app.lessons.col_subject')
         span = t('app.lessons.col_price')
         span = t('app.lessons.col_status')
+        span = t('app.lessons.col_outcome')
         span.lessons-page__head-actions = t('app.lessons.col_actions')
       ul.lessons-page__list
         - @lessons.each do |lesson|
           = render 'row', lesson: lesson
 
   .lessons-page__cancel-tip hidden="hidden" role="tooltip" data-lessons-target="cancelTip"
-  = render 'drawer'
-  = render 'confirm'

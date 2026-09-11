@@ -40,12 +40,13 @@
         h3 = t('app.calendar.filters')
         button type="button" data-action="calendar#closeFilters" = t('app.calendar.close')
       .calendar-page__filters-body
-        label
-          span = t('app.calendar.teacher')
-          select data-calendar-target="filterTeacher"
-            option value="" = t('app.calendar.all_teachers')
-            - @teacher_names.each do |name|
-              option value=name = name
+        - unless @lock_teacher
+          label
+            span = t('app.calendar.teacher')
+            select data-calendar-target="filterTeacher"
+              option value="" = t('app.calendar.all_teachers')
+              - @teacher_names.each do |name|
+                option value=name = name
         label
           span = t('app.calendar.student')
           select data-calendar-target="filterStudent"
@@ -109,43 +110,6 @@
           p = t('app.calendar.no_lessons_scheduled')
           span = t('app.calendar.no_lessons_hint')
         = link_to t('app.calendar.create_lesson'), new_calendar_path, class: 'calendar-page__primary-btn', data: calendar_create_turbo_data(sync: true)
-
-  .calendar-page__modal hidden="hidden" data-calendar-target="details"
-    button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeLesson"
-    .calendar-page__modal-card role="dialog" aria-modal="true" aria-labelledby="lesson-details-title"
-      .calendar-page__modal-head
-        div
-          p.calendar-page__selected-label = t('app.calendar.lesson_details')
-          h2#lesson-details-title data-calendar-target="detailsTitle"
-        button.calendar-page__icon-btn type="button" aria-label=t('app.calendar.close') data-action="calendar#closeLesson"
-          = icon_tag 'x', size: 20
-      .calendar-page__modal-body
-        p.calendar-page__details-tone data-calendar-target="detailsTone"
-        .calendar-page__detail
-          span = t('app.calendar.lesson_type')
-          strong data-calendar-target="detailsType"
-        .calendar-page__detail
-          span = t('app.calendar.student')
-          strong data-calendar-target="detailsStudent"
-        .calendar-page__detail
-          span = t('app.calendar.teacher')
-          strong data-calendar-target="detailsTeacher"
-        .calendar-page__detail
-          span = t('app.calendar.date')
-          strong data-calendar-target="detailsDate"
-        .calendar-page__detail
-          span = t('app.calendar.time')
-          strong data-calendar-target="detailsTime"
-        .calendar-page__detail
-          span = t('app.calendar.location')
-          strong data-calendar-target="detailsLocation"
-        .calendar-page__detail data-calendar-target="detailsNotesRow" hidden="hidden"
-          span = t('app.calendar.notes')
-          strong data-calendar-target="detailsNotes"
-      .calendar-page__modal-foot
-        button.calendar-page__primary-btn type="button" data-action="calendar#editLesson" = t('app.calendar.edit')
-        button.calendar-page__secondary-btn type="button" data-calendar-target="detailsDuplicate" data-action="calendar#duplicateLesson" = t('app.calendar.duplicate')
-        button.calendar-page__danger-btn type="button" data-calendar-target="detailsCancel" data-action="calendar#cancelLesson" = t('app.calendar.cancel_lesson')
 
   .calendar-page__modal.calendar-page__modal--overflow hidden="hidden" data-calendar-target="overflow"
     button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeOverflow"

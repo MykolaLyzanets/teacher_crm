@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"]
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default class extends Controller {
   static targets = [
@@ -410,7 +411,7 @@ export default class extends Controller {
     if (!first) errors.firstName = this.t("teachers", "enter_first_name")
     if (!last) errors.lastName = this.t("teachers", "enter_last_name")
     if (!status) errors.status = this.t("teachers", "select_status")
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || !EMAIL_RE.test(email)) {
       errors.email = this.t("teachers", "enter_email")
     }
     if (preset === "custom") {

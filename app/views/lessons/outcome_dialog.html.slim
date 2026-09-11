@@ -1,0 +1,28 @@
+= turbo_frame_tag 'lesson_dialog' do
+  - if @lesson.present?
+    - lesson = @lesson
+    - close_path = outcome_dialog_lesson_path(lesson[:id], dismiss: 1)
+    - title = lesson[:lessonTypeName].presence || lesson[:subject].presence || t('app.lessons.default_subject')
+    .danlio-modal.danlio-modal--sm.danlio-modal--stack data-controller="modal"
+      a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_dialog"
+      .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="outcome-chooser-title"
+        .danlio-modal__head
+          div
+            h2#outcome-chooser-title.danlio-modal__title = t('app.lessons.confirm_lesson_outcome')
+            p.danlio-modal__desc = t('app.lessons.outcome_text', title:)
+          = link_to close_path, class: 'danlio-modal__close', aria: { label: t('app.common.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_dialog', modal_focus: true } do
+            = lesson_icon 'x', size: 20
+        .danlio-modal__body
+          .lessons-page__outcome-choices
+            = link_to complete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__outcome', data: lesson_dialog_turbo do
+              span.lessons-page__outcome-icon = lesson_icon 'circle-check', size: 20
+              span
+                strong = t('app.lessons.outcome_completed')
+                span = t('app.lessons.outcome_completed_text')
+            = link_to cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__outcome', data: lesson_dialog_turbo do
+              span.lessons-page__outcome-icon = lesson_icon 'calendar-x', size: 20
+              span
+                strong = t('app.lessons.outcome_missed')
+                span = t('app.lessons.outcome_missed_text')
+          .lessons-page__confirm-actions
+            = link_to t('app.lessons.not_now'), close_path, class: 'lessons-page__secondary-btn', data: { turbo: true, turbo_frame: 'lesson_dialog' }

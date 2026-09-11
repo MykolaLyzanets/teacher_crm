@@ -12,7 +12,7 @@
   - name = teacher_display_name(teacher)
   - content_for :title, "#{name} | danlio"
 
-  .teachers-page.teachers-page--profile data={ **{ controller: 'teachers lesson-types', teachers_i18n_value: app_i18n_json('app.teachers', 'app.common', 'app.statuses'), teachers_name_value: name }, **lesson_types_stimulus_data(mode: 'readonly', teacher_id: teacher[:id], controller: 'teachers lesson-types', lesson_types_edit_url_value: (can_manage_teachers? ? edit_teacher_path(teacher[:id]) : '')) }
+  .teachers-page.teachers-page--profile data={ **{ controller: 'teachers lesson-types', teachers_i18n_value: app_i18n_json('app.teachers', 'app.common', 'app.statuses'), teachers_name_value: name }, **lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id], controller: 'teachers lesson-types') }
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path
       = icon_tag 'chevron-right', size: 16
@@ -62,9 +62,6 @@
             dt = t('app.teachers.subjects')
             dd = Array(teacher[:subjects]).presence&.join(', ') || '—'
           div
-            dt = t('app.teachers.lesson_types')
-            dd data-lesson-types-target="accessList"
-          div
             dt = t('app.teachers.languages')
             dd = Array(teacher[:languages]).map { |code| teacher_language_label(code) }.presence&.join(', ') || '—'
           div
@@ -100,6 +97,9 @@
                 = t('app.teachers.invited_status', status: teacher[:invitationStatus].presence || t('app.statuses.pending'))
               - else
                 = t('app.teachers.has_workspace_access')
+
+    section#lesson-types.teachers-page__card.teachers-page__card--lesson-types
+      = render 'lesson_types/manager', heading: :h2, title: t('app.lesson_types.lessons_pricing'), description: t('app.lesson_types.lessons_pricing_hint')
 
     - if can_view_finance? && @earnings
       section.teachers-page__card
@@ -210,3 +210,4 @@
     = turbo_frame_tag 'assign_dialog'
     = turbo_frame_tag 'unassign_dialog'
     = turbo_frame_tag 'delete_dialog'
+    = render 'lesson_types/dialogs'
