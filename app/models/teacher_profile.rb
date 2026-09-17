@@ -7,6 +7,7 @@ class TeacherProfile < ApplicationRecord
   LESSON_FORMATS = %w[online in_person hybrid].freeze
   CALENDAR_COLORS = { olive: 0, slate: 1, amber: 2, plum: 3, terra: 4, teal: 5 }.freeze
   DEFAULT_TIMEZONE = 'Europe/Kyiv'
+  DEFAULT_COMPENSATION_PERCENT = 60
 
   enum status: STATUSES
   enum preferred_contact_method: CONTACT_METHODS, _prefix: :contact
@@ -25,6 +26,8 @@ class TeacherProfile < ApplicationRecord
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
   validates :default_lesson_duration_minutes, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validates :compensation_percent, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
+            if: :compensation_percent_attribute?
   validate :user_matches_workspace
   validate :lesson_formats_are_known
 
@@ -38,6 +41,12 @@ class TeacherProfile < ApplicationRecord
 
   def photo_url
     photo.url if photo.present?
+  end
+
+  def compensation_rate
+    return DEFAULT_COMPENSATION_PERCENT unless compensation_percent_attribute?
+
+    compensation_percent
   end
 
   def as_catalog
@@ -67,6 +76,7 @@ class TeacherProfile < ApplicationRecord
       defaultMeetingLink: default_meeting_link,
       maxLessonsPerDay: max_lessons_per_day,
       calendarColor: calendar_color,
+      compensationPercent: compensation_rate,
       inviteToWorkspace: true,
       invitationStatus: invited? ? 'sent' : 'active',
       notes:,
@@ -76,6 +86,10 @@ class TeacherProfile < ApplicationRecord
   end
 
   private
+
+  def compensation_percent_attribute?
+    has_attribute?(:compensation_percent)
+  end
 
   def user_matches_workspace
     return if user.blank? || workspace.blank? || user.workspace_id == workspace_id

@@ -146,7 +146,7 @@ module Teachers
         working_hours: normalized_working_hours,
         default_lesson_duration_minutes: lesson_duration_minutes,
         max_lessons_per_day: integer_or_nil(params[:max_lessons_per_day]),
-        lesson_formats: Array(params[:lesson_formats]).compact_blank.presence || %w[online],
+        lesson_formats: Array(params[:lesson_formats]).compact_blank,
         default_meeting_link: params[:default_meeting_link].to_s.strip.presence,
         calendar_color: params[:calendar_color].presence || 'olive',
         notes: params[:notes].to_s.strip.presence
@@ -176,9 +176,9 @@ module Teachers
 
     def lesson_duration_minutes
       if params[:duration_preset].to_s == 'custom'
-        integer_or_nil(params[:custom_duration]) || 60
+        integer_or_nil(params[:custom_duration])
       else
-        integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes]) || 60
+        integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes])
       end
     end
 

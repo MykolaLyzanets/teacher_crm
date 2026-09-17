@@ -27,27 +27,28 @@
           = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
             = t('app.students.create_lesson')
 
-    section.students-page__profile-panel
-      .students-page__profile-panel-head
-        h2 = t('app.students.learning_information')
-      .students-page__info
-        span = t('app.students.subject')
-        span.students-page__info-value = Array(student[:subjects]).compact_blank.join(', ').presence || '—'
-      .students-page__info
-        span = t('app.students.current_level')
-        span.students-page__info-value = student_level_label(student[:level]).presence || '—'
-      .students-page__info
-        span = t('app.students.learning_goal')
-        span.students-page__info-value = progress&.dig(:goal).presence || student[:notes].presence || '—'
-      .students-page__info
-        span = t('app.students.preferred_format')
-        span.students-page__info-value = student_format_label(student, pricing: pricing).presence || '—'
-      .students-page__info
-        span = t('app.students.start_date')
-        span.students-page__info-value = student_profile_date_label(student[:enrollmentDate]).presence || '—'
-      .students-page__info
-        span = t('app.students.tags')
-        span.students-page__info-value = student_tag_line(student) || '—'
+    - if student_profile_school_sections?
+      section.students-page__profile-panel
+        .students-page__profile-panel-head
+          h2 = t('app.students.learning_information')
+        .students-page__info
+          span = t('app.students.subject')
+          span.students-page__info-value = Array(student[:subjects]).compact_blank.join(', ').presence || '—'
+        .students-page__info
+          span = t('app.students.current_level')
+          span.students-page__info-value = student_level_label(student[:level]).presence || '—'
+        .students-page__info
+          span = t('app.students.learning_goal')
+          span.students-page__info-value = progress&.dig(:goal).presence || student[:notes].presence || '—'
+        .students-page__info
+          span = t('app.students.preferred_format')
+          span.students-page__info-value = student_format_label(student, pricing: pricing).presence || '—'
+        .students-page__info
+          span = t('app.students.start_date')
+          span.students-page__info-value = student_profile_date_label(student[:enrollmentDate]).presence || '—'
+        .students-page__info
+          span = t('app.students.tags')
+          span.students-page__info-value = student_tag_line(student) || '—'
 
     section.students-page__profile-panel
       .students-page__profile-panel-head
@@ -89,7 +90,8 @@
               span = student_activity_date_label(item[:date])
 
   .students-page__profile-col
-    = render 'students/profile/teacher', student: student
+    - if student_profile_school_sections?
+      = render 'students/profile/teacher', student: student
 
     section.students-page__profile-panel
       .students-page__profile-panel-head

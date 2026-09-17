@@ -290,6 +290,22 @@ RSpec.describe Lesson do
     expect(catalog).to include(:cancellationReasonCode, :cancelledBy, :chargeDecision, :chargedCents, :createdAt)
     expect(catalog[:attendance]).to eq('pending')
     expect(catalog).to include(:teacherNote, :studentProgressNote, :actualDurationMinutes, :compensationPercent)
+    expect(catalog[:compensationPercent]).to eq(lesson.teacher_profile.compensation_percent)
+  end
+
+  it 'uses the teacher compensation percent in the catalog' do
+    teacher = create(:teacher_profile, compensation_percent: 45)
+    lesson = create(:lesson, teacher:)
+
+    expect(lesson.as_catalog[:compensationPercent]).to eq(45)
+  end
+
+  it 'defaults compensation when the teacher profile has no such column' do
+    lesson = create(:lesson)
+    allow(lesson.teacher_profile).to receive(:has_attribute?).and_call_original
+    allow(lesson.teacher_profile).to receive(:has_attribute?).with(:compensation_percent).and_return(false)
+
+    expect(lesson.as_catalog[:compensationPercent]).to eq(TeacherProfile::DEFAULT_COMPENSATION_PERCENT)
   end
 
   it 'uses the lesson type price when the lesson has none' do

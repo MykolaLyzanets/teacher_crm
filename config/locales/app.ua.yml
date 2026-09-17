@@ -558,6 +558,7 @@ ua:
       working_hours: Робочі години
       copy_monday: Скопіювати понеділок на вибрані дні
       default_duration: Тривалість уроку за замовчуванням
+      select_duration: Не обрано
       minutes: "%{count} хв"
       max_lessons: Максимум уроків на день
       lesson_formats: Формати уроків

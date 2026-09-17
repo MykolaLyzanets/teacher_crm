@@ -203,20 +203,24 @@ module TeachersHelper
     row = Array(teacher[:workingHours]).find do |item|
       item.with_indifferent_access[:day].to_s == day.to_s
     end
-    fallback = field.to_s == 'start' ? '09:00' : '17:00'
-    return fallback if row.blank?
+    return '' if row.blank?
 
     row = row.with_indifferent_access
     if field.to_s == 'start'
-      row[:startTime].presence || row[:start].presence || fallback
+      row[:startTime].presence || row[:start].presence || ''
     else
-      row[:endTime].presence || row[:end].presence || fallback
+      row[:endTime].presence || row[:end].presence || ''
     end
   end
 
   def teacher_duration_preset(teacher)
-    minutes = teacher.with_indifferent_access[:defaultLessonDurationMinutes].to_i
-    TeachersHelper::LESSON_DURATION_PRESETS.include?(minutes) ? minutes.to_s : 'custom'
+    minutes = teacher.with_indifferent_access[:defaultLessonDurationMinutes]
+    return '' if minutes.blank?
+
+    minutes = minutes.to_i
+    return '' unless minutes.positive?
+
+    LESSON_DURATION_PRESETS.include?(minutes) ? minutes.to_s : 'custom'
   end
 
   def lesson_format_label(format)

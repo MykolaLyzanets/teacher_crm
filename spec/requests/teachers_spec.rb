@@ -28,4 +28,15 @@ RSpec.describe 'Teacher form' do
     expect(response.body).to include('data-lesson-types-target="list"')
     expect(response.body).to include('data-lesson-types-mode-value="catalog"')
   end
+
+  it 'shows the teacher compensation rate on the profile' do
+    workspace = create(:workspace)
+    teacher = create(:teacher_profile, workspace:, compensation_percent: 45)
+    sign_in workspace.owner
+
+    get teacher_path(id: teacher.id)
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t('app.teachers.compensation_percentage', percent: 45))
+  end
 end

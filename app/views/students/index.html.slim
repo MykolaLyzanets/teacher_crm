@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.students.title')} | danlio"
 
-.students-page data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
+.students-page class=(student_profile_school_sections? ? nil : 'students-page--no-teacher-col') data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
   p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
   .students-page__header
     div
@@ -25,7 +25,7 @@
             option value="trial" = t('app.statuses.trial')
             option value="paused" = t('app.statuses.paused')
             option value="archived" = t('app.statuses.archived')
-          - if can_assign_teacher?
+          - if student_profile_school_sections?
             select aria-label=t('app.students.filter_teacher') data-students-target="teacher" data-action="change->students#filter"
               option value="all" = t('app.students.all_teachers')
               option value="assigned" = t('app.students.assigned')
@@ -58,7 +58,8 @@
         span = t('app.students.col_student')
         span = t('app.students.col_contact')
         span = t('app.students.col_grade')
-        span = t('app.students.col_teacher')
+        - if student_profile_school_sections?
+          span = t('app.students.col_teacher')
         span = t('app.students.col_status')
         span.students-page__align-right = t('app.students.col_actions')
       ul.students-page__list

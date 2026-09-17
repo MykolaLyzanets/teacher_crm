@@ -558,6 +558,7 @@ en:
       working_hours: Working hours
       copy_monday: Copy Monday to selected days
       default_duration: Default lesson duration
+      select_duration: Not selected
       minutes: "%{count} minutes"
       max_lessons: Maximum lessons per day
       lesson_formats: Lesson formats

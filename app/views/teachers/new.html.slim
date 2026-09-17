@@ -1,8 +1,7 @@
 - editing = @editing
 - teacher = (@teacher || {}).with_indifferent_access
 - working_days = Array(teacher[:workingDays])
-- working_days = %w[Monday Tuesday Wednesday Thursday Friday] if working_days.blank? && !editing
-- duration_preset = teacher.present? ? teacher_duration_preset(teacher) : '60'
+- duration_preset = teacher_duration_preset(teacher)
 - form_url = editing ? teacher_path(teacher[:id]) : teachers_path
 - form_method = editing ? :patch : :post
 - cancel_path = editing ? teacher_path(teacher[:id]) : teachers_path
@@ -164,8 +163,9 @@
         .teachers-page__fields
           label.teachers-page__field
             span = t('app.teachers.default_duration')
-            input type="hidden" name="default_lesson_duration_minutes" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : duration_preset) data-teachers-target="durationValue"
+            input type="hidden" name="default_lesson_duration_minutes" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : duration_preset.presence) data-teachers-target="durationValue"
             select data-teachers-target="durationPreset" data-action="change->teachers#toggleCustomDuration" name="duration_preset"
+              option value="" selected=(duration_preset.blank?) = t('app.teachers.select_duration')
               - [30, 45, 60, 90].each do |minutes|
                 option value=minutes selected=(duration_preset == minutes.to_s) = t('app.teachers.minutes', count: minutes)
               option value="custom" selected=(duration_preset == 'custom') = t('app.teachers.custom_duration')
@@ -180,7 +180,7 @@
             .teachers-page__chips
               - [['online', t('app.common.online')], ['in_person', t('app.common.in_person')], ['hybrid', t('app.common.hybrid')]].each do |value, label|
                 label.teachers-page__chip-toggle
-                  input type="checkbox" name="lesson_formats[]" value=value checked=Array(teacher[:lessonFormats].presence || ['online']).include?(value)
+                  input type="checkbox" name="lesson_formats[]" value=value checked=Array(teacher[:lessonFormats]).include?(value)
                   span = label
           fieldset.teachers-page__field.teachers-page__field--full
             legend.teachers-page__chips-label = t('app.teachers.calendar_color')

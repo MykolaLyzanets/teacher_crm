@@ -10,7 +10,11 @@ User.find_or_create_by!(email: admin_email) do |user|
   user.role = :admin
 end
 
-Demo::Seeder.call
+if ActiveModel::Type::Boolean.new.cast(ENV['SEED_DEMO'])
+  Demo::Seeder.call
+  puts 'Demo workspace ready: ava.thompson@example.com / DemoPass123'
+else
+  puts 'Demo workspace skipped (set SEED_DEMO=1 to seed demo teachers and students).'
+end
 
 puts "Admin user ready: #{admin_email}"
-puts 'Demo workspace ready: ava.thompson@example.com / DemoPass123'

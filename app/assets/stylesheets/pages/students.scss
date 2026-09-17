@@ -305,6 +305,13 @@
     }
   }
 
+  &--no-teacher-col &__table-head,
+  &--no-teacher-col &__row {
+    @media (min-width: 768px) {
+      grid-template-columns: 40px minmax(180px, 1.3fr) 1fr 110px 110px 118px;
+    }
+  }
+
   &__table-head {
     display: none;
     grid-template-columns: 40px minmax(180px, 1.3fr) 1fr 110px 140px 110px 118px;

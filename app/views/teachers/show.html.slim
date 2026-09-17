@@ -56,27 +56,6 @@
 
     .teachers-page__grid
       section.teachers-page__card
-        h2 = t('app.teachers.teaching_details')
-        dl.teachers-page__dl
-          div
-            dt = t('app.teachers.subjects')
-            dd = Array(teacher[:subjects]).presence&.join(', ') || '—'
-          div
-            dt = t('app.teachers.languages')
-            dd = Array(teacher[:languages]).map { |code| teacher_language_label(code) }.presence&.join(', ') || '—'
-          div
-            dt = t('app.teachers.experience')
-            dd = teacher[:experienceYears].present? ? t('app.teachers.experience_years', count: teacher[:experienceYears]) : '—'
-          - if teacher[:bio].present?
-            div
-              dt = t('app.teachers.bio')
-              dd = teacher[:bio]
-          - if can_view_finance? && @school_workspace
-            div
-              dt = t('app.teachers.compensation')
-              dd = t('app.teachers.compensation_percentage', percent: @catalog_teacher&.dig(:compensationPercent) || 60)
-
-      section.teachers-page__card
         h2 = t('app.teachers.availability_title')
         dl.teachers-page__dl
           div

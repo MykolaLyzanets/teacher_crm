@@ -83,7 +83,7 @@ class Lesson < ApplicationRecord
       actualDurationMinutes: actual_duration_minutes,
       lessonTypeId: lesson_type_id,
       lessonTypeName: lesson_type&.name,
-      compensationPercent: teacher_profile&.compensation_percent,
+      compensationPercent: teacher_profile&.compensation_rate || TeacherProfile::DEFAULT_COMPENSATION_PERCENT,
       priceCents: billed_price_cents,
       currency: billed_currency,
       cancellationReasonCode: cancellation_reason_code,

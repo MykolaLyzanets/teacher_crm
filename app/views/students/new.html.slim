@@ -90,23 +90,24 @@
             option value="paused" selected=(student[:status].to_s == 'paused') = t('app.statuses.paused')
             option value="archived" selected=(student[:status].to_s == 'archived') = t('app.statuses.archived')
           p.students-page__field-error hidden="hidden" data-error-for="status"
-        label.students-page__field.students-page__field--full
-          span = t('app.students.assigned_teacher')
-          - if can_assign_teacher?
-            - if auto_teacher
-              span.students-page__hint = t('app.students.assigned_teacher_auto')
-              p.students-page__locked-teacher = @teachers.first[:displayName].presence || [@teachers.first[:firstName], @teachers.first[:lastName]].compact_blank.join(' ')
-              input type="hidden" name="teacher_id" value=@teachers.first[:id]
+        - if student_profile_school_sections?
+          label.students-page__field.students-page__field--full
+            span = t('app.students.assigned_teacher')
+            - if can_assign_teacher?
+              - if auto_teacher
+                span.students-page__hint = t('app.students.assigned_teacher_auto')
+                p.students-page__locked-teacher = @teachers.first[:displayName].presence || [@teachers.first[:firstName], @teachers.first[:lastName]].compact_blank.join(' ')
+                input type="hidden" name="teacher_id" value=@teachers.first[:id]
+              - else
+                span.students-page__hint = t('app.students.assigned_teacher_hint')
+                select name="teacher_id"
+                  option value="" = t('app.students.select_teacher')
+                  - @teachers.each do |teacher|
+                    - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
+                    option value=teacher[:id] selected=(teacher[:id].to_s == student[:teacherId].to_s) = name
             - else
-              span.students-page__hint = t('app.students.assigned_teacher_hint')
-              select name="teacher_id"
-                option value="" = t('app.students.select_teacher')
-                - @teachers.each do |teacher|
-                  - name = teacher[:displayName].presence || [teacher[:firstName], teacher[:lastName]].compact_blank.join(' ')
-                  option value=teacher[:id] selected=(teacher[:id].to_s == student[:teacherId].to_s) = name
-          - else
-            span.students-page__hint = t('app.students.assigned_teacher_locked')
-            p.students-page__locked-teacher = current_user.teacher_profile&.display_label || t('app.common.teacher')
+              span.students-page__hint = t('app.students.assigned_teacher_locked')
+              p.students-page__locked-teacher = current_user.teacher_profile&.display_label || t('app.common.teacher')
 
     section.students-page__card
       h2 = t('app.students.contact_info')
@@ -156,33 +157,34 @@
             input type="tel" name="parent_phone" placeholder=t('app.students.phone_placeholder') value=student[:parentPhone] data-students-target="parentPhone" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
 
-    section.students-page__card
-      h2 = t('app.students.learning_details')
-      p.students-page__section-sub = t('app.students.learning_sub')
-      .students-page__fields
-        label.students-page__field
-          span = t('app.students.grade_class')
-          select name="grade"
-            option value="" = t('app.students.select_grade')
-            - grades, selected_grade = student_grade_options(student[:grade])
-            - grades.each do |grade|
-              option value=grade selected=(grade.to_s == selected_grade.to_s) = grade
-          span.students-page__hint = t('app.students.optional_field')
-        label.students-page__field
-          span = t('app.students.student_id')
-          input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
-          span.students-page__hint = t('app.students.student_id_hint')
-        label.students-page__field
-          span = t('app.students.enrollment')
-          input type="date" name="enrollment_date" value=enrollment_default
-          span.students-page__hint = t('app.students.optional_field')
-        label.students-page__field
-          span = t('app.students.academic_year')
-          select name="academic_year"
-            option value="" = t('app.students.select_year')
-            - StudentsHelper::ACADEMIC_YEARS.each do |year|
-              option value=year selected=(year == student[:academicYear].to_s) = year
-          span.students-page__hint = t('app.students.optional_field')
+    - if student_profile_school_sections?
+      section.students-page__card
+        h2 = t('app.students.learning_details')
+        p.students-page__section-sub = t('app.students.learning_sub')
+        .students-page__fields
+          label.students-page__field
+            span = t('app.students.grade_class')
+            select name="grade"
+              option value="" = t('app.students.select_grade')
+              - grades, selected_grade = student_grade_options(student[:grade])
+              - grades.each do |grade|
+                option value=grade selected=(grade.to_s == selected_grade.to_s) = grade
+            span.students-page__hint = t('app.students.optional_field')
+          label.students-page__field
+            span = t('app.students.student_id')
+            input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
+            span.students-page__hint = t('app.students.student_id_hint')
+          label.students-page__field
+            span = t('app.students.enrollment')
+            input type="date" name="enrollment_date" value=enrollment_default
+            span.students-page__hint = t('app.students.optional_field')
+          label.students-page__field
+            span = t('app.students.academic_year')
+            select name="academic_year"
+              option value="" = t('app.students.select_year')
+              - StudentsHelper::ACADEMIC_YEARS.each do |year|
+                option value=year selected=(year == student[:academicYear].to_s) = year
+            span.students-page__hint = t('app.students.optional_field')
 
     section.students-page__card
       h2 = t('app.students.lesson_preferences')

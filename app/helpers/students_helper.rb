@@ -103,13 +103,17 @@ module StudentsHelper
     t("app.calendar.weekdays_short.#{key}", default: day.to_s[0, 3])
   end
 
+  def student_profile_school_sections?
+    user_signed_in? && current_user.workspace&.school?
+  end
+
   def student_stats_cards(stats)
     stats = stats.with_indifferent_access
     cards = [
       { id: 'all', label: t('app.students.stats_total'), value: stats[:totalStudents], support: t('app.students.stats_total_support'), icon: 'students', aria: t('app.students.stats_total_aria') },
       { id: 'active', label: t('app.students.stats_active'), value: stats[:activeStudents], support: percent_of_total(stats[:activeStudents], stats[:totalStudents]), icon: 'grad', aria: t('app.students.stats_active_aria') }
     ]
-    if can_assign_teacher?
+    if student_profile_school_sections?
       cards += [
         { id: 'assigned', label: t('app.students.stats_assigned'), value: stats[:assignedStudents], support: percent_of_total(stats[:assignedStudents], stats[:totalStudents]), icon: 'user-check', aria: t('app.students.stats_assigned_aria') },
         { id: 'unassigned', label: t('app.students.stats_unassigned'), value: stats[:unassignedStudents], support: percent_of_total(stats[:unassignedStudents], stats[:totalStudents]), icon: 'user-x', aria: t('app.students.stats_unassigned_aria') }
