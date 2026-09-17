@@ -20,6 +20,7 @@ class AppController < ApplicationController
       'teachers' => 'teachers',
       'dashboard' => 'dashboard',
       'payments' => 'payments',
+      'homework' => 'homework',
       'pages' => 'placeholder',
       'settings' => 'settings',
       'profiles' => 'settings'

@@ -1,0 +1,54 @@
+.danlio-modal.danlio-modal--lg.homework-page__modal hidden="hidden" data-homework-target="formModal"
+  button.danlio-modal__backdrop type="button" aria-label=t('app.common.close') data-action="homework#closeForm"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="homework-form-title"
+    .danlio-modal__head
+      div
+        h2#homework-form-title.danlio-modal__title data-homework-target="formTitle" = t('app.homework.add')
+        p.danlio-modal__desc data-homework-target="formDesc"
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="homework#closeForm" data-modal-focus="true"
+        = homework_icon 'x', size: 20
+    .danlio-modal__body
+      .homework-page__summary-card data-homework-target="formSummary"
+      label.homework-page__field
+        span
+          = t('app.homework.field_title')
+          abbr.homework-page__req title="required" *
+        input type="text" data-homework-target="formName" autocomplete="off"
+        p.homework-page__hint data-homework-target="formTitleHint" = t('app.homework.title_suggested')
+      label.homework-page__field
+        span data-homework-target="formStudentLabel" = t('app.homework.field_student')
+        input type="text" readonly="readonly" data-homework-target="formStudent"
+      .homework-page__students hidden="hidden" data-homework-target="formStudentsWrap"
+        p.homework-page__field-label
+          = t('app.homework.field_students')
+          abbr.homework-page__req title="required" *
+        p.homework-page__hint data-homework-target="formStudentsCount"
+        ul.homework-page__check-list data-homework-target="formStudents" data-action="change->homework#updateSelectedCount"
+      label.homework-page__field
+        span = t('app.homework.field_subject')
+        input type="text" readonly="readonly" data-homework-target="formSubject"
+      .homework-page__field-grid
+        label.homework-page__field
+          span
+            = t('app.homework.field_due_date')
+            abbr.homework-page__req title="required" *
+          input type="date" data-homework-target="formDueDate"
+          p.homework-page__hint = t('app.homework.due_default')
+        label.homework-page__field
+          span = t('app.homework.field_due_time')
+          input type="time" data-homework-target="formDueTime"
+      label.homework-page__field
+        span
+          = t('app.homework.field_instructions')
+          abbr.homework-page__req title="required" *
+        textarea rows="4" placeholder=t('app.homework.instructions_placeholder') data-homework-target="formInstructions"
+      p.homework-page__warn hidden="hidden" data-homework-target="formSubmittedNote" = t('app.homework.already_submitted')
+      = render 'materials_field'
+      label.homework-page__field
+        span = t('app.homework.field_private_note')
+        textarea rows="3" placeholder=t('app.homework.private_note_placeholder') data-homework-target="formNote"
+        p.homework-page__hint = t('app.homework.private_note_hint')
+      p.homework-page__error hidden="hidden" role="alert" data-homework-target="formError"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="homework#closeForm" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="homework#saveForm" data-homework-target="formSubmit" = t('app.homework.assign')

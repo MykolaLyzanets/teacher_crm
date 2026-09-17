@@ -1,0 +1,83 @@
+- payload = homework_row_payload(item)
+- status = payload[:status]
+- attachments = payload[:attachments]
+- lesson_title = payload[:lessonTitle]
+- template_row = local_assigns[:template]
+
+li.homework-page__row[
+  hidden=(true if template_row)
+  data-homework-target=(template_row ? 'rowTemplate' : 'row')
+  data-id=payload[:id]
+  data-tab=payload[:tab]
+  data-status=status
+  data-subject=payload[:subject]
+  data-student-ids=payload[:studentIds].join(',')
+  data-search=payload[:search]
+  data-title=payload[:title]
+  data-teacher=payload[:teacher]
+  data-submission-ids=payload[:submissionIds].join(',')
+  data-review-ids=payload[:reviewIds].join(',')
+  data-has-submission=(payload[:hasSubmission] ? 'true' : 'false')
+  data-student-name=payload[:studentName]
+  data-student-label=payload[:studentLabel]
+  data-student-initials=payload[:studentInitials]
+  data-assigned-date=payload[:assignedDate]
+  data-due-date=payload[:dueDate]
+  data-due-time=payload[:dueTime]
+  data-submitted-at=payload[:submittedAt]
+  data-instructions=payload[:instructions]
+  data-feedback=payload[:feedback]
+  data-response=payload[:response]
+  data-private-note=payload[:privateNote]
+  data-lesson-title=lesson_title
+  data-attachments=attachments
+  data-material-ids=payload[:materialIds].join(',')
+  data-late=(payload[:late] ? 'true' : 'false')
+  data-can-review=(payload[:canReview] ? 'true' : 'false')
+]
+  article.homework-page__card
+    .homework-page__card-top
+      .homework-page__person
+        span.homework-page__avatar = payload[:studentInitials]
+        div
+          p.homework-page__card-title = payload[:title]
+          p.homework-page__muted = payload[:studentLabel]
+      span.status-badge class="status-badge--#{teacher_homework_status_tone(status)}" data-homework-badge=""
+        = teacher_homework_status_label(status)
+    p.homework-page__muted
+      = lesson_title.presence || '—'
+      - if payload[:subject].present?
+        =< '·'
+        =< payload[:subject]
+    p.homework-page__card-meta
+      span = t('app.homework.assigned_on', date: homework_date_label(payload[:assignedDate]))
+      span = t('app.homework.due_on', date: homework_date_label(payload[:dueDate]))
+      - if attachments.positive?
+        span.homework-page__files
+          = homework_icon 'paperclip', size: 14
+          = attachments
+    .homework-page__actions
+      = render 'actions', can_review: payload[:canReview]
+
+  .homework-page__desktop
+    .homework-page__person
+      span.homework-page__avatar.homework-page__avatar--sm = payload[:studentInitials]
+      div
+        p.homework-page__card-title = payload[:title]
+        p.homework-page__muted = payload[:studentLabel]
+    p.homework-page__cell = lesson_title.presence || '—'
+    p.homework-page__cell = payload[:subject].presence || '—'
+    p.homework-page__muted = homework_date_label(payload[:assignedDate])
+    p.homework-page__muted = homework_date_label(payload[:dueDate])
+    p.homework-page__muted
+      - if attachments.positive?
+        span.homework-page__files
+          = homework_icon 'paperclip', size: 14
+          = attachments
+      - else
+        | —
+    div
+      span.status-badge class="status-badge--#{teacher_homework_status_tone(status)}" data-homework-badge=""
+        = teacher_homework_status_label(status)
+    .homework-page__desktop-actions
+      = render 'actions', can_review: payload[:canReview]

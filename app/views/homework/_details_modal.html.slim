@@ -1,0 +1,23 @@
+.danlio-modal.danlio-modal--md.homework-page__modal hidden="hidden" data-homework-target="detailsModal"
+  button.danlio-modal__backdrop type="button" aria-label=t('app.common.close') data-action="homework#closeDetails"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="homework-details-title"
+    .danlio-modal__head
+      div
+        h2#homework-details-title.danlio-modal__title data-homework-target="detailsTitle"
+        p.danlio-modal__desc data-homework-target="detailsDesc"
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="homework#closeDetails" data-modal-focus="true"
+        = homework_icon 'x', size: 20
+    .danlio-modal__body
+      section.homework-page__details-block data-homework-target="detailsInstructionsWrap"
+        h3 = t('app.homework.instructions')
+        p.homework-page__details-copy data-homework-target="detailsInstructions"
+      section.homework-page__details-block
+        h3 = t('app.homework.materials')
+        ul.homework-page__attachment-list data-homework-target="detailsMaterials"
+        p.homework-page__muted data-homework-target="detailsMaterialsEmpty" = t('app.homework.no_materials')
+      = render 'homework/submission_panel',
+        no_submission_target: 'detailsNoSubmission',
+        written_wrap_target: 'detailsWrittenWrap',
+        response_target: 'detailsSubmission',
+        list_target: 'detailsSubmissionList',
+        empty_target: 'detailsSubmissionEmpty'

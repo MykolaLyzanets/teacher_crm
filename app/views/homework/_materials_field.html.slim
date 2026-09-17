@@ -1,0 +1,43 @@
+- scope = local_assigns.fetch(:scope, 'form')
+- title = local_assigns.fetch(:title) { t('app.homework.materials_title') }
+- text = local_assigns.fetch(:text) { t('app.homework.materials_text') }
+
+section.homework-page__materials
+  div
+    h3.homework-page__materials-title = title
+    p.homework-page__hint = text
+  .homework-page__upload-actions
+    button.homework-page__upload-btn type="button" data-action="homework#pickVideo"
+      = homework_icon 'video', size: 16
+      span = t('app.homework.upload_video')
+    button.homework-page__upload-btn type="button" data-action="homework#pickFiles"
+      = homework_icon 'paperclip', size: 16
+      span = t('app.homework.attach_files')
+    button.homework-page__upload-btn type="button" data-action="homework#toggleLink"
+      = homework_icon 'link', size: 16
+      span = t('app.homework.add_link')
+  input.sr-only type="file" accept="video/mp4,video/quicktime,video/webm,video/x-m4v" aria-label=t('app.homework.upload_video') data-homework-target=homework_materials_target(scope, 'videoInput') data-action="change->homework#addVideoFiles"
+  input.sr-only type="file" multiple="multiple" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,image/jpeg,image/png,image/webp,audio/mpeg,audio/mp4,audio/wav,audio/webm" aria-label=t('app.homework.attach_files') data-homework-target=homework_materials_target(scope, 'fileInput') data-action="change->homework#addFiles"
+  .homework-page__link-form hidden="hidden" data-homework-target=homework_materials_target(scope, 'linkForm')
+    label.homework-page__field
+      span = t('app.homework.link_url')
+      input type="url" placeholder="https://example.com/resource" data-homework-target=homework_materials_target(scope, 'linkUrl')
+    label.homework-page__field
+      span = t('app.homework.link_title')
+      input type="text" placeholder=t('app.homework.link_title_placeholder') data-homework-target=homework_materials_target(scope, 'linkTitle')
+    p.homework-page__error hidden="hidden" data-homework-target=homework_materials_target(scope, 'linkError')
+    .homework-page__link-actions
+      button.homework-page__link-add type="button" data-action="homework#saveLink" = t('app.homework.add_link')
+      button.homework-page__link-cancel type="button" data-action="homework#toggleLink" = t('app.common.cancel')
+  .homework-page__dropzone data-homework-target=homework_materials_target(scope, 'dropzone') data-action="dragenter->homework#dragEnter dragover->homework#dragOver dragleave->homework#dragLeave drop->homework#dropFiles"
+    = homework_icon 'upload', size: 18
+    span = t('app.homework.drop_files')
+    button.homework-page__browse type="button" data-action="homework#pickFiles" = t('app.homework.browse')
+  p.homework-page__materials-limits = t('app.homework.materials_limits')
+  p.homework-page__error hidden="hidden" data-homework-target=homework_materials_target(scope, 'materialsError')
+  ul.homework-page__attachment-list data-homework-target=homework_materials_target(scope, 'attachmentList')
+  button.homework-page__library-btn type="button" data-action="homework#toggleLibrary"
+    span = t('app.homework.attach_from_materials')
+  .homework-page__library hidden="hidden" data-homework-target=homework_materials_target(scope, 'library')
+    p.homework-page__hint = t('app.homework.library_hint')
+    ul.homework-page__library-list data-homework-target=homework_materials_target(scope, 'libraryList')

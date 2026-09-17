@@ -34,6 +34,9 @@ application.register("student-materials", StudentMaterialsController)
 import LessonsController from "./lessons_controller"
 application.register("lessons", LessonsController)
 
+import HomeworkController from "./homework_controller"
+application.register("homework", HomeworkController)
+
 import LessonDrawerController from "./lesson_drawer_controller"
 application.register("lesson-drawer", LessonDrawerController)
 

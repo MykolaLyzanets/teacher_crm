@@ -1100,6 +1100,129 @@ ua:
         group: Група
         trial: Пробний
         consultation: Консультація
+    homework:
+      title: Домашні
+      subtitle: Відстежуйте завдання та перевіряйте роботи учнів.
+      add: Додати домашнє
+      add_desc: Створіть завдання для %{name} на основі цього уроку.
+      edit_title: Редагувати домашнє
+      edit_desc: Оновіть завдання для %{name}.
+      assign: Призначити домашнє
+      save: Зберегти зміни
+      view: Переглянути
+      edit: Редагувати
+      review_submission: Перевірити роботу
+      review_title: Перевірка роботи
+      tabs_aria: Статус домашніх
+      tab_to_review: На перевірку
+      tab_active: Активні
+      tab_overdue: Прострочені
+      tab_reviewed: Перевірені
+      tab_all: Усі
+      stat_to_review: На перевірку
+      stat_active: Активні
+      stat_overdue: Прострочені
+      stat_reviewed_month: Перевірено цього місяця
+      search_placeholder: Пошук за учнем або назвою…
+      search_aria: Пошук за учнем або назвою
+      filter_student: Фільтр за учнем
+      filter_subject: Фільтр за предметом
+      filter_status: Фільтр за статусом
+      all_students: Усі учні
+      all_subjects: Усі предмети
+      all_statuses: Усі статуси
+      col_student: Учень / Завдання
+      col_lesson: Повʼязаний урок
+      col_subject: Предмет
+      col_assigned: Призначено
+      col_due: Дедлайн
+      col_files: Файли
+      col_status: Статус
+      col_actions: Дії
+      empty_title: Домашніх ще немає
+      empty_text: Призначте домашнє з завершеного уроку — і воно зʼявиться тут.
+      none_title: Нічого не знайдено
+      none_text: Спробуйте змінити пошук або фільтри.
+      assigned_on: "Призначено %{date}"
+      due_on: "До %{date}"
+      more_students: "%{name} +ще %{count}"
+      select_lesson: Оберіть урок
+      select_lesson_text: Оберіть завершений урок, до якого ще немає домашнього.
+      select_search: Пошук за учнем або предметом…
+      select_empty: Немає завершених уроків без домашнього.
+      select_empty_text: Спочатку завершіть урок, а тоді поверніться призначити домашнє.
+      select_none: Жоден урок не відповідає пошуку.
+      field_title: Назва
+      field_student: Учень
+      field_students: Учні
+      field_subject: Предмет / курс
+      field_due_date: Дедлайн
+      field_due_time: Час здачі
+      field_instructions: Інструкція
+      field_private_note: Приватна нотатка
+      field_feedback: Відгук
+      title_suggested: Підказано з теми уроку
+      title_from_topic: "%{topic} — практика"
+      practice_fallback: Практичне завдання
+      due_default: За 7 днів
+      instructions_placeholder: Що учень має зробити до наступного уроку?
+      private_note_placeholder: Необовʼязкові нотатки лише для себе…
+      private_note_hint: Бачать лише викладачі — учневі не показується.
+      already_submitted: Учень уже здав це домашнє. Зміна інструкції, дедлайну чи файлів не вплине на здану роботу.
+      materials_title: Матеріали та вкладення
+      materials_text: Додайте файли, навчальні матеріали або відеопояснення.
+      upload_video: Завантажити відео
+      attach_files: Прикріпити файли
+      add_link: Додати посилання
+      drop_files: Перетягніть файли сюди або
+      browse: оберіть
+      materials_limits: До 10 файлів. Документи до 25 МБ, відео до 500 МБ. PDF, Office, текст, зображення, аудіо, MP4, MOV, WEBM і M4V.
+      attach_from_materials: Додати з матеріалів
+      attach_item: Додати
+      library_hint: Оберіть матеріал, який уже є в робочому просторі.
+      link_url: URL посилання
+      link_title: Назва посилання
+      link_title_placeholder: Навчальний ресурс
+      link_required: Введіть коректний URL.
+      too_many_files: Можна додати не більше 10 вкладень.
+      file_too_large: Цей файл завеликий.
+      remove_attachment: Видалити
+      instructions_required: Додайте інструкцію для учня.
+      due_required: Оберіть дату дедлайну.
+      assigned_toast: Домашнє призначено.
+      updated_toast: Домашнє оновлено.
+      reviewed_toast: Домашнє позначено як перевірене.
+      revision_toast: Запитано доопрацювання.
+      instructions: Інструкція
+      materials: Матеріали
+      no_materials: Матеріалів немає.
+      student_submission: Робота учня
+      written_answer: Письмова відповідь
+      submission_materials: Матеріали здачі
+      no_submission: Роботу не здано.
+      correction_title: Додайте виправлений файл або матеріал
+      correction_text: Необовʼязково — поділіться виправленою версією або додатковим ресурсом.
+      submission: Робота учня
+      submitted: Здано
+      late: Здано із запізненням
+      feedback_placeholder: Напишіть відгук для учня…
+      feedback_required: Обовʼязково, якщо просите доопрацювання.
+      feedback_required_error: Додайте відгук, перш ніж просити доопрацювання.
+      request_revision: Попросити доопрацювання
+      mark_reviewed: Позначити перевіреним
+      students_selected:
+        one: "Обрано %{count} учня"
+        few: "Обрано %{count} учні"
+        many: "Обрано %{count} учнів"
+        other: "Обрано %{count} учнів"
+      students_selected_label: "Обрано %{count}"
+      student_fallback: Учень
+      statuses:
+        assigned: Призначено
+        submitted: Здано
+        needs_revision: Потрібне доопрацювання
+        reviewed: Перевірено
+        overdue: Прострочено
     pages:
       coming_soon_text: Цей розділ є частиною робочого простору Danlio і зʼявиться в наступному оновленні.
       back_dashboard: До огляду
@@ -1108,7 +1231,7 @@ ua:
         description: Керуйте всіма уроками та переглядайте їх.
       homework:
         title: Домашні завдання
-        description: Призначайте та перевіряйте домашні в одному місці.
+        description: Відстежуйте завдання та перевіряйте роботи учнів.
       materials:
         title: Матеріали
         description: Завантажуйте та діліться матеріалами з учнями.

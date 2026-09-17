@@ -1,0 +1,40 @@
+.danlio-modal.danlio-modal--lg.homework-page__modal hidden="hidden" data-homework-target="reviewModal"
+  button.danlio-modal__backdrop type="button" aria-label=t('app.common.close') data-action="homework#closeReview"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="homework-review-title"
+    .danlio-modal__head
+      div
+        h2#homework-review-title.danlio-modal__title = t('app.homework.review_title')
+        p.danlio-modal__desc data-homework-target="reviewDesc"
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="homework#closeReview" data-modal-focus="true"
+        = homework_icon 'x', size: 20
+    .danlio-modal__body
+      section.homework-page__summary-card
+        p.homework-page__summary-title data-homework-target="reviewTitle"
+        p.homework-page__muted data-homework-target="reviewMeta"
+        p.homework-page__details-copy data-homework-target="reviewInstructions"
+        .homework-page__original hidden="hidden" data-homework-target="reviewOriginalWrap"
+          ul.homework-page__attachment-list data-homework-target="reviewOriginalList"
+      section
+        .homework-page__review-head
+          h3 = t('app.homework.submitted')
+          span.homework-page__muted data-homework-target="reviewSubmittedAt"
+          span.homework-page__late hidden="hidden" data-homework-target="reviewLate" = t('app.homework.late')
+      = render 'submission_panel',
+        show_empty: false,
+        written_wrap_target: 'reviewWrittenWrap',
+        response_target: 'reviewResponse',
+        list_target: 'reviewSubmissionList',
+        empty_target: 'reviewSubmissionEmpty'
+      label.homework-page__field
+        span = t('app.homework.field_feedback')
+        textarea rows="4" placeholder=t('app.homework.feedback_placeholder') data-homework-target="reviewFeedback" data-action="input->homework#clearReviewError"
+        p.homework-page__hint = t('app.homework.feedback_required')
+      = render 'materials_field',
+        scope: 'review',
+        title: t('app.homework.correction_title'),
+        text: t('app.homework.correction_text')
+      p.homework-page__error hidden="hidden" role="alert" data-homework-target="reviewError"
+    .danlio-modal__foot.danlio-modal__foot--triple
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="homework#closeReview" = t('app.common.cancel')
+      button.danlio-modal__btn.homework-page__revision-btn type="button" data-action="homework#requestRevision" = t('app.homework.request_revision')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="homework#markReviewed" = t('app.homework.mark_reviewed')

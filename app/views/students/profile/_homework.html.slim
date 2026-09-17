@@ -24,7 +24,22 @@
         tbody
           - homework.each do |item|
             - facing = Demo::Portal.facing_status(item)
-            tr
+            - payload = homework_row_payload(item)
+            tr[
+              data-homework-target="row"
+              data-id=payload[:id]
+              data-title=payload[:title]
+              data-teacher=payload[:teacher]
+              data-subject=payload[:subject]
+              data-due-date=payload[:dueDate]
+              data-submitted-at=payload[:submittedAt]
+              data-instructions=payload[:instructions]
+              data-feedback=payload[:feedback]
+              data-response=payload[:response]
+              data-material-ids=payload[:materialIds].join(',')
+              data-submission-ids=payload[:submissionIds].join(',')
+              data-has-submission=(payload[:hasSubmission] ? 'true' : 'false')
+            ]
               td = item[:title]
               td = student_profile_date_label(item[:assignedDate])
               td = student_profile_date_label(item[:dueDate])
@@ -33,4 +48,6 @@
                 span class="status-badge status-badge--#{student_homework_tone(facing)}" = t("app.student_portal.homework.statuses.#{facing}", default: facing.to_s.humanize)
               td = item[:score].presence || item[:feedback].presence || '—'
               td
-                = link_to t('app.students.open_homework'), homework_path, class: 'students-page__text-link students-page__text-link--lg'
+                button.students-page__text-link.students-page__text-link--lg type="button" data-action="homework#openView" = t('app.students.open_homework')
+
+  = render 'homework/details_modal'

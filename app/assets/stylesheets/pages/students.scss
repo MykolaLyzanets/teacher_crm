@@ -1819,8 +1819,10 @@
 
   &__text-link {
     border: 0;
+    padding: 0;
     background: transparent;
     color: var(--olive);
+    font-family: inherit;
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;

@@ -1,0 +1,10 @@
+.homework-page__action-row
+  button.homework-page__action type="button" hidden=(true unless can_review) data-action="homework#openReview" data-review-action="true"
+    = homework_icon 'eye', size: 16
+    span = t('app.homework.review_submission')
+  button.homework-page__action class=("homework-page__action--muted" if can_review) type="button" data-action="homework#openView"
+    = homework_icon 'eye', size: 16
+    span = t('app.homework.view')
+  button.homework-page__action.homework-page__action--muted type="button" data-action="homework#openEdit"
+    = homework_icon 'pencil', size: 16
+    span = t('app.homework.edit')

@@ -3,6 +3,7 @@
 class StudentsController < AppController
   helper LessonsHelper
   helper FinanceHelper
+  helper HomeworkHelper
   before_action :require_workspace!, only: %i[new create edit update destroy assign_dialog assign status_dialog bulk_status unassign unassign_dialog delete_dialog]
   before_action :require_assign_permission!, only: %i[assign_dialog assign unassign unassign_dialog]
   before_action :set_student_record, only: %i[show edit update destroy unassign unassign_dialog]
@@ -34,6 +35,7 @@ class StudentsController < AppController
       @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
     end
     @profile_tab = student_profile_tab
+    @materials_by_id = Demo::Catalog.materials.index_by { |item| item[:id].to_s }
   end
 
   def new

@@ -1,0 +1,106 @@
+- content_for :title, "#{t('app.homework.title')} | danlio"
+- summary = @homework_summary
+- default_tab = @default_tab
+
+.homework-page[
+  data-controller="homework"
+  data-homework-tab-value=default_tab
+  data-homework-locale-value=I18n.locale
+  data-homework-i18n-value=app_i18n_json('app.homework', 'app.common')
+  data-homework-library-value=@materials_by_id.to_json
+]
+  p.homework-page__toast hidden="hidden" role="status" data-homework-target="toast"
+
+  .homework-page__header
+    div
+      h1.homework-page__title = t('app.homework.title')
+      p.homework-page__subtitle = t('app.homework.subtitle')
+    button.homework-page__primary-btn type="button" data-action="homework#openAdd"
+      = homework_icon 'plus', size: 20
+      span = t('app.homework.add')
+
+  .homework-page__stats
+    .homework-page__stat class=("is-warn" if summary[:toReview].positive?) data-homework-target="stat" data-stat="toReview"
+      span.homework-page__stat-icon
+        = homework_icon 'clipboard-check', size: 20
+      span
+        strong data-homework-target="statValue" data-stat="toReview" = summary[:toReview]
+        span = t('app.homework.stat_to_review')
+    .homework-page__stat data-homework-target="stat" data-stat="active"
+      span.homework-page__stat-icon
+        = homework_icon 'clock', size: 20
+      span
+        strong data-homework-target="statValue" data-stat="active" = summary[:active]
+        span = t('app.homework.stat_active')
+    .homework-page__stat class=("is-warn" if summary[:overdue].positive?) data-homework-target="stat" data-stat="overdue"
+      span.homework-page__stat-icon
+        = homework_icon 'alert-triangle', size: 20
+      span
+        strong data-homework-target="statValue" data-stat="overdue" = summary[:overdue]
+        span = t('app.homework.stat_overdue')
+    .homework-page__stat data-homework-target="stat" data-stat="reviewedThisMonth"
+      span.homework-page__stat-icon
+        = homework_icon 'circle-check', size: 20
+      span
+        strong data-homework-target="statValue" data-stat="reviewedThisMonth" = summary[:reviewedThisMonth]
+        span = t('app.homework.stat_reviewed_month')
+
+  section.homework-page__panel
+    .homework-page__toolbar
+      div.homework-page__tabs role="tablist" aria-label=t('app.homework.tabs_aria')
+        - HomeworkHelper::TABS.each do |tab|
+          button.homework-page__tab type="button" role="tab" aria-selected=(tab == default_tab ? 'true' : 'false') data-homework-target="tab" data-tab=tab data-action="homework#selectTab"
+            = t("app.homework.tab_#{tab}")
+
+      .homework-page__filters
+        .homework-page__search
+          = homework_icon 'search', size: 18
+          input type="search" placeholder=t('app.homework.search_placeholder') aria-label=t('app.homework.search_aria') data-homework-target="search" data-action="input->homework#filter"
+        select.homework-page__select aria-label=t('app.homework.filter_student') data-homework-target="student" data-action="change->homework#filter"
+          option value="all" = t('app.homework.all_students')
+          - @student_options.each do |id, name|
+            option value=id = name
+        select.homework-page__select aria-label=t('app.homework.filter_subject') data-homework-target="subject" data-action="change->homework#filter"
+          option value="all" = t('app.homework.all_subjects')
+          - @subject_options.each do |subject|
+            option value=subject = subject
+        select.homework-page__select aria-label=t('app.homework.filter_status') data-homework-target="status" data-action="change->homework#filter"
+          option value="all" = t('app.homework.all_statuses')
+          - HomeworkHelper::STATUS_FILTERS.each do |status|
+            option value=status = teacher_homework_status_label(status)
+
+    .homework-page__empty data-homework-target="catalogEmpty" hidden=(true if @homework_items.any?)
+      .homework-page__empty-icon
+        = homework_icon 'clipboard-check', size: 24
+      h2 = t('app.homework.empty_title')
+      p = t('app.homework.empty_text')
+      button.homework-page__primary-btn type="button" data-action="homework#openAdd"
+        = homework_icon 'plus', size: 20
+        span = t('app.homework.add')
+
+    .homework-page__empty hidden="hidden" data-homework-target="filterEmpty"
+      .homework-page__empty-icon
+        = homework_icon 'search', size: 24
+      h2 = t('app.homework.none_title')
+      p = t('app.homework.none_text')
+      button.homework-page__clear type="button" data-action="homework#clearFilters" = t('app.common.clear_filters')
+
+    .homework-page__table data-homework-target="table" hidden=(true if @homework_items.empty?)
+      .homework-page__head
+        span = t('app.homework.col_student')
+        span = t('app.homework.col_lesson')
+        span = t('app.homework.col_subject')
+        span = t('app.homework.col_assigned')
+        span = t('app.homework.col_due')
+        span = t('app.homework.col_files')
+        span = t('app.homework.col_status')
+        span.homework-page__head-actions = t('app.homework.col_actions')
+      ul.homework-page__list data-homework-target="list"
+        - @homework_items.each do |item|
+          = render 'row', item: item
+        = render 'row', item: homework_template_item, template: true
+
+  = render 'select_lesson_modal'
+  = render 'form_modal'
+  = render 'details_modal'
+  = render 'review_modal'

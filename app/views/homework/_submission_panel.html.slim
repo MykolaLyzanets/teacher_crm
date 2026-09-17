@@ -1,0 +1,13 @@
+- show_empty = local_assigns.fetch(:show_empty, true)
+
+section.homework-page__details-block
+  h3 = t('app.homework.student_submission')
+  - if show_empty
+    p.homework-page__muted data-homework-target=no_submission_target = t('app.homework.no_submission')
+  .homework-page__written hidden="hidden" data-homework-target=written_wrap_target
+    p.homework-page__written-label = t('app.homework.written_answer')
+    p.homework-page__details-copy data-homework-target=response_target
+  section.homework-page__details-block
+    h3.homework-page__materials-title = t('app.homework.submission_materials')
+    ul.homework-page__attachment-list data-homework-target=list_target
+    p.homework-page__muted hidden="hidden" data-homework-target=empty_target = t('app.homework.no_materials')

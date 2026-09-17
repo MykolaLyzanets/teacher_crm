@@ -85,7 +85,9 @@ Rails.application.routes.draw do
       get 'notifications', to: 'student_portal#notifications'
     end
 
-    %w[homework materials reports messages].each do |page|
+    get 'homework', to: 'homework#index', as: :homework
+
+    %w[materials reports messages].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page
     end
 

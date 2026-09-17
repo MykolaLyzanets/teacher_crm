@@ -1094,6 +1094,127 @@ en:
         group: Group
         trial: Trial
         consultation: Consultation
+    homework:
+      title: Homework
+      subtitle: Track assignments and review student submissions.
+      add: Add homework
+      add_desc: Create an assignment for %{name} based on this lesson.
+      edit_title: Edit homework
+      edit_desc: Update the assignment for %{name}.
+      assign: Assign homework
+      save: Save changes
+      view: View
+      edit: Edit
+      review_submission: Review submission
+      review_title: Review submission
+      tabs_aria: Homework status
+      tab_to_review: To review
+      tab_active: Active
+      tab_overdue: Overdue
+      tab_reviewed: Reviewed
+      tab_all: All
+      stat_to_review: To review
+      stat_active: Active
+      stat_overdue: Overdue
+      stat_reviewed_month: Reviewed this month
+      search_placeholder: Search by student or title…
+      search_aria: Search by student or title
+      filter_student: Filter by student
+      filter_subject: Filter by subject
+      filter_status: Filter by status
+      all_students: All students
+      all_subjects: All subjects
+      all_statuses: All statuses
+      col_student: Student / Homework
+      col_lesson: Related lesson
+      col_subject: Subject
+      col_assigned: Assigned
+      col_due: Due
+      col_files: Files
+      col_status: Status
+      col_actions: Actions
+      empty_title: No homework yet
+      empty_text: Assign homework from a completed lesson and it will appear here.
+      none_title: No homework found
+      none_text: Try changing your search or filters.
+      assigned_on: "Assigned %{date}"
+      due_on: "Due %{date}"
+      more_students: "%{name} +%{count} more"
+      select_lesson: Select a lesson
+      select_lesson_text: Choose a completed lesson that doesn't have homework yet.
+      select_search: Search by student or subject…
+      select_empty: No completed lessons without homework yet.
+      select_empty_text: Complete a lesson first, then come back to assign homework for it.
+      select_none: No lessons match your search.
+      field_title: Title
+      field_student: Student
+      field_students: Students
+      field_subject: Subject / course
+      field_due_date: Due date
+      field_due_time: Due time
+      field_instructions: Instructions
+      field_private_note: Private note
+      field_feedback: Feedback
+      title_suggested: Suggested from lesson topic
+      title_from_topic: "%{topic} practice"
+      practice_fallback: Practice assignment
+      due_default: Due in 7 days
+      instructions_placeholder: What should the student do before the next lesson?
+      private_note_placeholder: Optional notes for your own reference…
+      private_note_hint: Only visible to teachers — never shown to the student.
+      already_submitted: This student already submitted this homework. Changing instructions, the due date or attachments will not affect their submission.
+      materials_title: Materials & attachments
+      materials_text: Add files, learning materials or a video explanation.
+      upload_video: Upload video
+      attach_files: Attach files
+      add_link: Add link
+      drop_files: Drop files here or
+      browse: browse
+      materials_limits: Up to 10 files. Documents up to 25 MB, video up to 500 MB. PDF, Office, text, images, audio, MP4, MOV, WEBM and M4V.
+      attach_from_materials: Attach from materials
+      attach_item: Add
+      library_hint: Choose a material already shared in the workspace.
+      link_url: Link URL
+      link_title: Link title
+      link_title_placeholder: Learning resource
+      link_required: Enter a valid URL.
+      too_many_files: Up to 10 attachments are allowed.
+      file_too_large: That file is too large.
+      remove_attachment: Remove
+      instructions_required: Add instructions for the student.
+      due_required: Choose a due date.
+      assigned_toast: Homework assigned.
+      updated_toast: Homework updated.
+      reviewed_toast: Homework marked as reviewed.
+      revision_toast: Revision requested.
+      instructions: Instructions
+      materials: Materials
+      no_materials: No materials attached.
+      student_submission: Student submission
+      written_answer: Written answer
+      submission_materials: Submission materials
+      no_submission: No submission received.
+      correction_title: Attach a corrected file or material
+      correction_text: Optional — share a corrected version or an extra resource.
+      submission: Submission
+      submitted: Submitted
+      late: Late submission
+      feedback_placeholder: Write feedback for the student…
+      feedback_required: Required when requesting a revision.
+      feedback_required_error: Add feedback before requesting a revision.
+      request_revision: Request revision
+      mark_reviewed: Mark as reviewed
+      students_selected:
+        one: "%{count} student selected"
+        other: "%{count} students selected"
+      students_selected_label: "%{count} students selected"
+      student_fallback: Student
+      statuses:
+        assigned: Assigned
+        submitted: Submitted
+        needs_revision: Needs revision
+        reviewed: Reviewed
+        overdue: Overdue
     pages:
       coming_soon_text: This section is part of the Danlio workspace and will be available in a future update.
       back_dashboard: Back to dashboard
@@ -1102,7 +1223,7 @@ en:
         description: Manage and review all your lessons.
       homework:
         title: Homework
-        description: Assign and review student homework in one place.
+        description: Track assignments and review student submissions.
       materials:
         title: Materials
         description: Upload and share lesson materials with students.
