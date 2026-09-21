@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_09_21_143000) do
+ActiveRecord::Schema[7.0].define(version: 2026_09_21_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -74,15 +74,15 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_21_143000) do
     t.bigint "lesson_id"
     t.string "title", null: false
     t.string "subject"
-    t.datetime "due_at", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "topic"
     t.text "instructions", null: false
     t.datetime "assigned_at", null: false
+    t.datetime "due_at", null: false
     t.datetime "resubmission_due_at"
     t.text "private_note"
     t.boolean "allow_late_submission", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["lesson_id"], name: "index_homeworks_on_lesson_id"
     t.index ["lesson_id"], name: "index_homeworks_on_lesson_id_unique", unique: true, where: "(lesson_id IS NOT NULL)"
     t.index ["teacher_id"], name: "index_homeworks_on_teacher_id"
