@@ -28,13 +28,13 @@ module Demo
       }.with_indifferent_access
     end
 
-    def teacher(name, lessons:, now: Time.zone.now)
+    def teacher(name, lessons:, now: Time.zone.now, homework_review: [])
       today = now.to_date
       today_lessons = lessons_on(lessons, today).sort_by { |lesson| lesson[:startTime].to_s }
       next_lesson = today_lessons.find { |lesson| upcoming?(lesson) && !past?(lesson, now) } ||
                     today_lessons.find { |lesson| in_progress?(lesson, now) }
       hours = today_lessons.sum { |lesson| duration_hours(lesson) }
-      homework_review = Portal.review_for_teacher(name)
+      homework_review = Array(homework_review)
 
       {
         today: today,

@@ -29,6 +29,7 @@ en:
       subject: Subject
       lesson_type: Lesson type
       lesson: Lesson
+      homework: Homework
     attributes:
       user:
         email: Email
@@ -65,6 +66,13 @@ en:
         actual_duration_minutes: Duration
         teacher_note: Teacher note
         student_progress_note: Progress note
+      homework:
+        title: Title
+        instructions: Instructions
+        assigned_at: Assigned on
+        due_at: Due date
+        students: Students
+        lesson: Lesson
     errors:
       messages:
         taken: has already been taken
@@ -100,6 +108,12 @@ en:
               individual_count: an individual lesson requires exactly one student
               group_count: a group lesson requires at least one student
               workspace_mismatch: must belong to the same workspace as the teacher
+        homework:
+          attributes:
+            due_at:
+              before_assigned: must be on or after the assigned date
+            lesson:
+              teacher_mismatch: must belong to the selected teacher
   activemodel:
     errors:
       models:

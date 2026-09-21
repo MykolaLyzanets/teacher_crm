@@ -1,6 +1,15 @@
 - content_for :title, "#{t('app.lessons.title')} | danlio"
+- content_for :head do
+  = stylesheet_link_tag 'css/homework.min', 'data-turbo-track': 'reload'
 
-.lessons-page data-controller="lessons" data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common')
+.lessons-page[
+  data-controller="lessons homework"
+  data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common')
+  data-homework-locale-value=I18n.locale
+  data-homework-i18n-value=app_i18n_json('app.homework', 'app.common')
+  data-homework-library-value=@materials_by_id.to_json
+  data-homework-homeworks-url-value=homeworks_path
+]
   p.lessons-page__toast hidden="hidden" role="status" data-lessons-target="toast"
 
   .lessons-page__header
@@ -61,3 +70,7 @@
           = render 'row', lesson: lesson
 
   .lessons-page__cancel-tip hidden="hidden" role="tooltip" data-lessons-target="cancelTip"
+
+  ul.homework-page__list.sr-only aria-hidden="true"
+    = render 'homework/row', item: homework_template_item, template: true
+  = render 'homework/modals_shell'

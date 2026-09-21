@@ -79,6 +79,7 @@ Rails.application.routes.draw do
       get 'home', to: 'student_portal#home'
       get 'calendar', to: 'student_portal#calendar'
       get 'homework', to: 'student_portal#homework'
+      get 'homework/assignments/:id', to: 'student_portal/homework_assignments#show', as: :homework_assignment
       get 'materials', to: 'student_portal#materials'
       get 'payments', to: 'student_portal#payments'
       get 'profile', to: 'student_portal#profile'
@@ -86,6 +87,13 @@ Rails.application.routes.draw do
     end
 
     get 'homework', to: 'homework#index', as: :homework
+    resources :homeworks, controller: 'homework', only: %i[show create update] do
+      member do
+        post :review
+      end
+    end
+    patch 'homework_responses/:id', to: 'homework_responses#update', as: :homework_response
+    patch 'homework_responses/:id/submit', to: 'homework_responses#submit', as: :submit_homework_response
 
     %w[materials reports messages].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page

@@ -19,7 +19,8 @@ class StudentsController < AppController
     @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
     @teacher = @student_record&.teacher_profile&.as_catalog
     @catalog_student = Demo::Catalog.match_student(@student) if @student
-    @student_homework = []
+    @student_homework = HomeworkStudent.portal_items_for(@student_record) if @student_record
+    @student_homework ||= []
     @student_notes = []
     @student_progress = nil
     @finance = nil
@@ -30,7 +31,6 @@ class StudentsController < AppController
       @finance = Demo::Finance.portal_finance(@catalog_student[:id])
       @pricing = Demo::Finance.pricing_for(@catalog_student[:id])
       @balance_cents = Demo::Finance.balance_cents(@catalog_student[:id])
-      @student_homework = Demo::Portal.homework_for(@catalog_student[:id])
       @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
       @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
     end

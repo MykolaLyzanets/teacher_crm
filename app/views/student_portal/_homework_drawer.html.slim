@@ -1,0 +1,92 @@
+p.sp-toast.sp-hw-toast hidden="hidden" role="status" data-student-homework-target="toast"
+
+.sp-drawer.sp-drawer--homework.sp-drawer--hidden data-student-homework-target="drawer"
+  button.sp-drawer__backdrop type="button" aria-label="#{t('app.common.close')}" data-action="student-homework#closeDetails"
+  aside.sp-drawer__panel role="dialog" aria-modal="true" aria-labelledby="homework-drawer-title"
+    .sp-hw-drawer__head
+      .sp-hw-drawer__head-main
+        .sp-hw-drawer__badge-wrap data-student-homework-target="drawerBadgeWrap"
+          span.status-badge data-student-homework-target="drawerBadge"
+        h2#homework-drawer-title.sp-hw-drawer__title data-student-homework-target="drawerTitle"
+        p.sp-hw-drawer__subtitle data-student-homework-target="drawerSubtitle"
+      button.sp-icon-btn type="button" aria-label="#{t('app.common.close')}" data-action="student-homework#closeDetails"
+        = portal_icon 'x', size: 20
+    .sp-drawer__body.sp-hw-drawer__body
+      .sp-hw-drawer__meta data-student-homework-target="drawerMeta"
+      section.sp-hw-drawer__section hidden="hidden" data-student-homework-target="drawerInstructionsSection"
+        h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.instructions')
+        p.sp-hw-drawer__copy data-student-homework-target="drawerInstructions"
+      section.sp-hw-drawer__section
+        h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.materials')
+        p.sp-hw-drawer__hint = t('app.student_portal.homework.drawer.materials_supporting')
+        ul.sp-hw-drawer__materials data-student-homework-target="drawerMaterialsList"
+        p.sp-hw-drawer__muted data-student-homework-target="drawerMaterialsEmpty" = t('app.student_portal.homework.drawer.no_materials')
+      section.sp-hw-drawer__section.sp-hw-drawer__lesson-card hidden="hidden" data-student-homework-target="drawerLessonSection"
+        h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.related_lesson')
+        p.sp-hw-drawer__lesson-title data-student-homework-target="drawerLessonTitle"
+        .sp-hw-drawer__lesson-facts data-student-homework-target="drawerLessonFacts"
+        = link_to t('app.student_portal.homework.drawer.open_calendar'), student_calendar_path, class: 'sp-hw-drawer__link'
+      section.sp-hw-drawer__feedback hidden="hidden" data-student-homework-target="drawerFeedbackSection"
+        h3.sp-hw-drawer__feedback-title data-student-homework-target="drawerFeedbackTitle"
+        p.sp-hw-drawer__feedback-copy data-student-homework-target="drawerFeedback"
+        p.sp-hw-drawer__muted data-student-homework-target="drawerResubmissionDue"
+        p.sp-hw-drawer__muted data-student-homework-target="drawerReviewMeta"
+      section.sp-hw-drawer__section hidden="hidden" data-student-homework-target="drawerReviewedSection"
+        h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.teacher_feedback')
+        p.sp-hw-drawer__score data-student-homework-target="drawerScore"
+        p.sp-hw-drawer__copy data-student-homework-target="drawerReviewedFeedback"
+        p.sp-hw-drawer__muted data-student-homework-target="drawerReviewedMeta"
+      section.sp-hw-drawer__section hidden="hidden" data-student-homework-target="drawerEditableSection"
+        .sp-hw-drawer__submission-head
+          = portal_icon 'homework', size: 18
+          div
+            h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.your_submission')
+            p.sp-hw-drawer__hint = t('app.student_portal.homework.drawer.submission_hint')
+        label.sp-field.sp-hw-drawer__answer
+          span.sp-hw-drawer__answer-label = t('app.student_portal.homework.drawer.written_answer')
+          textarea.sp-hw-drawer__answer-input data-student-homework-target="drawerResponse" rows="6" placeholder="#{t('app.student_portal.homework.drawer.written_placeholder')}"
+        p.sp-hw-drawer__late hidden="hidden" role="status" data-student-homework-target="drawerLateNotice"
+        p.sp-hw-drawer__status aria-live="polite" hidden="hidden" data-student-homework-target="drawerSaveStatus"
+      section.sp-hw-drawer__section hidden="hidden" data-student-homework-target="drawerReadonlySection"
+        h3.sp-hw-drawer__kicker = t('app.student_portal.homework.drawer.your_submission')
+        p.sp-hw-drawer__submitted-banner hidden="hidden" data-student-homework-target="drawerSubmittedBanner"
+        .sp-hw-drawer__readonly-answer hidden="hidden" data-student-homework-target="drawerReadonlyAnswer"
+          p.sp-hw-drawer__muted = t('app.student_portal.homework.drawer.written_answer')
+          p.sp-hw-drawer__copy data-student-homework-target="drawerReadonlyText"
+        p.sp-hw-drawer__muted data-student-homework-target="drawerNoSubmission"
+    .sp-drawer__foot.sp-hw-drawer__foot
+      .sp-hw-drawer__foot-confirm hidden="hidden" data-student-homework-target="drawerFootConfirm"
+        p.sp-hw-drawer__foot-confirm-title = t('app.student_portal.homework.drawer.submit_confirm_title')
+        p.sp-hw-drawer__foot-confirm-text = t('app.student_portal.homework.drawer.submit_confirm_text')
+        .sp-hw-drawer__foot-confirm-actions
+          button.sp-btn.sp-btn--primary type="button" data-action="student-homework#confirmSubmit" = t('app.student_portal.homework.drawer.submit_homework')
+          button.sp-btn.sp-btn--ghost type="button" data-action="student-homework#cancelConfirm" = t('app.student_portal.homework.drawer.continue_editing')
+      .sp-hw-drawer__foot-default data-student-homework-target="drawerFootDefault"
+        button.sp-btn.sp-btn--ghost type="button" data-action="student-homework#closeDetails" = t('app.common.close')
+        .sp-hw-drawer__foot-actions hidden="hidden" data-student-homework-target="drawerFootActions"
+          button.sp-btn.sp-btn--ghost type="button" data-action="student-homework#saveDraft" data-student-homework-target="drawerSaveDraft" = t('app.student_portal.homework.drawer.save_draft')
+          button.sp-btn.sp-btn--primary type="button" data-student-homework-target="drawerSubmit" data-action="student-homework#requestSubmit" = t('app.student_portal.homework.drawer.submit_homework')
+
+article.sp-hw-card.sp-hw-card--scratch[
+  hidden="hidden"
+  aria-hidden="true"
+  data-student-homework-target="scratchCard"
+  data-tab=""
+  data-subject=""
+  data-teacher=""
+  data-due=""
+  data-search=""
+  data-id=""
+  data-homework-student-id=""
+  data-homework-response-id=""
+  data-title=""
+  data-facing=""
+  data-facing-label=""
+  data-facing-tone=""
+  data-portal-action=""
+  data-instructions=""
+  data-feedback=""
+  data-score=""
+  data-response=""
+  data-portal-item=""
+]

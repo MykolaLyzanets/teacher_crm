@@ -59,6 +59,24 @@ module WorkspaceScoping
                  .map(&:as_catalog)
   end
 
+  def homeworks_scope
+    scoped = Homework.includes(:teacher, :lesson, homework_students: %i[student homework_response])
+    return scoped if current_user.admin?
+    return Homework.none if current_workspace.blank?
+
+    scoped = scoped.where(workspace_id: current_workspace.id)
+    return scoped if current_user.owner?
+
+    if current_user.teacher?
+      teacher_id = current_user.teacher_profile&.id
+      return Homework.none if teacher_id.blank?
+
+      return scoped.where(teacher_id:)
+    end
+
+    Homework.none
+  end
+
   def require_workspace!
     return if current_workspace.present?
 

@@ -9,4 +9,4 @@ article.lessons-page__person
     - if person[:meta].present?
       p.lessons-page__person-meta = person[:meta]
   - if person[:url].present?
-    = link_to t('app.lessons.view_profile'), person[:url], class: 'lessons-page__person-link'
+    = link_to t('app.lessons.view_profile'), person[:url], class: 'lessons-page__person-link', data: { turbo_frame: '_top' }

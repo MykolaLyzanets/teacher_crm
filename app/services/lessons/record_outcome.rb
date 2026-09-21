@@ -32,6 +32,8 @@ module Lessons
            else correct
            end
       return false unless ok
+      return true if @lesson.completed? && outcome == 'completed' && !@lesson.changed?
+
       return true if @lesson.save
 
       errors.merge!(@lesson.errors)
@@ -45,6 +47,8 @@ module Lessons
     private
 
     def complete
+      return true if @lesson.completed?
+
       unless @lesson.confirmed?
         errors.add(:base, :not_confirmed)
         return false

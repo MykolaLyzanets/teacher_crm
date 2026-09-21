@@ -43,7 +43,7 @@
           abbr.homework-page__req title="required" *
         textarea rows="4" placeholder=t('app.homework.instructions_placeholder') data-homework-target="formInstructions"
       p.homework-page__warn hidden="hidden" data-homework-target="formSubmittedNote" = t('app.homework.already_submitted')
-      = render 'materials_field'
+      = render 'homework/materials_field'
       label.homework-page__field
         span = t('app.homework.field_private_note')
         textarea rows="3" placeholder=t('app.homework.private_note_placeholder') data-homework-target="formNote"

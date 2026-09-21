@@ -20,6 +20,8 @@ class User < ApplicationRecord
   has_one :student_profile, dependent: :destroy, inverse_of: :user
   has_many :assigned_student_profiles, class_name: 'StudentProfile', foreign_key: :assigned_by,
                                        inverse_of: :assigned_by_user, dependent: :nullify
+  has_many :reviewed_homework_responses, class_name: 'HomeworkResponse', foreign_key: :reviewed_by_id,
+                                         inverse_of: :reviewed_by, dependent: :nullify
 
   validates :full_name, presence: true, length: { minimum: 2 }
   validates :workspace, presence: true, unless: :workspace_optional?

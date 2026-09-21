@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_09_17_183200) do
+ActiveRecord::Schema[7.0].define(version: 2026_09_21_143000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -42,26 +42,30 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_17_183200) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "homework_assignments", force: :cascade do |t|
-    t.bigint "homework_id", null: false
-    t.bigint "student_id", null: false
-    t.datetime "assigned_at", null: false
+  create_table "homework_responses", force: :cascade do |t|
+    t.bigint "homework_student_id", null: false
+    t.integer "status", default: 0, null: false
+    t.text "written_response"
+    t.datetime "submitted_at"
+    t.text "feedback"
+    t.string "score"
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["homework_id", "student_id"], name: "idx_homework_assignments_unique", unique: true
-    t.index ["homework_id"], name: "index_homework_assignments_on_homework_id"
-    t.index ["student_id"], name: "index_homework_assignments_on_student_id"
+    t.index ["homework_student_id"], name: "index_homework_responses_on_homework_student_id", unique: true
+    t.index ["reviewed_by_id"], name: "index_homework_responses_on_reviewed_by_id"
+    t.check_constraint "status >= 0 AND status <= 3", name: "homework_responses_status_valid"
   end
 
-  create_table "homework_submissions", force: :cascade do |t|
-    t.bigint "homework_assignment_id", null: false
-    t.text "content"
-    t.datetime "submitted_at"
-    t.integer "status", default: 0, null: false
-    t.text "teacher_comment"
+  create_table "homework_students", force: :cascade do |t|
+    t.bigint "homework_id", null: false
+    t.bigint "student_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["homework_assignment_id"], name: "index_homework_submissions_on_homework_assignment_id", unique: true
+    t.index ["homework_id", "student_id"], name: "idx_homework_students_unique", unique: true
+    t.index ["homework_id"], name: "index_homework_students_on_homework_id"
+    t.index ["student_id"], name: "index_homework_students_on_student_id"
   end
 
   create_table "homeworks", force: :cascade do |t|
@@ -69,12 +73,18 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_17_183200) do
     t.bigint "teacher_id", null: false
     t.bigint "lesson_id"
     t.string "title", null: false
-    t.text "description"
     t.string "subject"
-    t.datetime "due_at"
+    t.datetime "due_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "topic"
+    t.text "instructions", null: false
+    t.datetime "assigned_at", null: false
+    t.datetime "resubmission_due_at"
+    t.text "private_note"
+    t.boolean "allow_late_submission", default: false, null: false
     t.index ["lesson_id"], name: "index_homeworks_on_lesson_id"
+    t.index ["lesson_id"], name: "index_homeworks_on_lesson_id_unique", unique: true, where: "(lesson_id IS NOT NULL)"
     t.index ["teacher_id"], name: "index_homeworks_on_teacher_id"
     t.index ["workspace_id"], name: "index_homeworks_on_workspace_id"
   end
@@ -470,9 +480,11 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_17_183200) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "homework_assignments", "homeworks"
-  add_foreign_key "homework_assignments", "student_profiles", column: "student_id"
-  add_foreign_key "homework_submissions", "homework_assignments"
+  add_foreign_key "homework_responses", "homework_students"
+  add_foreign_key "homework_responses", "users", column: "reviewed_by_id"
+  add_foreign_key "homework_students", "homeworks"
+  add_foreign_key "homework_students", "student_profiles", column: "student_id"
+  add_foreign_key "homeworks", "lessons"
   add_foreign_key "homeworks", "teacher_profiles", column: "teacher_id"
   add_foreign_key "homeworks", "workspaces"
   add_foreign_key "lesson_schedule_students", "lesson_schedules"

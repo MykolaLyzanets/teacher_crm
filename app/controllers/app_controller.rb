@@ -34,6 +34,7 @@ class AppController < ApplicationController
 
   def redirect_students_to_portal
     return unless current_user.student?
+    return if request.format.json?
 
     redirect_to student_root_path
   end

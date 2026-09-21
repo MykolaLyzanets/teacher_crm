@@ -1,3 +1,7 @@
+.lessons-page .homework-page__modal.danlio-modal {
+  z-index: 100;
+}
+
 [data-homework-target="rowTemplate"] {
   display: none !important;
 }
@@ -962,4 +966,45 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.homework-page__submission-progress {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.homework-page__student-submissions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.homework-page__student-submission {
+  padding: 12px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--surface-muted, #fafaf8);
+}
+
+.homework-page__student-submission-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.homework-page__student-submission-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.homework-page__student-submission-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
 }

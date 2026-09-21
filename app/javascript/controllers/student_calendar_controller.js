@@ -102,9 +102,20 @@ export default class extends Controller {
     "upcomingJoin",
     "drawer",
     "drawerTitle",
+    "drawerSubtitle",
+    "drawerBadges",
+    "drawerBanner",
+    "drawerTeacherInitials",
+    "drawerTeacher",
+    "drawerTeacherRole",
+    "drawerDate",
     "drawerWhen",
-    "drawerWho",
+    "drawerLessonType",
+    "drawerTimezone",
     "drawerPlace",
+    "drawerHomeworkEmpty",
+    "drawerHomeworkList",
+    "drawerNotesSection",
     "drawerNotes",
     "drawerJoin",
   ];
@@ -237,7 +248,7 @@ export default class extends Controller {
     }
     if (this.hasUpcomingWhoTarget) this.upcomingWhoTarget.textContent = lesson.teacher;
     if (this.hasUpcomingJoinTarget) {
-      const joinable = lesson.location === "online" && lesson.meetingLink;
+      const joinable = this.canStudentJoinLesson(lesson);
       this.upcomingJoinTarget.hidden = !joinable;
       if (joinable) this.upcomingJoinTarget.href = lesson.meetingLink;
     }
@@ -249,18 +260,175 @@ export default class extends Controller {
   }
 
   openLesson(lesson) {
-    if (!this.hasDrawerTarget) return;
-    this.drawerTitleTarget.textContent = lesson.title;
-    this.drawerWhenTarget.textContent = `${lesson.date} · ${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}`;
-    this.drawerWhoTarget.textContent = (this.labels.withTeacher || "With %{name}").replace("%{name}", lesson.teacher);
-    this.drawerPlaceTarget.textContent = lesson.location === "online" ? "Online" : (lesson.locationText || "In person");
-    this.drawerNotesTarget.textContent = lesson.notes || "";
+    if (!this.hasDrawerTarget || !lesson) return;
+    const { labels } = this;
+    const timeRange = `${formatTime(lesson.startTime, labels.locale)} – ${formatTime(lesson.endTime, labels.locale)}`;
+    const duration = lesson.durationMinutes
+      ? ` (${String(labels.durationMinutes || "%{count} min").replace("%{count}", String(lesson.durationMinutes))})`
+      : "";
+
+    if (this.hasDrawerTitleTarget) this.drawerTitleTarget.textContent = lesson.title || lesson.subject || "";
+    if (this.hasDrawerSubtitleTarget) {
+      const typeName = lesson.lessonTypeName || this.lessonTypeLabel(lesson);
+      const subject = lesson.subject && lesson.subject !== lesson.title ? lesson.subject : "";
+      this.drawerSubtitleTarget.textContent = [typeName, subject].filter(Boolean).join(" · ");
+    }
+    if (this.hasDrawerBadgesTarget) this.renderLessonBadges(lesson, this.drawerBadgesTarget);
+    if (this.hasDrawerBannerTarget) this.renderLessonBanner(lesson, this.drawerBannerTarget);
+
+    if (this.hasDrawerTeacherInitialsTarget) {
+      this.drawerTeacherInitialsTarget.textContent = lesson.teacherInitials || this.initialsFromName(lesson.teacher);
+    }
+    if (this.hasDrawerTeacherTarget) this.drawerTeacherTarget.textContent = lesson.teacher || "";
+    if (this.hasDrawerTeacherRoleTarget) {
+      this.drawerTeacherRoleTarget.textContent = lesson.teacherRole || labels.lessonTeacherRole || "";
+    }
+
+    if (this.hasDrawerDateTarget) this.drawerDateTarget.textContent = this.formatLessonDate(lesson.date);
+    if (this.hasDrawerWhenTarget) this.drawerWhenTarget.textContent = `${timeRange}${duration}`;
+    if (this.hasDrawerLessonTypeTarget) this.drawerLessonTypeTarget.textContent = lesson.lessonTypeName || this.lessonTypeLabel(lesson);
+    if (this.hasDrawerTimezoneTarget) this.drawerTimezoneTarget.textContent = lesson.timezone || "—";
+    if (this.hasDrawerPlaceTarget) this.drawerPlaceTarget.textContent = this.lessonLocationLabel(lesson);
+
+    this.renderLessonHomework(lesson);
+
+    const progressNote = lesson.studentProgressNote || "";
+    if (this.hasDrawerNotesSectionTarget) this.drawerNotesSectionTarget.hidden = !progressNote;
+    if (this.hasDrawerNotesTarget) this.drawerNotesTarget.textContent = progressNote || labels.lessonNotesEmpty || "";
+
     if (this.hasDrawerJoinTarget) {
-      const joinable = lesson.location === "online" && lesson.meetingLink;
+      const joinable = this.canStudentJoinLesson(lesson);
       this.drawerJoinTarget.hidden = !joinable;
       if (joinable) this.drawerJoinTarget.href = lesson.meetingLink;
     }
     this.drawerTarget.classList.remove("sp-drawer--hidden");
+  }
+
+  canStudentJoinLesson(lesson, now = new Date()) {
+    if (!lesson || lesson.location !== "online" || !lesson.meetingLink) return false;
+    const status = lesson.status || "";
+    if (["cancelled", "completed", "no_show"].includes(status)) return false;
+    const todayKey = toDateKey(now);
+    if (lesson.date < todayKey) return false;
+    if (lesson.date > todayKey) return true;
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    return timeToMinutes(lesson.endTime) >= minutes;
+  }
+
+  isCancelledLesson(status) {
+    return String(status || "").startsWith("cancelled") || status === "cancelled";
+  }
+
+  lessonTypeLabel(lesson) {
+    const type = lesson.type || "individual";
+    const map = this.labels.typeLabels || {};
+    return map[type] || type;
+  }
+
+  lessonStatusLabel(status) {
+    const map = this.labels.statusLabels || {};
+    if (map[status]) return map[status];
+    if (this.isCancelledLesson(status)) return map.cancelled || status;
+    return status;
+  }
+
+  lessonLocationLabel(lesson) {
+    const { labels } = this;
+    if (lesson.location === "online") {
+      const link = lesson.meetingLink;
+      return link ? `${labels.locationOnline || "Online"} · ${link}` : labels.locationOnline || "Online";
+    }
+    return lesson.locationText || labels.locationInPerson || "In person";
+  }
+
+  formatLessonDate(dateKey) {
+    if (!dateKey) return "";
+    const date = new Date(`${dateKey}T12:00:00`);
+    const { weekdaysFull, months } = this.labels;
+    const weekday = weekdaysFull[(date.getDay() + 6) % 7];
+    return `${weekday}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  }
+
+  initialsFromName(name) {
+    return String(name || "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
+  }
+
+  renderLessonBadges(lesson, container) {
+    container.replaceChildren();
+    const status = lesson.status || "pending";
+    const badge = document.createElement("span");
+    badge.className = `sp-lesson-drawer__badge sp-lesson-drawer__badge--${status === "completed" ? "completed" : this.isCancelledLesson(status) ? "cancelled" : status}`;
+    badge.textContent = this.lessonStatusLabel(status);
+    container.append(badge);
+  }
+
+  renderLessonBanner(lesson, container) {
+    const status = lesson.status || "";
+    let message = "";
+    let tone = "";
+    if (status === "completed") {
+      message = this.labels.bannerCompleted || "";
+      tone = "completed";
+    } else if (this.isCancelledLesson(status)) {
+      message = this.labels.bannerCancelled || "";
+      tone = "cancelled";
+    }
+    if (!message) {
+      container.hidden = true;
+      container.textContent = "";
+      container.className = "sp-lesson-drawer__banner";
+      return;
+    }
+    container.hidden = false;
+    container.className = `sp-lesson-drawer__banner sp-lesson-drawer__banner--${tone}`;
+    container.textContent = message;
+  }
+
+  renderLessonHomework(lesson) {
+    if (!this.hasDrawerHomeworkListTarget) return;
+    const items = Array.isArray(lesson.homework) ? lesson.homework : [];
+    if (this.hasDrawerHomeworkEmptyTarget) {
+      this.drawerHomeworkEmptyTarget.hidden = items.length > 0;
+    }
+    this.drawerHomeworkListTarget.replaceChildren(
+      ...items.map((item) => this.buildHomeworkRow(item))
+    );
+  }
+
+  buildHomeworkRow(item) {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "sp-lesson-drawer__hw-row";
+    row.dataset.action = "student-homework#openFromLessonHomework";
+    row.dataset.homeworkItem = JSON.stringify(item);
+
+    const head = document.createElement("div");
+    head.className = "sp-lesson-drawer__hw-head";
+    const title = document.createElement("span");
+    title.className = "sp-lesson-drawer__hw-title";
+    title.textContent = item.title || "";
+    const badge = document.createElement("span");
+    const tone = item.facingTone || "neutral";
+    badge.className = `status-badge status-badge--${tone}`;
+    badge.textContent = item.facingLabel || item.facing || "";
+    head.append(title, badge);
+
+    const meta = document.createElement("p");
+    meta.className = "sp-lesson-drawer__muted";
+    meta.textContent = item.subject || "";
+
+    const action = document.createElement("span");
+    action.className = "sp-lesson-drawer__hw-action";
+    action.textContent = this.labels.openHomework || this.labels.viewHomework || "Open";
+
+    row.append(head, meta, action);
+    return row;
   }
 
   closeDetails() {
@@ -321,21 +489,16 @@ export default class extends Controller {
         if (list.length) {
           const events = document.createElement("div");
           events.className = "sp-cal__events";
-          list.slice(0, 2).forEach((lesson) => {
-            const chip = document.createElement("button");
-            chip.type = "button";
-            chip.className = "sp-cal__chip-event";
-            chip.textContent = lesson.title;
-            chip.addEventListener("click", (event) => {
-              event.stopPropagation();
-              this.openLesson(lesson);
-            });
-            events.append(chip);
+          const compact = list.length > 2;
+          const visible = list.slice(0, 3);
+          visible.forEach((lesson) => {
+            events.append(this.buildMonthEvent(lesson, compact));
           });
-          if (list.length > 2) {
+          const overflow = list.length - visible.length;
+          if (overflow > 0) {
             const more = document.createElement("span");
             more.className = "sp-cal__more";
-            more.textContent = `+${list.length - 2}`;
+            more.textContent = `+${overflow}`;
             events.append(more);
           }
           button.append(events);
@@ -405,13 +568,9 @@ export default class extends Controller {
       this.lessonsOn(toDateKey(day)).forEach((lesson) => {
         const start = timeToMinutes(lesson.startTime);
         const end = timeToMinutes(lesson.endTime);
-        const event = document.createElement("button");
-        event.type = "button";
-        event.className = "sp-cal__week-event";
+        const event = this.buildWeekEvent(lesson);
         event.style.top = `${((start - DAY_START_HOUR * 60) / 60) * HOUR_HEIGHT}px`;
         event.style.height = `${Math.max(((end - start) / 60) * HOUR_HEIGHT, 28)}px`;
-        event.textContent = lesson.title;
-        event.addEventListener("click", () => this.openLesson(lesson));
         column.append(event);
       });
       grid.append(column);
@@ -437,12 +596,7 @@ export default class extends Controller {
     const list = document.createElement("div");
     list.className = "sp-cal__agenda-list";
     monthLessons.forEach((lesson) => {
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "sp-cal__agenda-row";
-      row.innerHTML = `<strong>${lesson.title}</strong><span>${lesson.date} · ${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}</span><span>${lesson.teacher}</span>`;
-      row.addEventListener("click", () => this.openLesson(lesson));
-      list.append(row);
+      list.append(this.buildAgendaEvent(lesson));
     });
     this.agendaTarget.replaceChildren(list);
   }
@@ -480,5 +634,88 @@ export default class extends Controller {
       return `${hour % 12 || 12} ${period}`;
     }
     return `${String(hour).padStart(2, "0")}:00`;
+  }
+
+  eventTone(lesson) {
+    if (lesson.status === "cancelled") return "cancelled";
+    const type = lesson.type || "individual";
+    if (["individual", "group", "trial", "consultation"].includes(type)) return type;
+    return "individual";
+  }
+
+  buildMonthEvent(lesson, compact = false) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    const tone = this.eventTone(lesson);
+    chip.className = `sp-cal__event sp-cal__event--${tone}${compact ? " sp-cal__event--compact" : ""}`;
+    chip.addEventListener("click", (event) => {
+      event.stopPropagation();
+      this.openLesson(lesson);
+    });
+
+    const time = document.createElement("span");
+    time.className = "sp-cal__event-time";
+    time.textContent = formatTime(lesson.startTime, this.labels.locale);
+
+    const title = document.createElement("span");
+    title.className = "sp-cal__event-title";
+    title.textContent = lesson.title;
+
+    if (compact) {
+      chip.append(time, title);
+      return chip;
+    }
+
+    const meta = document.createElement("span");
+    meta.className = "sp-cal__event-meta";
+    meta.textContent = lesson.teacher || "";
+    chip.append(time, title, meta);
+    return chip;
+  }
+
+  buildWeekEvent(lesson) {
+    const event = document.createElement("button");
+    event.type = "button";
+    const tone = this.eventTone(lesson);
+    event.className = `sp-cal__event sp-cal__event--block sp-cal__event--${tone} sp-cal__week-event`;
+    event.addEventListener("click", () => this.openLesson(lesson));
+
+    const time = document.createElement("p");
+    time.className = "sp-cal__event-time";
+    time.textContent = `${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}`;
+
+    const title = document.createElement("p");
+    title.className = "sp-cal__event-title";
+    title.textContent = lesson.title;
+
+    const meta = document.createElement("p");
+    meta.className = "sp-cal__event-meta";
+    meta.textContent = lesson.teacher || "";
+
+    event.append(time, title, meta);
+    return event;
+  }
+
+  buildAgendaEvent(lesson) {
+    const row = document.createElement("button");
+    row.type = "button";
+    const tone = this.eventTone(lesson);
+    row.className = `sp-cal__event sp-cal__event--agenda sp-cal__event--${tone} sp-cal__agenda-row`;
+
+    const time = document.createElement("div");
+    time.className = "sp-cal__event-time";
+    time.textContent = `${formatTime(lesson.startTime, this.labels.locale)} – ${formatTime(lesson.endTime, this.labels.locale)}`;
+
+    const body = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "sp-cal__event-title";
+    title.textContent = lesson.title;
+    const meta = document.createElement("div");
+    meta.className = "sp-cal__event-meta";
+    meta.textContent = `${lesson.date} · ${lesson.teacher || ""}`;
+    body.append(title, meta);
+    row.append(time, body);
+    row.addEventListener("click", () => this.openLesson(lesson));
+    return row;
   }
 }

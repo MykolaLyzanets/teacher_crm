@@ -57,12 +57,19 @@ module HomeworkHelper
   end
 
   def homework_students(item)
-    Demo::TeacherHomework.student_ids(item).filter_map { |id| Demo::Catalog.find_student(id) }
+    ids = homework_student_ids(item)
+    StudentProfile.where(id: ids).sort_by { |student| ids.index(student.id.to_s) || ids.length }
+  end
+
+  def homework_student_ids(item)
+    return item.student_ids_list if item.is_a?(Homework)
+
+    Array(item[:studentIds]).presence || [item[:studentId]].compact.map(&:to_s)
   end
 
   def homework_student_name(item)
     student = homework_students(item).first
-    student ? Demo::Catalog.student_name(student) : t('app.common.student')
+    student ? student.display_label : t('app.common.student')
   end
 
   def homework_student_label(item)
@@ -85,6 +92,7 @@ module HomeworkHelper
   end
 
   def homework_materials_for(item)
+    # TODO: resolve materials when homework material links exist
     Array(item[:materialIds]).filter_map { |id| @materials_by_id&.[](id.to_s) }
   end
 
@@ -104,44 +112,35 @@ module HomeworkHelper
       dueDate: (Date.current + 7).iso8601,
       teacher: current_user_display_name,
       status: 'assigned',
+      tab: 'active',
       subject: '',
       instructions: '',
-      attachmentCount: 0,
-      materialIds: []
+      submissionIds: [],
+      reviewIds: [],
+      hasSubmission: false,
+      studentName: '',
+      studentLabel: '',
+      studentInitials: 'ST',
+      dueTime: '',
+      submittedAt: '',
+      feedback: '',
+      response: '',
+      privateNote: '',
+      lessonTitle: '',
+      attachments: 0,
+      materialIds: [],
+      late: false,
+      canReview: false,
+      homeworkResponseId: '',
+      studentSubmissions: [],
+      submissionSummary: '',
+      search: ''
     }
   end
 
   def homework_row_payload(item)
-    status = Demo::TeacherHomework.status(item)
-    {
-      id: item[:id],
-      title: item[:title],
-      status: status,
-      tab: Demo::TeacherHomework.tab_for(item),
-      subject: item[:subject],
-      teacher: item[:teacher],
-      submissionIds: Array(item.dig(:submission, :attachmentIds)),
-      reviewIds: Array(item[:reviewAttachmentIds]),
-      hasSubmission: item[:submission].present? || item[:submittedAt].present?,
-      studentIds: Demo::TeacherHomework.student_ids(item),
-      studentName: homework_student_name(item),
-      studentLabel: homework_student_label(item),
-      studentInitials: homework_student_initials(item),
-      assignedDate: item[:assignedDate],
-      dueDate: item[:dueDate],
-      dueTime: item[:dueTime],
-      submittedAt: item[:submittedAt],
-      instructions: item[:instructions],
-      feedback: item[:feedback],
-      response: item.dig(:submission, :writtenResponse),
-      privateNote: item[:privateNote],
-      lessonId: item[:lessonId],
-      lessonTitle: Demo::TeacherHomework.lesson_title(item),
-      attachments: Demo::TeacherHomework.attachments_count(item),
-      materialIds: Array(item[:materialIds]),
-      late: Demo::TeacherHomework.late_submission?(item),
-      canReview: status == 'submitted',
-      search: "#{item[:title]} #{homework_student_label(item)}".downcase
-    }
+    return item.as_teacher_row if item.is_a?(Homework)
+
+    item
   end
 end

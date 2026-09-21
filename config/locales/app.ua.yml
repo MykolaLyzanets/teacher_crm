@@ -1146,6 +1146,8 @@ ua:
       assigned_on: "Призначено %{date}"
       due_on: "До %{date}"
       more_students: "%{name} +ще %{count}"
+      submission_progress: "%{submitted} з %{total} здали"
+      group_submissions: Роботи учнів
       select_lesson: Оберіть урок
       select_lesson_text: Оберіть завершений урок, до якого ще немає домашнього.
       select_search: Пошук за учнем або предметом…
@@ -1164,6 +1166,17 @@ ua:
       title_suggested: Підказано з теми уроку
       title_from_topic: "%{topic} — практика"
       practice_fallback: Практичне завдання
+      not_found: Домашнє завдання не знайдено.
+      lesson_not_found: Урок не знайдено.
+      lesson_already_has_homework: До цього уроку вже привʼязано домашнє.
+      nothing_to_review: Немає зданих робіт для перевірки.
+      invalid_review_decision: Невідома дія перевірки.
+      invalid_students: Деякі учні не входять до цього уроку.
+      students_required: Оберіть хоча б одного учня.
+      forbidden: У вас немає прав на цю дію.
+      students_only_submit: Здавати домашнє можуть лише учні.
+      staff_only: Керувати домашніми можуть лише викладачі та staff workspace.
+      save_failed: Не вдалося зберегти домашнє. Спробуйте ще раз.
       due_default: За 7 днів
       instructions_placeholder: Що учень має зробити до наступного уроку?
       private_note_placeholder: Необовʼязкові нотатки лише для себе…
@@ -1189,6 +1202,8 @@ ua:
       remove_attachment: Видалити
       instructions_required: Додайте інструкцію для учня.
       due_required: Оберіть дату дедлайну.
+      invalid_due_date: Вкажіть коректну дату дедлайну.
+      lesson_not_eligible: Домашнє можна привʼязати лише до завершеного уроку або no-show.
       assigned_toast: Домашнє призначено.
       updated_toast: Домашнє оновлено.
       reviewed_toast: Домашнє позначено як перевірене.
@@ -1491,6 +1506,24 @@ ua:
         no_lessons_on: "Немає уроків %{date}."
         join: Приєднатися
         with_teacher: "З викладачем %{name}"
+        lesson_teacher: Викладач
+        lesson_teacher_role: Ваш викладач
+        lesson_datetime: Дата та місце
+        lesson_date: Дата
+        lesson_time: Час
+        lesson_type: Тип уроку
+        lesson_timezone: Часовий пояс
+        lesson_location: Місце
+        lesson_homework: Домашнє завдання
+        lesson_homework_empty: Для цього уроку домашнього ще немає.
+        lesson_notes: Нотатки про прогрес
+        lesson_notes_empty: Нотаток ще немає.
+        open_homework: Відкрити завдання
+        banner_completed: Урок завершено.
+        banner_cancelled: Урок скасовано.
+        location_online: Онлайн-урок
+        location_in_person: Очно
+        duration_minutes: "%{count} хв"
         months_short:
           jan: Січ
           feb: Лют
@@ -1546,6 +1579,40 @@ ua:
         details: Деталі
         your_answer: Ваша відповідь
         submitted_toast: Домашнє здано.
+        drawer:
+          assigned: "Призначено:"
+          due: "Термін:"
+          submitted: "Здано:"
+          related_lesson: Пов’язаний урок
+          related_lesson_prefix: "Пов’язаний урок:"
+          instructions: Інструкції
+          materials: Матеріали
+          materials_supporting: Файли та відео від викладача.
+          no_materials: Матеріалів не додано.
+          open_calendar: Відкрити в календарі
+          your_submission: Ваша робота
+          submission_hint: Додайте текстову відповідь. Можна зберегти чернетку перед здачею.
+          written_answer: Текстова відповідь
+          written_placeholder: Напишіть відповідь…
+          submission_readonly: Здано. Редагування недоступне, доки викладач не попросить переробити.
+          submitted_banner: Здано
+          no_submission: Роботу ще не надіслано.
+          teacher_feedback: Відгук викладача
+          changes_requested: Потрібні зміни
+          new_due_date: "Новий термін:"
+          no_written_feedback: Текстового відгуку немає.
+          score: Оцінка
+          save_draft: Зберегти чернетку
+          submit_homework: Здати домашнє
+          submit_confirm_title: Здати домашнє?
+          submit_confirm_text: Після здачі ви, ймовірно, не зможете змінити відповідь.
+          continue_editing: Продовжити редагування
+          draft_saved: Збережено.
+          late_warning: Роботу позначать як запізнену.
+          late_blocked: Термін здачі минув.
+          answer_required: Введіть відповідь перед здачею.
+          not_editable: Це домашнє вже не можна редагувати.
+          submit_failed: Не вдалося здати. Оновіть сторінку й спробуйте ще раз.
         statuses:
           assigned: Призначено
           in_progress: У роботі

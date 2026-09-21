@@ -1,12 +1,17 @@
 # frozen_string_literal: true
 
 class LessonsController < AppController
+  helper HomeworkHelper
+
   wrap_parameters false
   before_action :ensure_api_workspace!, only: %i[create update destroy outcome]
 
   def index
     @lessons = catalog_lessons
     @teacher_names = @lessons.map { |lesson| lesson[:teacher].to_s }.compact_blank.uniq.sort
+    @materials_by_id = Demo::Catalog.materials.index_by { |item| item[:id].to_s }
+    homework_records = homeworks_scope.ordered_by_due.to_a
+    @eligible_lessons = eligible_lessons_without_homework(homework_records)
   end
 
   def show
@@ -348,5 +353,13 @@ class LessonsController < AppController
     return unless permitted.key?(snake) || permitted.key?(camel)
 
     hash[snake] = permitted[snake] || permitted[camel]
+  end
+
+  def eligible_lessons_without_homework(records)
+    assigned_ids = records.filter_map(&:lesson_id).map(&:to_s).to_set
+    @lessons.select do |lesson|
+      HomeworkController::ELIGIBLE_LESSON_STATUSES.include?(lesson[:status].to_s) &&
+        assigned_ids.exclude?(lesson[:id].to_s)
+    end.sort_by { |lesson| lesson[:date].to_s }.reverse
   end
 end

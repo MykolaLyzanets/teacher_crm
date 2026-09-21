@@ -15,9 +15,14 @@
         h3 = t('app.homework.materials')
         ul.homework-page__attachment-list data-homework-target="detailsMaterials"
         p.homework-page__muted data-homework-target="detailsMaterialsEmpty" = t('app.homework.no_materials')
-      = render 'homework/submission_panel',
-        no_submission_target: 'detailsNoSubmission',
-        written_wrap_target: 'detailsWrittenWrap',
-        response_target: 'detailsSubmission',
-        list_target: 'detailsSubmissionList',
-        empty_target: 'detailsSubmissionEmpty'
+      section.homework-page__details-block hidden="hidden" data-homework-target="detailsGroupWrap"
+        h3 = t('app.homework.group_submissions')
+        p.homework-page__muted.homework-page__submission-progress data-homework-target="detailsSubmissionSummary"
+        .homework-page__student-submissions data-homework-target="detailsStudentList"
+      .homework-page__single-submission data-homework-target="detailsSingleWrap"
+        = render 'homework/submission_panel',
+          no_submission_target: 'detailsNoSubmission',
+          written_wrap_target: 'detailsWrittenWrap',
+          response_target: 'detailsSubmission',
+          list_target: 'detailsSubmissionList',
+          empty_target: 'detailsSubmissionEmpty'

@@ -8,6 +8,7 @@
   data-homework-locale-value=I18n.locale
   data-homework-i18n-value=app_i18n_json('app.homework', 'app.common')
   data-homework-library-value=@materials_by_id.to_json
+  data-homework-homeworks-url-value=homeworks_path
 ]
   p.homework-page__toast hidden="hidden" role="status" data-homework-target="toast"
 
@@ -100,7 +101,4 @@
           = render 'row', item: item
         = render 'row', item: homework_template_item, template: true
 
-  = render 'select_lesson_modal'
-  = render 'form_modal'
-  = render 'details_modal'
-  = render 'review_modal'
+  = render 'modals_shell'

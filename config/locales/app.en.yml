@@ -1140,6 +1140,8 @@ en:
       assigned_on: "Assigned %{date}"
       due_on: "Due %{date}"
       more_students: "%{name} +%{count} more"
+      submission_progress: "%{submitted} of %{total} submitted"
+      group_submissions: Student submissions
       select_lesson: Select a lesson
       select_lesson_text: Choose a completed lesson that doesn't have homework yet.
       select_search: Search by student or subject…
@@ -1158,6 +1160,17 @@ en:
       title_suggested: Suggested from lesson topic
       title_from_topic: "%{topic} practice"
       practice_fallback: Practice assignment
+      not_found: Homework not found.
+      lesson_not_found: Lesson not found.
+      lesson_already_has_homework: This lesson already has homework assigned.
+      nothing_to_review: There is no submitted work to review.
+      invalid_review_decision: Unknown review action.
+      invalid_students: One or more students are not part of this lesson.
+      students_required: Select at least one student.
+      forbidden: You are not allowed to perform this action.
+      students_only_submit: Only students can submit homework responses.
+      staff_only: Only teachers and workspace staff can manage homework.
+      save_failed: Could not save homework. Please try again.
       due_default: Due in 7 days
       instructions_placeholder: What should the student do before the next lesson?
       private_note_placeholder: Optional notes for your own reference…
@@ -1183,6 +1196,8 @@ en:
       remove_attachment: Remove
       instructions_required: Add instructions for the student.
       due_required: Choose a due date.
+      invalid_due_date: Enter a valid due date.
+      lesson_not_eligible: Homework can only be linked to a completed lesson or a no-show.
       assigned_toast: Homework assigned.
       updated_toast: Homework updated.
       reviewed_toast: Homework marked as reviewed.
@@ -1483,6 +1498,24 @@ en:
         no_lessons_on: "No lessons on %{date}."
         join: Join lesson
         with_teacher: "With %{name}"
+        lesson_teacher: Teacher
+        lesson_teacher_role: Your teacher
+        lesson_datetime: Date and location
+        lesson_date: Date
+        lesson_time: Time
+        lesson_type: Lesson type
+        lesson_timezone: Time zone
+        lesson_location: Location
+        lesson_homework: Homework
+        lesson_homework_empty: No homework for this lesson yet.
+        lesson_notes: Progress notes
+        lesson_notes_empty: No notes shared yet.
+        open_homework: Open assignment
+        banner_completed: This lesson is completed.
+        banner_cancelled: This lesson was cancelled.
+        location_online: Online lesson
+        location_in_person: In person
+        duration_minutes: "%{count} min"
         months_short:
           jan: Jan
           feb: Feb
@@ -1534,6 +1567,40 @@ en:
         details: Details
         your_answer: Your answer
         submitted_toast: Homework submitted.
+        drawer:
+          assigned: "Assigned:"
+          due: "Due:"
+          submitted: "Submitted:"
+          related_lesson: Related lesson
+          related_lesson_prefix: "Related lesson:"
+          instructions: Instructions
+          materials: Materials
+          materials_supporting: Files and videos shared by your teacher.
+          no_materials: No materials attached.
+          open_calendar: Open in Calendar
+          your_submission: Your submission
+          submission_hint: Add a written response. You can save a draft before submitting.
+          written_answer: Written answer
+          written_placeholder: Write your answer…
+          submission_readonly: Submitted. You cannot edit unless your teacher requests changes.
+          submitted_banner: Submitted
+          no_submission: No submission received yet.
+          teacher_feedback: Teacher feedback
+          changes_requested: Changes requested
+          new_due_date: "New due date:"
+          no_written_feedback: No written feedback.
+          score: Score
+          save_draft: Save draft
+          submit_homework: Submit homework
+          submit_confirm_title: Submit this homework?
+          submit_confirm_text: You may not be able to edit your answer after submission.
+          continue_editing: Continue editing
+          draft_saved: Saved.
+          late_warning: Your submission will be marked as late.
+          late_blocked: The submission deadline has passed.
+          answer_required: Please enter your answer before submitting.
+          not_editable: This homework can no longer be edited.
+          submit_failed: Could not submit. Refresh the page and try again.
         statuses:
           assigned: Assigned
           in_progress: In progress

@@ -14,22 +14,26 @@
         p.homework-page__details-copy data-homework-target="reviewInstructions"
         .homework-page__original hidden="hidden" data-homework-target="reviewOriginalWrap"
           ul.homework-page__attachment-list data-homework-target="reviewOriginalList"
-      section
+      section.homework-page__details-block hidden="hidden" data-homework-target="reviewGroupWrap"
+        h3 = t('app.homework.group_submissions')
+        p.homework-page__muted.homework-page__submission-progress data-homework-target="reviewSubmissionSummary"
+        .homework-page__student-submissions data-homework-target="reviewStudentList"
+      section data-homework-target="reviewSingleWrap"
         .homework-page__review-head
           h3 = t('app.homework.submitted')
           span.homework-page__muted data-homework-target="reviewSubmittedAt"
           span.homework-page__late hidden="hidden" data-homework-target="reviewLate" = t('app.homework.late')
-      = render 'submission_panel',
-        show_empty: false,
-        written_wrap_target: 'reviewWrittenWrap',
-        response_target: 'reviewResponse',
-        list_target: 'reviewSubmissionList',
-        empty_target: 'reviewSubmissionEmpty'
+        = render 'homework/submission_panel',
+          show_empty: false,
+          written_wrap_target: 'reviewWrittenWrap',
+          response_target: 'reviewResponse',
+          list_target: 'reviewSubmissionList',
+          empty_target: 'reviewSubmissionEmpty'
       label.homework-page__field
         span = t('app.homework.field_feedback')
         textarea rows="4" placeholder=t('app.homework.feedback_placeholder') data-homework-target="reviewFeedback" data-action="input->homework#clearReviewError"
         p.homework-page__hint = t('app.homework.feedback_required')
-      = render 'materials_field',
+      = render 'homework/materials_field',
         scope: 'review',
         title: t('app.homework.correction_title'),
         text: t('app.homework.correction_text')

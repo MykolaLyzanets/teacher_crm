@@ -54,6 +54,7 @@ ua:
       subject: Предмет
       lesson_type: Тип уроку
       lesson: Урок
+      homework: Домашнє завдання
     attributes:
       user:
         email: Email
@@ -90,6 +91,13 @@ ua:
         actual_duration_minutes: Тривалість
         teacher_note: Нотатка викладача
         student_progress_note: Нотатка про прогрес
+      homework:
+        title: Назва
+        instructions: Інструкція
+        assigned_at: Дата призначення
+        due_at: Дедлайн
+        students: Учні
+        lesson: Урок
     errors:
       messages:
         taken: уже використовується
@@ -125,6 +133,12 @@ ua:
               individual_count: індивідуальний урок потребує рівно одного учня
               group_count: груповий урок потребує щонайменше одного учня
               workspace_mismatch: мають належати до того самого простору, що й викладач
+        homework:
+          attributes:
+            due_at:
+              before_assigned: має бути не раніше дати призначення
+            lesson:
+              teacher_mismatch: має належати вибраному викладачу
   activemodel:
     errors:
       models:

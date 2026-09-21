@@ -81,6 +81,10 @@ export default class extends Controller {
     "detailsSubmission",
     "detailsSubmissionList",
     "detailsSubmissionEmpty",
+    "detailsGroupWrap",
+    "detailsSubmissionSummary",
+    "detailsStudentList",
+    "detailsSingleWrap",
     "reviewModal",
     "reviewDesc",
     "reviewTitle",
@@ -94,6 +98,10 @@ export default class extends Controller {
     "reviewResponse",
     "reviewSubmissionList",
     "reviewSubmissionEmpty",
+    "reviewGroupWrap",
+    "reviewSubmissionSummary",
+    "reviewStudentList",
+    "reviewSingleWrap",
     "reviewFeedback",
     "reviewError",
     "reviewVideoInput",
@@ -113,7 +121,8 @@ export default class extends Controller {
     i18n: Object,
     tab: { type: String, default: "all" },
     locale: { type: String, default: "en" },
-    library: { type: Object, default: {} }
+    library: { type: Object, default: {} },
+    homeworksUrl: { type: String, default: "/homeworks" }
   }
 
   connect() {
@@ -124,10 +133,17 @@ export default class extends Controller {
     this.materialsKind = "form"
     this.formAttachments = []
     this.reviewAttachments = []
+    this.openFromLessonHandler = (event) => {
+      const lesson = event.detail?.lesson
+      if (!lesson) return
+      this.openHomeworkForLesson(lesson, { completeBeforeAssign: Boolean(event.detail?.completeBeforeAssign) })
+    }
+    window.addEventListener("homework:open-from-lesson", this.openFromLessonHandler)
     if (this.hasTabTarget) this.filter()
   }
 
   disconnect() {
+    window.removeEventListener("homework:open-from-lesson", this.openFromLessonHandler)
     this.closeAllModals()
     window.clearTimeout(this.toastTimer)
   }
@@ -240,9 +256,10 @@ export default class extends Controller {
     this.editing = false
     this.activeRow = null
     this.pickedLesson = null
+    this.completeBeforeAssign = false
   }
 
-  saveForm() {
+  async saveForm() {
     const title = this.hasFormNameTarget ? this.formNameTarget.value.trim() : ""
     const instructions = this.hasFormInstructionsTarget ? this.formInstructionsTarget.value.trim() : ""
     const dueDate = this.hasFormDueDateTarget ? this.formDueDateTarget.value : ""
@@ -255,27 +272,98 @@ export default class extends Controller {
       return
     }
 
-    if (this.editing && this.activeRow) {
-      this.applyFormToRow(this.activeRow, { title, instructions, dueDate })
-      this.showToast(this.strings.updated_toast)
+    this.setFormError("")
+    try {
+      if (this.editing && this.activeRow) {
+        const data = await this.requestHomework(this.activeRow.dataset.id, "PATCH", this.editPayload({ title, instructions, dueDate }))
+        this.applyRowPayload(this.activeRow, data.row)
+        this.refreshSummary(data.summary)
+        this.showToast(this.strings.updated_toast)
+        this.closeForm()
+        this.filter()
+        return
+      }
+
+      const fromCompleteDialog = this.completeBeforeAssign
+      await this.ensureLessonCompletedForHomework()
+      const data = await this.requestHomework(null, "POST", this.createPayload({ title, instructions, dueDate }))
+      this.insertRow(data.row)
+      this.refreshSummary(data.summary)
+      this.maybeAddStudentOptionFromRow(data.row)
+      this.maybeAddSubjectOptionFromRow(data.row)
+      this.showToast(this.strings.assigned_toast)
       this.closeForm()
+      if (fromCompleteDialog) {
+        await this.dismissLessonDialog()
+        this.filter()
+        return
+      }
       this.filter()
+    } catch (error) {
+      this.setFormError(error.message)
+    }
+  }
+
+  openHomeworkForLesson(lesson, { completeBeforeAssign = false } = {}) {
+    if (!lesson) return
+    this.editing = false
+    this.activeRow = null
+    this.completeBeforeAssign = completeBeforeAssign
+    this.pickedLesson = lesson
+    this.useFormMaterials()
+    this.fillFormFromLesson(lesson)
+    this.openTarget("formModal")
+  }
+
+  async openFromLessonOutcome(event) {
+    const button = event.currentTarget
+    const mode = button.dataset.homeworkMode
+    if (mode === "create") {
+      const lesson = this.parseJson(button.dataset.lesson)
+      if (!lesson) return
+      this.openHomeworkForLesson(lesson)
       return
     }
 
-    const row = this.buildRowFromForm({ title, instructions, dueDate })
-    if (row && this.hasListTarget) this.listTarget.prepend(row)
-    this.adjustStat("active", 1)
-    this.maybeAddStudentOption()
-    this.maybeAddSubjectOption()
-    this.showToast(this.strings.assigned_toast)
-    this.closeForm()
-    this.filter()
+    const homeworkId = button.dataset.homeworkId
+    if (!homeworkId) return
+    const row = await this.fetchHomeworkRow(homeworkId)
+    if (!row) return
+
+    if (mode === "edit") {
+      this.editing = true
+      this.activeRow = row
+      this.pickedLesson = null
+      this.useFormMaterials()
+      this.fillFormFromRow(row)
+      this.openTarget("formModal")
+      return
+    }
+
+    this.activeRow = row
+    this.fillDetails(row)
+    this.openTarget("detailsModal")
   }
 
-  openView(event) {
+  async fetchHomeworkRow(homeworkId) {
+    try {
+      const data = await this.requestHomework(homeworkId, "GET")
+      if (!data.row) return null
+      return this.buildRowFromPayload(data.row)
+    } catch (_) {
+      return null
+    }
+  }
+
+  async openView(event) {
     const row = event.currentTarget.closest("[data-homework-target='row']")
     if (!row) return
+    try {
+      const data = await this.requestHomework(row.dataset.id, "GET")
+      if (data.row) this.applyRowPayload(row, data.row)
+    } catch (_) {
+      /* use current row data */
+    }
     this.fillDetails(row)
     this.openTarget("detailsModal")
   }
@@ -303,28 +391,11 @@ export default class extends Controller {
   }
 
   requestRevision() {
-    const feedback = this.hasReviewFeedbackTarget ? this.reviewFeedbackTarget.value.trim() : ""
-    if (!feedback) {
-      this.setReviewError(this.strings.feedback_required_error)
-      return
-    }
-    this.persistReview(this.activeRow)
-    this.updateRowStatus(this.activeRow, "needs_revision")
-    this.adjustStat("toReview", -1)
-    this.adjustStat("active", 1)
-    this.showToast(this.strings.revision_toast)
-    this.closeReview()
-    this.filter()
+    this.postReview("resubmission_requested")
   }
 
   markReviewed() {
-    this.persistReview(this.activeRow)
-    this.updateRowStatus(this.activeRow, "reviewed")
-    this.adjustStat("toReview", -1)
-    this.adjustStat("reviewedThisMonth", 1)
-    this.showToast(this.strings.reviewed_toast)
-    this.closeReview()
-    this.filter()
+    this.postReview("reviewed")
   }
 
   fillFormFromLesson(lesson) {
@@ -401,78 +472,252 @@ export default class extends Controller {
     this.resetAttachments(this.attachmentsFromRow(row))
   }
 
-  applyFormToRow(row, { title, instructions, dueDate }) {
-    const nextTitle = title || row.dataset.title
-    row.dataset.title = nextTitle
-    row.dataset.instructions = instructions
-    row.dataset.dueDate = dueDate
-    if (this.hasFormDueTimeTarget) row.dataset.dueTime = this.formDueTimeTarget.value
-    if (this.hasFormNoteTarget) row.dataset.privateNote = this.formNoteTarget.value
-    row.dataset.search = `${nextTitle} ${row.dataset.studentLabel || ""}`.toLowerCase()
-    row.querySelectorAll(".homework-page__card-title").forEach((node) => {
-      node.textContent = nextTitle
-    })
-    this.refreshDueLabels(row, dueDate)
-    this.persistAttachments(row)
+  homeworkEligibleStatuses() {
+    return ["completed", "no_show"]
   }
 
-  buildRowFromForm({ title, instructions, dueDate }) {
+  lessonNeedsCompletion(lesson) {
+    const status = String(lesson?.status || "")
+    return !this.homeworkEligibleStatuses().includes(status)
+  }
+
+  async ensureLessonCompletedForHomework() {
+    const lesson = this.pickedLesson
+    if (!lesson || !this.lessonNeedsCompletion(lesson)) return
+    if (!this.completeBeforeAssign) {
+      throw new Error(this.strings.lesson_not_eligible || "Homework can only be linked to a completed lesson.")
+    }
+    const event = new CustomEvent("homework:request-lesson-completion", { detail: {} })
+    window.dispatchEvent(event)
+    const completer = event.detail?.completer
+    if (!completer) {
+      throw new Error(this.strings.lesson_complete_dialog_required || this.strings.lesson_not_eligible)
+    }
+    const catalog = await completer()
+    this.pickedLesson = { ...lesson, ...catalog, status: catalog.status || "completed" }
+  }
+
+  async dismissLessonDialog() {
+    const lessonId = this.pickedLesson?.id
+    const frame = document.getElementById("lesson_dialog")
+    if (!lessonId || !frame) {
+      window.location.reload()
+      return
+    }
+    try {
+      const response = await fetch(`/lessons/${encodeURIComponent(lessonId)}/complete_dialog?dismiss=1`, {
+        credentials: "same-origin",
+        headers: { Accept: "text/html", "Turbo-Frame": "lesson_dialog" }
+      })
+      if (!response.ok) throw new Error("dismiss failed")
+      frame.innerHTML = await response.text()
+    } catch (_) {
+      window.location.reload()
+    }
+  }
+
+  createPayload({ title, instructions, dueDate }) {
+    const lesson = this.pickedLesson || {}
+    return {
+      lessonId: lesson.id,
+      studentIds: this.selectedStudentIds(lesson),
+      title: title || undefined,
+      subject: lesson.subject,
+      instructions,
+      dueDate,
+      dueTime: this.hasFormDueTimeTarget ? this.formDueTimeTarget.value : "",
+      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : ""
+    }
+  }
+
+  editPayload({ title, instructions, dueDate }) {
+    return {
+      title: title || undefined,
+      instructions,
+      dueDate,
+      dueTime: this.hasFormDueTimeTarget ? this.formDueTimeTarget.value : "",
+      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : ""
+    }
+  }
+
+  insertRow(payload) {
+    const row = this.buildRowFromPayload(payload)
+    if (row && this.hasListTarget) {
+      this.listTarget.prepend(row)
+      this.syncEmptyState(true)
+    }
+  }
+
+  buildRowFromPayload(payload) {
     if (!this.hasRowTemplateTarget) return null
     const row = this.rowTemplateTarget.cloneNode(true)
     row.hidden = false
     row.setAttribute("data-homework-target", "row")
-    const lesson = this.pickedLesson || {}
-    const studentIds = this.selectedStudentIds(lesson)
-    const studentName = lesson.studentName || lesson.student || this.strings.student_fallback
-    const extra = Math.max(studentIds.length - 1, 0)
-    const studentLabel = extra > 0 ? `${studentName} +${extra}` : studentName
-    const subject = lesson.subject || ""
-    const assigned = this.todayKey()
-    const nextTitle = title || this.suggestTitle(subject)
-    const id = `hw-demo-${Date.now()}`
-
-    row.hidden = false
-    row.dataset.id = id
-    row.dataset.tab = "active"
-    row.dataset.status = "assigned"
-    row.dataset.subject = subject
-    row.dataset.studentIds = studentIds.join(",")
-    row.dataset.title = nextTitle
-    row.dataset.studentName = studentName
-    row.dataset.studentLabel = studentLabel
-    row.dataset.studentInitials = this.initials(studentName)
-    row.dataset.assignedDate = assigned
-    row.dataset.dueDate = dueDate
-    row.dataset.dueTime = this.hasFormDueTimeTarget ? this.formDueTimeTarget.value : ""
-    row.dataset.submittedAt = ""
-    row.dataset.instructions = instructions
-    row.dataset.feedback = ""
-    row.dataset.response = ""
-    row.dataset.privateNote = this.hasFormNoteTarget ? this.formNoteTarget.value : ""
-    row.dataset.lessonTitle = lesson.title || subject || ""
-    row.dataset.teacher = lesson.teacher || ""
-    row.dataset.submissionIds = ""
-    row.dataset.reviewIds = ""
-    row.dataset.hasSubmission = "false"
-    this.persistAttachments(row)
-    row.dataset.late = "false"
-    row.dataset.canReview = "false"
-    row.dataset.search = `${nextTitle} ${studentLabel}`.toLowerCase()
-
-    row.querySelectorAll(".homework-page__card-title").forEach((node) => { node.textContent = nextTitle })
-    row.querySelectorAll(".homework-page__person .homework-page__muted, .homework-page__person p.homework-page__muted").forEach((node) => {
-      node.textContent = studentLabel
-    })
-    row.querySelectorAll(".homework-page__avatar").forEach((node) => { node.textContent = this.initials(studentName) })
-    this.updateStatusBadge(row, "assigned")
-    this.setReviewAction(row, false)
-    this.refreshDueLabels(row, dueDate)
-    const lessonCell = row.querySelector(".homework-page__desktop p.homework-page__cell")
-    if (lessonCell) lessonCell.textContent = row.dataset.lessonTitle || "—"
-    const subjectCells = row.querySelectorAll(".homework-page__desktop p.homework-page__cell")
-    if (subjectCells[1]) subjectCells[1].textContent = subject || "—"
-
+    this.applyRowPayload(row, payload)
     return row
+  }
+
+  applyRowPayload(row, payload) {
+    const data = payload || {}
+    row.dataset.id = data.id || ""
+    row.dataset.tab = data.tab || "all"
+    row.dataset.status = data.status || "assigned"
+    row.dataset.subject = data.subject || ""
+    row.dataset.studentIds = Array.isArray(data.studentIds) ? data.studentIds.join(",") : ""
+    row.dataset.title = data.title || ""
+    row.dataset.teacher = data.teacher || ""
+    row.dataset.studentName = data.studentName || ""
+    row.dataset.studentLabel = data.studentLabel || ""
+    row.dataset.studentInitials = data.studentInitials || this.initials(data.studentName)
+    row.dataset.assignedDate = data.assignedDate || ""
+    row.dataset.dueDate = data.dueDate || ""
+    row.dataset.dueTime = data.dueTime || ""
+    row.dataset.submittedAt = data.submittedAt || ""
+    row.dataset.instructions = data.instructions || ""
+    row.dataset.feedback = data.feedback || ""
+    row.dataset.response = data.response || ""
+    row.dataset.privateNote = data.privateNote || ""
+    row.dataset.lessonTitle = data.lessonTitle || ""
+    row.dataset.submissionIds = Array.isArray(data.submissionIds) ? data.submissionIds.join(",") : ""
+    row.dataset.reviewIds = Array.isArray(data.reviewIds) ? data.reviewIds.join(",") : ""
+    row.dataset.hasSubmission = data.hasSubmission ? "true" : "false"
+    row.dataset.attachments = String(data.attachments || 0)
+    row.dataset.materialIds = Array.isArray(data.materialIds) ? data.materialIds.join(",") : ""
+    row.dataset.late = data.late ? "true" : "false"
+    row.dataset.canReview = data.canReview ? "true" : "false"
+    row.dataset.homeworkResponseId = data.homeworkResponseId || ""
+    row.dataset.studentSubmissions = JSON.stringify(data.studentSubmissions || [])
+    row.dataset.submissionSummary = data.submissionSummary || ""
+    row.dataset.search = data.search || `${data.title || ""} ${data.studentLabel || ""}`.toLowerCase()
+
+    row.querySelectorAll(".homework-page__card-title").forEach((node) => { node.textContent = data.title || "" })
+    row.querySelectorAll(".homework-page__person .homework-page__muted, .homework-page__person p.homework-page__muted").forEach((node) => {
+      if (node.classList.contains("homework-page__submission-progress")) return
+      node.textContent = data.studentLabel || data.studentName || ""
+    })
+    row.querySelectorAll(".homework-page__submission-progress").forEach((node) => {
+      if (data.submissionSummary) {
+        node.textContent = data.submissionSummary
+        node.hidden = false
+      } else {
+        node.textContent = ""
+        node.hidden = true
+      }
+    })
+    row.querySelectorAll(".homework-page__avatar").forEach((node) => {
+      node.textContent = data.studentInitials || this.initials(data.studentName)
+    })
+    const lessonCells = row.querySelectorAll(".homework-page__desktop p.homework-page__cell")
+    if (lessonCells[0]) lessonCells[0].textContent = data.lessonTitle || "—"
+    if (lessonCells[1]) lessonCells[1].textContent = data.subject || "—"
+    this.updateRowStatus(row, data.status || "assigned")
+    this.refreshDueLabels(row, data.dueDate)
+    this.setReviewAction(row, data.canReview)
+  }
+
+  async requestHomework(id, method, body) {
+    const base = String(this.homeworksUrlValue || "/homeworks").replace(/\/$/, "")
+    const url = id ? `${base}/${encodeURIComponent(id)}` : base
+    const options = {
+      method,
+      credentials: "same-origin",
+      headers: this.apiHeaders(method !== "GET")
+    }
+    if (body && method !== "GET") options.body = JSON.stringify(body)
+    const response = await fetch(url, options)
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = Array.isArray(data.errors) ? data.errors.filter(Boolean).join(" ") : (data.error || this.strings.save_failed)
+      throw new Error(message || this.strings.save_failed)
+    }
+    return data
+  }
+
+  async postReview(decision) {
+    if (!this.activeRow) return
+    const feedback = this.hasReviewFeedbackTarget ? this.reviewFeedbackTarget.value.trim() : ""
+    if (decision === "resubmission_requested" && !feedback) {
+      this.setReviewError(this.strings.feedback_required_error)
+      return
+    }
+    this.setReviewError("")
+    try {
+      const base = String(this.homeworksUrlValue || "/homeworks").replace(/\/$/, "")
+      const response = await fetch(`${base}/${encodeURIComponent(this.activeRow.dataset.id)}/review`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: this.apiHeaders(true),
+        body: JSON.stringify({ decision, feedback })
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const message = Array.isArray(data.errors) ? data.errors.join(" ") : (data.error || this.strings.save_failed)
+        throw new Error(message)
+      }
+      this.applyRowPayload(this.activeRow, data.row)
+      this.refreshSummary(data.summary)
+      this.showToast(decision === "reviewed" ? this.strings.reviewed_toast : this.strings.revision_toast)
+      this.closeReview()
+      this.filter()
+    } catch (error) {
+      this.setReviewError(error.message)
+    }
+  }
+
+  apiHeaders(jsonBody = false) {
+    const headers = { Accept: "application/json" }
+    if (jsonBody) headers["Content-Type"] = "application/json"
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
+    if (token) headers["X-CSRF-Token"] = token
+    return headers
+  }
+
+  refreshSummary(summary) {
+    if (!summary) return
+    const map = {
+      toReview: summary.toReview,
+      active: summary.active,
+      overdue: summary.overdue,
+      reviewedThisMonth: summary.reviewedThisMonth
+    }
+    Object.entries(map).forEach(([key, value]) => {
+      this.statValueTargets.forEach((node) => {
+        if (node.dataset.stat === key) node.textContent = String(value ?? 0)
+      })
+      this.statTargets.forEach((node) => {
+        if (node.dataset.stat !== key) return
+        if (key === "toReview" || key === "overdue") {
+          node.classList.toggle("is-warn", Number(value || 0) > 0)
+        }
+      })
+    })
+  }
+
+  syncEmptyState(hasRows) {
+    if (this.hasCatalogEmptyTarget) this.catalogEmptyTarget.hidden = hasRows
+    if (this.hasTableTarget && hasRows) this.tableTarget.hidden = false
+  }
+
+  maybeAddStudentOptionFromRow(payload) {
+    if (!this.hasStudentTarget || !payload?.studentIds?.length) return
+    payload.studentIds.forEach((id, index) => {
+      const exists = Array.from(this.studentTarget.options).some((option) => option.value === String(id))
+      if (exists) return
+      const option = document.createElement("option")
+      option.value = String(id)
+      option.textContent = index === 0 ? (payload.studentName || id) : String(id)
+      this.studentTarget.append(option)
+    })
+  }
+
+  maybeAddSubjectOptionFromRow(payload) {
+    if (!this.hasSubjectTarget || !payload?.subject) return
+    const exists = Array.from(this.subjectTarget.options).some((option) => option.value === payload.subject)
+    if (exists) return
+    const option = document.createElement("option")
+    option.value = payload.subject
+    option.textContent = payload.subject
+    this.subjectTarget.append(option)
   }
 
   fillDetails(row) {
@@ -490,12 +735,18 @@ export default class extends Controller {
       this.attachmentsFromRow(row),
       this.hasDetailsMaterialsEmptyTarget ? this.detailsMaterialsEmptyTarget : null
     )
-    this.fillSubmissionPanel(row, {
-      empty: this.hasDetailsNoSubmissionTarget ? this.detailsNoSubmissionTarget : null,
-      wrap: this.hasDetailsWrittenWrapTarget ? this.detailsWrittenWrapTarget : null,
-      response: this.hasDetailsSubmissionTarget ? this.detailsSubmissionTarget : null,
-      list: this.hasDetailsSubmissionListTarget ? this.detailsSubmissionListTarget : null,
-      listEmpty: this.hasDetailsSubmissionEmptyTarget ? this.detailsSubmissionEmptyTarget : null
+    this.renderSubmissionSections(row, {
+      groupWrap: this.hasDetailsGroupWrapTarget ? this.detailsGroupWrapTarget : null,
+      summary: this.hasDetailsSubmissionSummaryTarget ? this.detailsSubmissionSummaryTarget : null,
+      studentList: this.hasDetailsStudentListTarget ? this.detailsStudentListTarget : null,
+      singleWrap: this.hasDetailsSingleWrapTarget ? this.detailsSingleWrapTarget : null,
+      panel: {
+        empty: this.hasDetailsNoSubmissionTarget ? this.detailsNoSubmissionTarget : null,
+        wrap: this.hasDetailsWrittenWrapTarget ? this.detailsWrittenWrapTarget : null,
+        response: this.hasDetailsSubmissionTarget ? this.detailsSubmissionTarget : null,
+        list: this.hasDetailsSubmissionListTarget ? this.detailsSubmissionListTarget : null,
+        listEmpty: this.hasDetailsSubmissionEmptyTarget ? this.detailsSubmissionEmptyTarget : null
+      }
     })
   }
 
@@ -518,15 +769,97 @@ export default class extends Controller {
         : ""
     }
     if (this.hasReviewLateTarget) this.reviewLateTarget.hidden = row.dataset.late !== "true"
-    this.fillSubmissionPanel(row, {
-      wrap: this.hasReviewWrittenWrapTarget ? this.reviewWrittenWrapTarget : null,
-      response: this.hasReviewResponseTarget ? this.reviewResponseTarget : null,
-      list: this.hasReviewSubmissionListTarget ? this.reviewSubmissionListTarget : null,
-      listEmpty: this.hasReviewSubmissionEmptyTarget ? this.reviewSubmissionEmptyTarget : null
+    this.renderSubmissionSections(row, {
+      groupWrap: this.hasReviewGroupWrapTarget ? this.reviewGroupWrapTarget : null,
+      summary: this.hasReviewSubmissionSummaryTarget ? this.reviewSubmissionSummaryTarget : null,
+      studentList: this.hasReviewStudentListTarget ? this.reviewStudentListTarget : null,
+      singleWrap: this.hasReviewSingleWrapTarget ? this.reviewSingleWrapTarget : null,
+      panel: {
+        wrap: this.hasReviewWrittenWrapTarget ? this.reviewWrittenWrapTarget : null,
+        response: this.hasReviewResponseTarget ? this.reviewResponseTarget : null,
+        list: this.hasReviewSubmissionListTarget ? this.reviewSubmissionListTarget : null,
+        listEmpty: this.hasReviewSubmissionEmptyTarget ? this.reviewSubmissionEmptyTarget : null
+      }
     })
     if (this.hasReviewFeedbackTarget) this.reviewFeedbackTarget.value = row.dataset.feedback || ""
     this.resetAttachments(this.reviewAttachmentsFromRow(row))
     this.setReviewError("")
+  }
+
+  parseStudentSubmissions(row) {
+    const raw = row?.dataset?.studentSubmissions
+    if (!raw) return []
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch (_) {
+      return []
+    }
+  }
+
+  renderSubmissionSections(row, { groupWrap, summary, studentList, singleWrap, panel }) {
+    const submissions = this.parseStudentSubmissions(row)
+    const isGroup = submissions.length > 1
+    if (groupWrap) groupWrap.hidden = !isGroup
+    if (singleWrap) singleWrap.hidden = isGroup
+    if (isGroup) {
+      if (summary) summary.textContent = row.dataset.submissionSummary || ""
+      this.renderStudentSubmissionsList(studentList, submissions)
+      return
+    }
+    this.fillSubmissionPanel(row, panel || {})
+  }
+
+  renderStudentSubmissionsList(listTarget, submissions) {
+    if (!listTarget) return
+    listTarget.replaceChildren()
+    const writtenLabel = this.strings.written_answer || "Written answer"
+    const noSubmission = this.strings.no_submission || "No submission received."
+    submissions.forEach((student) => {
+      const card = document.createElement("article")
+      card.className = "homework-page__student-submission"
+      const head = document.createElement("div")
+      head.className = "homework-page__student-submission-head"
+      const person = document.createElement("div")
+      person.className = "homework-page__student-submission-person"
+      const avatar = document.createElement("span")
+      avatar.className = "homework-page__avatar homework-page__avatar--sm"
+      avatar.textContent = student.initials || this.initials(student.name)
+      const name = document.createElement("p")
+      name.className = "homework-page__student-submission-name"
+      name.textContent = student.name || ""
+      person.append(avatar, name)
+      const badge = document.createElement("span")
+      const tone = student.statusTone || STATUS_TONE[student.status] || "neutral"
+      badge.className = `status-badge status-badge--${tone}`
+      badge.textContent = student.statusLabel || this.strings.statuses?.[student.status] || student.status || ""
+      head.append(person, badge)
+      card.append(head)
+      if (student.hasSubmission) {
+        const written = document.createElement("div")
+        written.className = "homework-page__written"
+        const label = document.createElement("p")
+        label.className = "homework-page__written-label"
+        label.textContent = writtenLabel
+        const copy = document.createElement("p")
+        copy.className = "homework-page__details-copy"
+        copy.textContent = student.response || "—"
+        written.append(label, copy)
+        card.append(written)
+        if (student.late) {
+          const late = document.createElement("p")
+          late.className = "homework-page__late"
+          late.textContent = this.strings.late || "Late"
+          card.append(late)
+        }
+      } else {
+        const empty = document.createElement("p")
+        empty.className = "homework-page__muted"
+        empty.textContent = noSubmission
+        card.append(empty)
+      }
+      listTarget.append(card)
+    })
   }
 
   fillSubmissionPanel(row, targets = {}) {
@@ -621,7 +954,13 @@ export default class extends Controller {
     if (this.hasFormStudentsTarget && !this.formStudentsWrapTarget.hidden) {
       return Array.from(this.formStudentsTarget.querySelectorAll("input:checked")).map((input) => input.value).filter(Boolean)
     }
-    return Array.isArray(lesson.studentIds) ? lesson.studentIds : []
+    const fromList = Array.isArray(lesson.studentIds) ? lesson.studentIds.map((id) => String(id)).filter(Boolean) : []
+    if (fromList.length > 0) return fromList
+    if (lesson.studentId != null && lesson.studentId !== "") return [String(lesson.studentId)]
+    if (Array.isArray(lesson.students)) {
+      return lesson.students.map((student) => String(student.id || "")).filter(Boolean)
+    }
+    return []
   }
 
   updateSelectedCount() {

@@ -217,7 +217,9 @@ module StudentsHelper
     upcoming = student_upcoming_lessons(lessons)
     month_key = Date.current.strftime('%Y-%m')
     homework_items = Array(homework)
-    done = homework_items.count { |item| HOMEWORK_DONE_STATUSES.include?(item[:status].to_s) }
+    done = homework_items.count do |item|
+      HOMEWORK_DONE_STATUSES.include?(student_homework_facing(item).to_s)
+    end
     homework_percent = homework_items.empty? ? nil : ((done.to_f / homework_items.size) * 100).round
     progress_percent = progress&.dig(:overallPercent)
 
@@ -240,7 +242,8 @@ module StudentsHelper
   def student_activity_items(lessons:, homework:, progress:, notes:, finance: nil, include_finance: false)
     items = []
     Array(homework).each do |item|
-      next unless HOMEWORK_DONE_STATUSES.include?(item[:status].to_s) || item[:status].to_s == 'needs_review'
+      facing = student_homework_facing(item)
+      next unless HOMEWORK_DONE_STATUSES.include?(facing) || %w[needs_review needs_revision submitted].include?(facing)
 
       items << {
         title: t('app.students.activity_homework', title: item[:title]),
@@ -435,6 +438,10 @@ module StudentsHelper
 
   def student_delete_dialog_path(student)
     delete_dialog_students_path(student_id: student[:id])
+  end
+
+  def student_homework_facing(item)
+    item[:facing].presence || item[:status].to_s
   end
 
   def student_homework_tone(status)

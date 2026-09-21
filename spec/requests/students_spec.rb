@@ -3,7 +3,23 @@
 require 'rails_helper'
 
 RSpec.describe 'Student profile' do
+  it 'lists homework from the database on the profile homework tab' do
+    student = create(:student_profile)
+    teacher = create(:teacher_profile, workspace: student.workspace, first_name: 'Anna')
+    student.update!(teacher_profile: teacher)
+    lesson = create(:lesson, teacher:, status: :completed).tap { |l| l.students = [student]; l.save! }
+    homework = create(:homework, workspace: student.workspace, teacher:, lesson:, students: [student], title: 'Profile HW')
+    sign_in student.workspace.owner
+
+    get student_path(id: student.id, tab: 'homework')
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('Profile HW')
+    expect(response.body).not_to include('Demo::Portal')
+  end
+
   it 'renders an editable status select next to the edit action' do
+    student = create(:student_profile, status: :trial)
     student = create(:student_profile, status: :trial)
     sign_in student.workspace.owner
 

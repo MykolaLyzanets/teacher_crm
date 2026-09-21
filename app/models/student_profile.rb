@@ -18,6 +18,8 @@ class StudentProfile < ApplicationRecord
                                 inverse_of: :assigned_student_profiles
   has_and_belongs_to_many :lessons, join_table: :lessons_students, foreign_key: :student_id,
                                     association_foreign_key: :lesson_id
+  has_many :homework_students, foreign_key: :student_id, inverse_of: :student, dependent: :destroy
+  has_many :homeworks, through: :homework_students
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true

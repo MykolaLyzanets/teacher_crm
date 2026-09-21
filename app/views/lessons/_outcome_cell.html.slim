@@ -1,5 +1,6 @@
 - review ||= lesson_review_status(lesson)
 - homework = lesson_homework_status(lesson)
+- lesson_payload = lesson.to_json
 
 .lessons-page__outcome-cell
   .lessons-page__outcome-stack data-outcome-required="" hidden=(true unless lesson_needs_outcome?(lesson))
@@ -13,14 +14,16 @@
   .lessons-page__outcome-homework data-outcome-homework="" hidden=(true unless review == 'completed')
     span.status-badge class="status-badge--#{homework[:assigned] ? 'olive' : 'neutral'}" data-homework-badge=""
       = homework[:assigned] ? t('app.lessons.homework_assigned') : t('app.lessons.homework_not_assigned')
+    - if homework[:submissionSummary].present?
+      p.lessons-page__outcome-homework-progress = homework[:submissionSummary]
     .lessons-page__outcome-stack
-      = link_to homework_path, class: 'lessons-page__outcome-link', hidden: !homework[:assigned], data: { homework_assigned: true } do
+      button.lessons-page__outcome-link type="button" hidden=(true unless homework[:assigned]) data-homework-assigned="true" data-homework-mode="view" data-homework-id=homework[:id] data-action="homework#openFromLessonOutcome"
         = lesson_icon 'eye', size: 15
         span = t('app.lessons.view_homework')
-      = link_to homework_path, class: 'lessons-page__outcome-link lessons-page__outcome-link--muted', hidden: !homework[:assigned], data: { homework_assigned: true } do
+      button.lessons-page__outcome-link.lessons-page__outcome-link--muted type="button" hidden=(true unless homework[:assigned]) data-homework-assigned="true" data-homework-mode="edit" data-homework-id=homework[:id] data-action="homework#openFromLessonOutcome"
         = lesson_icon 'pencil', size: 15
         span = t('app.lessons.edit_homework')
-      = link_to homework_path, class: 'lessons-page__outcome-link', hidden: homework[:assigned], data: { homework_missing: true } do
+      button.lessons-page__outcome-link type="button" hidden=(true if homework[:assigned]) data-homework-missing="true" data-homework-mode="create" data-lesson=lesson_payload data-action="homework#openFromLessonOutcome"
         = lesson_icon 'plus', size: 15
         span = t('app.lessons.add_homework')
 

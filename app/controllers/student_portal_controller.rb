@@ -10,7 +10,8 @@ class StudentPortalController < ApplicationController
 
   def home
     @finance = Demo::Finance.portal_finance(@catalog_student_id) if @catalog_student_id
-    @nearest_homework = Demo::Portal.nearest_todo(@homework_items || [])
+    profile = current_user.student_profile
+    @nearest_homework = HomeworkStudent.nearest_todo_item(profile) if profile.present?
     @recent_materials = Array(@materials_items).first(3)
   end
 
@@ -66,12 +67,20 @@ class StudentPortalController < ApplicationController
   end
 
   def load_portal_demo_extras
+    load_portal_homework
     return if @catalog_student_id.blank?
 
-    @homework_items = Demo::Portal.homework_for(@catalog_student_id)
-    @homework_summary = Demo::Portal.homework_summary(@homework_items)
     @materials_items = Demo::Portal.materials_for(@catalog_student_id)
-    @homework_badge = @homework_summary[:needsAttention]
     @materials_badge = Demo::Portal.new_materials_count(@materials_items)
+  end
+
+  def load_portal_homework
+    profile = current_user.student_profile
+    return if profile.blank?
+
+    @homework_records = HomeworkStudent.portal_scope(profile).to_a
+    @homework_items = @homework_records.map(&:as_student_portal_item)
+    @homework_summary = HomeworkStudent.portal_summary(@homework_records)
+    @homework_badge = @homework_summary[:needsAttention]
   end
 end

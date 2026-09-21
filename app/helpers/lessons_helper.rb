@@ -250,15 +250,35 @@ module LessonsHelper
   end
 
   def lesson_homework_status(lesson)
-    item = lesson_demo_homework(lesson)
+    homework = lesson_homework_record(lesson)
+    if homework.blank?
+      return {
+        assigned: false,
+        id: nil,
+        title: nil,
+        dueDate: nil,
+        teacher: nil,
+        status: nil
+      }
+    end
+
+    row = homework.as_teacher_row
     {
-      assigned: item.present?,
-      id: item&.dig(:id),
-      title: item&.dig(:title),
-      dueDate: item&.dig(:dueDate),
-      teacher: item&.dig(:teacher),
-      status: item&.dig(:status)
+      assigned: true,
+      id: homework.id.to_s,
+      title: homework.title,
+      dueDate: homework.due_at.to_date.iso8601,
+      teacher: homework.teacher.display_label,
+      status: row[:status],
+      submissionSummary: row[:submissionSummary]
     }
+  end
+
+  def lesson_homework_record(lesson)
+    lesson_id = lesson.is_a?(Lesson) ? lesson.id : lesson[:id]
+    return if lesson_id.blank?
+
+    Homework.includes(:teacher, homework_students: [:student, :homework_response]).find_by(lesson_id:)
   end
 
   def lesson_demo_homework(lesson)

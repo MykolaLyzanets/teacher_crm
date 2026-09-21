@@ -57,6 +57,11 @@ export default class extends Controller {
     this.chargeDecision = this.chargeValue || "no_charge"
     this.groupAttendance = {}
     this.saving = false
+    this.onHomeworkCompleteRequest = (event) => {
+      if (!this.hasDurationTarget || !this.urlValue) return
+      event.detail.completer = () => this.persistCompletedForHomework()
+    }
+    window.addEventListener("homework:request-lesson-completion", this.onHomeworkCompleteRequest)
     const students = Array.isArray(this.lesson.students) ? this.lesson.students : []
     const current = this.hasAttendanceTarget ? this.attendanceTarget.value : "attended"
     students.forEach((student) => {
@@ -64,6 +69,10 @@ export default class extends Controller {
     })
     this.syncCancelReasonFields()
     this.syncCompleteFinance()
+  }
+
+  disconnect() {
+    window.removeEventListener("homework:request-lesson-completion", this.onHomeworkCompleteRequest)
   }
 
   t(key, vars = {}) {
@@ -103,6 +112,12 @@ export default class extends Controller {
     this.homeworkBtnTargets.forEach((button) => {
       button.classList.toggle("is-selected", button.dataset.homework === this.homeworkIntent)
     })
+    if (this.homeworkIntent === "create") {
+      window.dispatchEvent(new CustomEvent("homework:open-from-lesson", {
+        detail: { lesson: this.lesson, completeBeforeAssign: true },
+        bubbles: true
+      }))
+    }
   }
 
   resolvedAttendance() {
@@ -213,6 +228,36 @@ export default class extends Controller {
     this.persist("completed")
   }
 
+  async persistCompletedForHomework() {
+    const duration = this.hasDurationTarget ? Number(this.durationTarget.value) : 0
+    if (!Number.isInteger(duration) || duration <= 0) {
+      throw new Error(this.t("duration_blank"))
+    }
+    if (!this.urlValue || this.saving) {
+      throw new Error(this.t("save_failed"))
+    }
+    this.saving = true
+    this.showError("")
+    try {
+      const response = await fetch(this.urlValue, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: this.apiHeaders(),
+        body: JSON.stringify(this.outcomePayload("completed"))
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const message = Array.isArray(data.errors) ? data.errors.filter(Boolean).join(" ") : (data.error || this.t("save_failed"))
+        throw new Error(message || this.t("save_failed"))
+      }
+      this.homeworkIntent = "skip"
+      return data
+    } finally {
+      this.saving = false
+      if (this.hasSubmitTarget) this.syncCompleteFinance()
+    }
+  }
+
   submitCancel() {
     const reason = this.cancelReasonLabel()
     if (!reason) {
@@ -268,10 +313,6 @@ export default class extends Controller {
       if (!response.ok) {
         const message = Array.isArray(data.errors) ? data.errors.filter(Boolean).join(" ") : (data.error || this.t("save_failed"))
         throw new Error(message || this.t("save_failed"))
-      }
-      if (outcome === "completed" && this.homeworkIntent === "create" && this.homeworkUrlValue) {
-        window.location.href = this.homeworkUrlValue
-        return
       }
       window.location.reload()
     } catch (error) {

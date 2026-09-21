@@ -23,22 +23,21 @@
             th = t('app.students.col_actions')
         tbody
           - homework.each do |item|
-            - facing = Demo::Portal.facing_status(item)
-            - payload = homework_row_payload(item)
+            - facing = item[:facing] || item[:status]
             tr[
               data-homework-target="row"
-              data-id=payload[:id]
-              data-title=payload[:title]
-              data-teacher=payload[:teacher]
-              data-subject=payload[:subject]
-              data-due-date=payload[:dueDate]
-              data-submitted-at=payload[:submittedAt]
-              data-instructions=payload[:instructions]
-              data-feedback=payload[:feedback]
-              data-response=payload[:response]
-              data-material-ids=payload[:materialIds].join(',')
-              data-submission-ids=payload[:submissionIds].join(',')
-              data-has-submission=(payload[:hasSubmission] ? 'true' : 'false')
+              data-id=item[:id]
+              data-title=item[:title]
+              data-teacher=item[:teacher]
+              data-subject=item[:subject]
+              data-due-date=item[:dueDate]
+              data-submitted-at=item[:submittedAt]
+              data-instructions=item[:instructions]
+              data-feedback=item[:feedback]
+              data-response=item[:writtenResponse]
+              data-material-ids=""
+              data-submission-ids=""
+              data-has-submission=(item[:writtenResponse].present? || item[:submittedAt].present? ? 'true' : 'false')
             ]
               td = item[:title]
               td = student_profile_date_label(item[:assignedDate])
