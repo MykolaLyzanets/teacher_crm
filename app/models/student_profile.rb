@@ -20,6 +20,8 @@ class StudentProfile < ApplicationRecord
                                     association_foreign_key: :lesson_id
   has_many :homework_students, foreign_key: :student_id, inverse_of: :student, dependent: :destroy
   has_many :homeworks, through: :homework_students
+  has_many :material_students, foreign_key: :student_id, inverse_of: :student, dependent: :destroy
+  has_many :materials, through: :material_students
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true

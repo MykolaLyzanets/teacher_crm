@@ -19,6 +19,7 @@ class Lesson < ApplicationRecord
                           join_table: :lessons_students,
                           association_foreign_key: :student_id
   has_one :homework, dependent: :nullify, inverse_of: :lesson
+  has_many :materials, dependent: :nullify, inverse_of: :lesson
 
   scope :overlapping, lambda { |starts_at, ends_at|
     where('lessons.starts_at < ? AND lessons.ends_at > ?', ends_at, starts_at)

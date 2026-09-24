@@ -17,7 +17,7 @@ class HomeworkController < AppController
     @student_options = homework_student_filter_options(records)
     @subject_options = records.map { |item| item.subject.to_s }.compact_blank.uniq.sort
     @eligible_lessons = eligible_lessons_for_homework(records)
-    @materials_by_id = Demo::Catalog.materials.index_by { |item| item[:id].to_s }
+    @materials_by_id = materials_library_by_id
   end
 
   def show
@@ -50,8 +50,9 @@ class HomeworkController < AppController
     end
 
     if homework.save
+      homework.sync_material_ids!(create_params[:material_ids]) if create_params.key?(:material_ids)
       ensure_draft_responses!(homework)
-      render json: homework_json(homework), status: :created
+      render json: homework_json(homework.reload), status: :created
     else
       render json: { errors: homework.errors.full_messages }, status: :unprocessable_entity
     end
@@ -71,7 +72,8 @@ class HomeworkController < AppController
 
     homework.assign_attributes(attrs)
     if homework.save
-      render json: homework_json(homework)
+      homework.sync_material_ids!(update_params[:material_ids]) if update_params.key?(:material_ids)
+      render json: homework_json(homework.reload)
     else
       render json: { errors: homework.errors.full_messages }, status: :unprocessable_entity
     end
@@ -93,6 +95,7 @@ class HomeworkController < AppController
       return
     end
 
+    homework.sync_review_material_ids!(review_params[:material_ids]) if review_params.key?(:material_ids)
     render json: homework_json(homework.reload)
   end
 
@@ -258,19 +261,24 @@ class HomeworkController < AppController
     @create_params ||= normalize_homework_params(params.permit(
       :lesson_id, :lessonId, :title, :subject, :topic, :instructions, :private_note, :privateNote,
       :due_date, :dueDate, :due_time, :dueTime, :allow_late_submission, :allowLateSubmission,
-      student_ids: [], studentIds: []
+      student_ids: [], studentIds: [], material_ids: [], materialIds: []
     ))
   end
 
   def update_params
     @update_params ||= normalize_homework_params(params.permit(
-      :title, :instructions, :private_note, :privateNote, :due_date, :dueDate, :due_time, :dueTime
+      :title, :instructions, :private_note, :privateNote, :due_date, :dueDate, :due_time, :dueTime,
+      material_ids: [], materialIds: []
     ))
   end
 
   def review_params
-    params.permit(:decision, :feedback, :score, :resubmission_due_at, :resubmissionDueAt, :homework_response_id,
-                  :homeworkResponseId)
+    permitted = params.permit(:decision, :feedback, :score, :resubmission_due_at, :resubmissionDueAt,
+                              :homework_response_id, :homeworkResponseId, material_ids: [], materialIds: [])
+    if permitted.key?(:material_ids) || permitted.key?(:materialIds)
+      permitted[:material_ids] = Array(permitted[:material_ids].presence || permitted.delete(:materialIds))
+    end
+    permitted
   end
 
   def boolean_param(value, default: false)
@@ -286,6 +294,9 @@ class HomeworkController < AppController
     map[:private_note] ||= map.delete(:privateNote)
     map[:allow_late_submission] = map[:allow_late_submission].nil? ? map.delete(:allowLateSubmission) : map[:allow_late_submission]
     map[:student_ids] = Array(map[:student_ids].presence || map.delete(:studentIds))
+    if map.key?(:material_ids) || map.key?(:materialIds)
+      map[:material_ids] = Array(map[:material_ids].presence || map.delete(:materialIds))
+    end
     map
   end
 end

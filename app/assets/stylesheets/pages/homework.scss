@@ -946,7 +946,25 @@
   font-size: 11px;
 }
 
+.homework-page__attachment-preview {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  margin-top: 8px;
+  border-radius: 8px;
+  background: #000;
+}
+
+.homework-page__attachment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .homework-page__attachment-remove,
+.homework-page__attachment-action,
 .homework-page__library-pick {
   padding: 0;
   border: 0;
@@ -956,6 +974,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 
   &:hover {
     text-decoration: underline;

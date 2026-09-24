@@ -281,6 +281,17 @@ module LessonsHelper
     Homework.includes(:teacher, homework_students: [:student, :homework_response]).find_by(lesson_id:)
   end
 
+  def lesson_materials_list(lesson)
+    lesson_id = lesson.is_a?(Hash) ? lesson[:id] : lesson.id
+    return Material.none if lesson_id.blank?
+
+    Material.role_assignment.where(lesson_id:).order(created_at: :desc)
+  end
+
+  def lesson_attachable_materials(_lesson)
+    materials_scope.library.library_standalone.order(:title)
+  end
+
   def lesson_demo_homework(lesson)
     items = Demo::Timeline.homework
     return if items.blank?

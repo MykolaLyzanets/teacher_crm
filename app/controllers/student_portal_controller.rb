@@ -70,7 +70,8 @@ class StudentPortalController < ApplicationController
     load_portal_homework
     return if @catalog_student_id.blank?
 
-    @materials_items = Demo::Portal.materials_for(@catalog_student_id)
+    profile = current_user.student_profile
+    @materials_items = profile.present? ? Material.portal_items_for(profile) : []
     @materials_badge = Demo::Portal.new_materials_count(@materials_items)
   end
 

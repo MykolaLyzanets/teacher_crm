@@ -59,8 +59,23 @@ module WorkspaceScoping
                  .map(&:as_catalog)
   end
 
+  def materials_scope
+    scoped = Material.includes(:teacher)
+    return scoped if current_user.admin?
+    return Material.none if current_workspace.blank?
+
+    scoped.where(workspace_id: current_workspace.id)
+  end
+
+  def materials_library_by_id
+    Material.library_index_for(materials_scope)
+  end
+
   def homeworks_scope
-    scoped = Homework.includes(:teacher, :lesson, homework_students: %i[student homework_response])
+    scoped = Homework.includes(
+      :teacher, :lesson, :materials,
+      homework_students: { student: {}, homework_response: :materials }
+    )
     return scoped if current_user.admin?
     return Homework.none if current_workspace.blank?
 

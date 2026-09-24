@@ -533,7 +533,7 @@ RSpec.describe 'Lesson scheduling API' do
     expect(response.body).to include(I18n.t('app.lessons.view_homework'))
   end
 
-  it 'renders the materials placeholder' do
+  it 'renders the materials library page' do
     workspace, = graph
     sign_in workspace.owner
 
@@ -541,5 +541,6 @@ RSpec.describe 'Lesson scheduling API' do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(I18n.t('app.pages.materials.title'))
+    expect(response.body).to include(I18n.t('app.materials.library_title'))
   end
 end

@@ -15,8 +15,8 @@ module HomeworkStudent::PortalQueryable
 
       portal_ordered
         .includes(
-          { homework_response: :reviewed_by },
-          homework: [:teacher, { lesson: %i[subject lesson_type teacher_profile] }]
+          { homework_response: [:reviewed_by, :materials] },
+          homework: [:teacher, :materials, { lesson: %i[subject lesson_type teacher_profile] }]
         )
         .where(student_id: student_profile.id)
         .where(homeworks: { workspace_id: student_profile.workspace_id })

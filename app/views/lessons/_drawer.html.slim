@@ -31,7 +31,7 @@
           button.danlio-modal__close type="button" aria-label=t('app.lessons.more_title') aria-expanded="false" data-action="lesson-drawer#toggleMenu"
             = lesson_icon 'dots', size: 20
           .lessons-page__menu.lessons-page__menu--hidden data-lesson-drawer-target="menu"
-            = link_to t('app.lessons.share_material'), materials_path, class: 'lessons-page__menu-item'
+            a.lessons-page__menu-item href="#lesson-materials" = t('app.lessons.share_material')
             = link_to t('app.lessons.duplicate_lesson_action'), lesson_duplicate_dialog_path(lesson), class: 'lessons-page__menu-item', data: calendar_create_turbo_data
             - if lesson[:upcoming]
               = link_to t('app.lessons.cancel_lesson'), cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item', data: lesson_dialog_turbo
@@ -134,20 +134,7 @@
                   = lesson_icon 'plus', size: 16
                   span = t('app.lessons.create_homework')
 
-        section.lessons-page__show-section
-          .lessons-page__section-head
-            h3.lessons-page__show-kicker
-              span.lessons-page__section-icon = lesson_icon 'folder', size: 16
-              = t('app.lessons.materials')
-          .lessons-page__empty-card.lessons-page__empty-card--center
-            p.lessons-page__muted = t('app.lessons.no_materials')
-            .lessons-page__empty-card-actions
-              = link_to materials_path, class: 'lessons-page__primary-btn lessons-page__compact-btn' do
-                = lesson_icon 'upload', size: 16
-                span = t('app.lessons.add_material')
-              = link_to materials_path, class: 'lessons-page__secondary-btn lessons-page__compact-btn' do
-                = lesson_icon 'folder-plus', size: 16
-                span = t('app.lessons.share_existing')
+        = render 'lessons/materials_section', lesson: lesson, editable: lesson_review_status(lesson) != 'cancelled'
 
         section.lessons-page__show-section
           h3.lessons-page__show-kicker = t('app.lessons.notes')

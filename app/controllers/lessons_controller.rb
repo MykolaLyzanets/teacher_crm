@@ -9,7 +9,7 @@ class LessonsController < AppController
   def index
     @lessons = catalog_lessons
     @teacher_names = @lessons.map { |lesson| lesson[:teacher].to_s }.compact_blank.uniq.sort
-    @materials_by_id = Demo::Catalog.materials.index_by { |item| item[:id].to_s }
+    @materials_by_id = materials_library_by_id
     homework_records = homeworks_scope.ordered_by_due.to_a
     @eligible_lessons = eligible_lessons_without_homework(homework_records)
   end

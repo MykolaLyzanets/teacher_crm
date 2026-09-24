@@ -1058,6 +1058,15 @@ ua:
       add_material: Додати матеріал
       share_existing: Поділитися наявним
       share_material: Поділитися матеріалом
+      material_added: Матеріал додано до уроку.
+      material_attached: Матеріал прив’язано до уроку.
+      material_not_found: Матеріал не знайдено в бібліотеці.
+      materials_limit: До уроку можна додати не більше 10 матеріалів.
+      material_link_url: Посилання
+      add_material_link: Додати посилання
+      upload_material: Завантажити файл
+      material_link_default: Посилання до уроку
+      choose_material: Оберіть матеріал
       duplicate_lesson_action: Дублювати
       payment: Оплата
       admin_only: Видно лише адміністраторам
@@ -1211,6 +1220,9 @@ ua:
       instructions: Інструкція
       materials: Матеріали
       no_materials: Матеріалів немає.
+      watch_material: Дивитися
+      download_material: Завантажити
+      open_material: Відкрити
       student_submission: Робота учня
       written_answer: Письмова відповідь
       submission_materials: Матеріали здачі
@@ -1238,6 +1250,17 @@ ua:
         needs_revision: Потрібне доопрацювання
         reviewed: Перевірено
         overdue: Прострочено
+    materials:
+      staff_only: У вас немає доступу до керування матеріалами.
+      teacher_required: Спочатку призначте викладача для завантаження матеріалів.
+      created: Матеріал додано до бібліотеки.
+      shared_with_student: Матеріал надіслано учню.
+      library_title: Бібліотека workspace
+      library_empty: У бібліотеці ще немає матеріалів.
+      add_to_library: Додати до бібліотеки
+      share_with: "Поділитися з %{name}"
+      on_lesson: На уроці
+      on_homework: У домашньому завданні
     pages:
       coming_soon_text: Цей розділ є частиною робочого простору Danlio і зʼявиться в наступному оновленні.
       back_dashboard: До огляду
@@ -1653,6 +1676,7 @@ ua:
         preparing: Готується…
         unavailable: Недоступно
         watch: Дивитися
+        download: Завантажити
         open_link: Відкрити посилання
         preview: Переглянути
         view_details: Деталі

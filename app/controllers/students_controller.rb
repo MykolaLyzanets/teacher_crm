@@ -35,7 +35,7 @@ class StudentsController < AppController
       @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
     end
     @profile_tab = student_profile_tab
-    @materials_by_id = Demo::Catalog.materials.index_by { |item| item[:id].to_s }
+    @materials_by_id = materials_library_by_id
   end
 
   def new

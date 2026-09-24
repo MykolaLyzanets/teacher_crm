@@ -92,7 +92,10 @@ module HomeworkHelper
   end
 
   def homework_materials_for(item)
-    # TODO: resolve materials when homework material links exist
+    if item.is_a?(Homework)
+      return item.materials.map(&:as_library_entry)
+    end
+
     Array(item[:materialIds]).filter_map { |id| @materials_by_id&.[](id.to_s) }
   end
 

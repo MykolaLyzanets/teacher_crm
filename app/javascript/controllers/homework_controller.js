@@ -122,7 +122,8 @@ export default class extends Controller {
     tab: { type: String, default: "all" },
     locale: { type: String, default: "en" },
     library: { type: Object, default: {} },
-    homeworksUrl: { type: String, default: "/homeworks" }
+    homeworksUrl: { type: String, default: "/homeworks" },
+    materialsUrl: { type: String, default: "/materials" }
   }
 
   connect() {
@@ -274,6 +275,7 @@ export default class extends Controller {
 
     this.setFormError("")
     try {
+      await this.ensurePersistedAttachments("form")
       if (this.editing && this.activeRow) {
         const data = await this.requestHomework(this.activeRow.dataset.id, "PATCH", this.editPayload({ title, instructions, dueDate }))
         this.applyRowPayload(this.activeRow, data.row)
@@ -516,6 +518,73 @@ export default class extends Controller {
     }
   }
 
+  persistedMaterialIds() {
+    return this.persistedMaterialIdsFrom(this.formAttachments)
+  }
+
+  persistedMaterialIdsFrom(items) {
+    return (Array.isArray(items) ? items : [])
+      .map((item) => String(item.id || ""))
+      .filter((id) => /^\d+$/.test(id))
+  }
+
+  async ensurePersistedAttachments(scope) {
+    const review = scope === "review"
+    const items = review ? this.reviewAttachments : this.formAttachments
+    const next = []
+    for (const item of items) {
+      if (/^\d+$/.test(String(item.id || ""))) {
+        next.push(item)
+        continue
+      }
+      const uploaded = await this.uploadMaterialItem(item)
+      if (uploaded) next.push(uploaded)
+    }
+    if (review) this.reviewAttachments = next
+    else this.formAttachments = next
+    this.renderAttachments()
+  }
+
+  async uploadMaterialItem(item) {
+    const form = new FormData()
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
+    if (item._file) {
+      form.append("file", item._file)
+      form.append("title", item.name || item._file.name)
+    } else if (item.url) {
+      form.append("external_url", item.url)
+      form.append("title", item.name || item.url)
+    } else {
+      return null
+    }
+    const response = await fetch(this.materialsUrlValue || "/materials", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { Accept: "application/json", ...(token ? { "X-CSRF-Token": token } : {}) },
+      body: form
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = Array.isArray(data.errors) ? data.errors.join(" ") : this.strings.save_failed
+      throw new Error(message || this.strings.save_failed)
+    }
+    const material = data.material || {}
+    this.mergeLibraryEntry(material)
+    const kind = material.type === "video" ? "video" : material.type === "link" ? "link" : "file"
+    return {
+      id: material.id,
+      kind,
+      name: material.title || material.id,
+      meta: material.domain || material.type || "",
+      url: material.accessUrl || ""
+    }
+  }
+
+  mergeLibraryEntry(material) {
+    if (!material?.id) return
+    this.libraryValue = { ...(this.libraryValue || {}), [material.id]: material }
+  }
+
   createPayload({ title, instructions, dueDate }) {
     const lesson = this.pickedLesson || {}
     return {
@@ -526,7 +595,8 @@ export default class extends Controller {
       instructions,
       dueDate,
       dueTime: this.hasFormDueTimeTarget ? this.formDueTimeTarget.value : "",
-      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : ""
+      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : "",
+      materialIds: this.persistedMaterialIds()
     }
   }
 
@@ -536,7 +606,8 @@ export default class extends Controller {
       instructions,
       dueDate,
       dueTime: this.hasFormDueTimeTarget ? this.formDueTimeTarget.value : "",
-      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : ""
+      privateNote: this.hasFormNoteTarget ? this.formNoteTarget.value : "",
+      materialIds: this.persistedMaterialIds()
     }
   }
 
@@ -642,12 +713,13 @@ export default class extends Controller {
     }
     this.setReviewError("")
     try {
+      await this.ensurePersistedAttachments("review")
       const base = String(this.homeworksUrlValue || "/homeworks").replace(/\/$/, "")
       const response = await fetch(`${base}/${encodeURIComponent(this.activeRow.dataset.id)}/review`, {
         method: "POST",
         credentials: "same-origin",
         headers: this.apiHeaders(true),
-        body: JSON.stringify({ decision, feedback })
+        body: JSON.stringify({ decision, feedback, materialIds: this.persistedMaterialIdsFrom(this.reviewAttachments) })
       })
       const data = await response.json().catch(() => ({}))
       if (!response.ok) {
@@ -1113,7 +1185,8 @@ export default class extends Controller {
         kind: isVideo ? "video" : "file",
         name: file.name,
         meta: `${isVideo ? "Video" : this.fileLabel(file)} · ${this.fileSize(file.size)}`,
-        size: file.size
+        size: file.size,
+        _file: file
       })
     })
     bag.setItems(next)
@@ -1138,7 +1211,8 @@ export default class extends Controller {
       id,
       kind: item.type === "video" ? "video" : item.type === "link" ? "link" : "file",
       name: item.title || id,
-      meta: item.type || "file"
+      meta: item.type || "file",
+      url: item.accessUrl || ""
     }])
     this.renderAttachments()
   }
@@ -1169,17 +1243,50 @@ export default class extends Controller {
 
   attachmentItemHtml(item, readOnly) {
     const icon = item.kind === "video" ? "▶" : item.kind === "link" ? "↗" : "📎"
-    const remove = readOnly
-      ? ""
+    const url = this.attachmentAccessUrl(item)
+    const trailing = readOnly
+      ? this.attachmentActionsHtml(item, url)
       : `<button class="homework-page__attachment-remove" type="button" data-id="${this.escape(item.id)}" data-action="homework#removeAttachment">${this.escape(this.strings.remove_attachment || "Remove")}</button>`
+    const preview = readOnly && url && item.kind === "video"
+      ? `<video class="homework-page__attachment-preview" controls preload="metadata" src="${this.escape(url)}"></video>`
+      : ""
     return `<li class="homework-page__attachment">
       <span class="homework-page__attachment-icon">${icon}</span>
       <div class="homework-page__attachment-copy">
         <p class="homework-page__attachment-name">${this.escape(item.name)}</p>
         <p class="homework-page__attachment-meta">${this.escape(item.meta || "")}</p>
+        ${preview}
       </div>
-      ${remove}
+      ${trailing}
     </li>`
+  }
+
+  attachmentAccessUrl(item) {
+    return String(item?.url || item?.accessUrl || "")
+  }
+
+  attachmentActionsHtml(item, url) {
+    if (!url) return ""
+    const kind = item.kind || item.type || "file"
+    const watch = this.strings.watch_material || "Watch"
+    const download = this.strings.download_material || "Download"
+    const open = this.strings.open_material || "Open"
+    const links = []
+    if (kind === "link") {
+      links.push(this.attachmentActionLink(open, url, false))
+    } else if (kind === "video") {
+      links.push(this.attachmentActionLink(watch, url, false))
+      links.push(this.attachmentActionLink(download, url, true))
+    } else {
+      links.push(this.attachmentActionLink(open, url, false))
+      links.push(this.attachmentActionLink(download, url, true))
+    }
+    return `<div class="homework-page__attachment-actions">${links.join("")}</div>`
+  }
+
+  attachmentActionLink(label, url, asDownload) {
+    const download = asDownload ? ' download' : ""
+    return `<a class="homework-page__attachment-action" href="${this.escape(url)}" target="_blank" rel="noreferrer"${download}>${this.escape(label)}</a>`
   }
 
   renderLibrary() {
@@ -1237,7 +1344,14 @@ export default class extends Controller {
     const library = this.libraryValue || {}
     return ids.map((id) => {
       const item = library[id] || {}
-      return { id, kind: item.type || "file", name: item.title || id, meta: item.domain || item.type || "" }
+      const kind = item.type === "video" ? "video" : item.type === "link" ? "link" : "file"
+      return {
+        id,
+        kind,
+        name: item.title || id,
+        meta: item.domain || item.type || "",
+        url: item.accessUrl || ""
+      }
     })
   }
 

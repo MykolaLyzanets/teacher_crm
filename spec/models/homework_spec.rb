@@ -98,6 +98,16 @@ RSpec.describe Homework do
     expect(summary).to eq(toReview: 1, active: 1, overdue: 1, reviewedThisMonth: 1)
   end
 
+  it 'includes linked materials in the teacher row' do
+    homework = build_homework
+    material = create(:material, workspace:, teacher:, homework:, students: [student])
+
+    row = homework.as_teacher_row
+
+    expect(row[:materialIds]).to eq([material.id.to_s])
+    expect(row[:attachments]).to eq(1)
+  end
+
   it 'exposes per-student submission rows for group homework' do
     student_two = create(:student_profile, workspace:, teacher_profile: teacher)
     homework = build_homework(students: [student, student_two])

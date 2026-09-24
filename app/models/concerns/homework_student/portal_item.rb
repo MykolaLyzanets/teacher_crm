@@ -9,6 +9,8 @@ module HomeworkStudent::PortalItem
     due = due_context(today: at.to_date)
     facing = facing_status(at:)
     due_on = homework.resubmission_due_at&.to_date || homework.due_at.to_date
+    homework_materials = homework.materials.to_a
+    material_ids = homework_materials.map { |material| material.id.to_s }
     {
       id: homework_id.to_s,
       lessonId: homework.lesson_id&.to_s,
@@ -33,10 +35,10 @@ module HomeworkStudent::PortalItem
       action: portal_action(at:),
       dueContext: due,
       dueBucket: due[:bucket],
-      materialIds: [],
-      materials: [],
-      attachmentCount: 0,
-      submissionAttachmentIds: [],
+      materialIds: material_ids,
+      materials: homework_materials.map(&:as_homework_attachment_summary),
+      attachmentCount: homework_materials.size,
+      submissionAttachmentIds: response.materials.role_submission.map { |material| material.id.to_s },
       allowLateSubmission: homework.allow_late_submission?,
       editable: portal_submission_editable?(response),
       responseStatus: response.status,

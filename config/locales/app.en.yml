@@ -1052,6 +1052,15 @@ en:
       add_material: Add material
       share_existing: Share existing
       share_material: Share material
+      material_added: Material added to this lesson.
+      material_attached: Material linked to this lesson.
+      material_not_found: Material not found in your library.
+      materials_limit: You can attach up to 10 materials per lesson.
+      material_link_url: Link URL
+      add_material_link: Add link
+      upload_material: Upload file
+      material_link_default: Lesson link
+      choose_material: Choose a material
       duplicate_lesson_action: Duplicate
       payment: Payment
       admin_only: Visible to administrators only
@@ -1205,6 +1214,9 @@ en:
       instructions: Instructions
       materials: Materials
       no_materials: No materials attached.
+      watch_material: Watch
+      download_material: Download
+      open_material: Open
       student_submission: Student submission
       written_answer: Written answer
       submission_materials: Submission materials
@@ -1230,6 +1242,17 @@ en:
         needs_revision: Needs revision
         reviewed: Reviewed
         overdue: Overdue
+    materials:
+      staff_only: You do not have permission to manage materials.
+      teacher_required: Assign a teacher before uploading materials.
+      created: Material added to your library.
+      shared_with_student: Material shared with the student.
+      library_title: Workspace library
+      library_empty: No materials in the library yet.
+      add_to_library: Add to library
+      share_with: "Share with %{name}"
+      on_lesson: On lesson
+      on_homework: On homework
     pages:
       coming_soon_text: This section is part of the Danlio workspace and will be available in a future update.
       back_dashboard: Back to dashboard
@@ -1641,6 +1664,7 @@ en:
         preparing: Preparing…
         unavailable: Unavailable
         watch: Watch video
+        download: Download
         open_link: Open link
         preview: Preview
         view_details: View details

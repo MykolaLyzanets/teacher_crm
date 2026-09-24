@@ -61,6 +61,7 @@ Rails.application.routes.draw do
         get :delete_dialog
         get :outcome_dialog
       end
+      resources :materials, only: :create, controller: 'lesson_materials'
     end
     get 'payments', to: 'payments#index'
     get 'profile', to: 'profiles#show'
@@ -86,6 +87,9 @@ Rails.application.routes.draw do
       get 'notifications', to: 'student_portal#notifications'
     end
 
+    resources :materials, only: %i[index create]
+    post 'students/:student_id/materials', to: 'student_materials#create', as: :share_student_material
+
     get 'homework', to: 'homework#index', as: :homework
     resources :homeworks, controller: 'homework', only: %i[show create update] do
       member do
@@ -95,7 +99,7 @@ Rails.application.routes.draw do
     patch 'homework_responses/:id', to: 'homework_responses#update', as: :homework_response
     patch 'homework_responses/:id/submit', to: 'homework_responses#submit', as: :submit_homework_response
 
-    %w[materials reports messages].each do |page|
+    %w[reports messages].each do |page|
       get page, to: 'pages#show', defaults: { page: page }, as: page
     end
 

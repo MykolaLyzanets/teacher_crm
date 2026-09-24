@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_09_21_120000) do
+ActiveRecord::Schema[7.0].define(version: 2026_09_24_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -220,6 +220,17 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_21_120000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "kind", default: 0, null: false
+    t.string "file"
+    t.string "external_url"
+    t.bigint "homework_id"
+    t.integer "byte_size"
+    t.string "content_type"
+    t.integer "duration_seconds"
+    t.integer "attachment_role", default: 0, null: false
+    t.bigint "homework_response_id"
+    t.index ["homework_id"], name: "index_materials_on_homework_id"
+    t.index ["homework_response_id"], name: "index_materials_on_homework_response_id"
     t.index ["lesson_id"], name: "index_materials_on_lesson_id"
     t.index ["teacher_id"], name: "index_materials_on_teacher_id"
     t.index ["workspace_id"], name: "index_materials_on_workspace_id"
@@ -501,6 +512,9 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_21_120000) do
   add_foreign_key "lessons_students", "student_profiles", column: "student_id"
   add_foreign_key "material_students", "materials"
   add_foreign_key "material_students", "student_profiles", column: "student_id"
+  add_foreign_key "materials", "homework_responses"
+  add_foreign_key "materials", "homeworks"
+  add_foreign_key "materials", "lessons"
   add_foreign_key "materials", "teacher_profiles", column: "teacher_id"
   add_foreign_key "materials", "workspaces"
   add_foreign_key "notifications", "users", on_delete: :cascade

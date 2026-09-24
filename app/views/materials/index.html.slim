@@ -1,0 +1,58 @@
+- content_for :title, "#{t('app.pages.materials.title')} | danlio"
+
+.materials-page
+  .materials-page__header
+    div
+      h1 = t('app.pages.materials.title')
+      p = t('app.pages.materials.description')
+
+  - if @share_student.present?
+    section.materials-page__share
+      h2 = t('app.materials.share_with', name: @share_student.display_label)
+      - if @shareable_materials.any?
+        = form_with url: share_student_material_path(@share_student), method: :post, class: 'materials-page__share-form' do
+          label
+            span = t('app.lessons.choose_material')
+            select name="material_id" required="required"
+              option value="" = t('app.lessons.choose_material')
+              - @shareable_materials.each do |material|
+                option value=material.id = material.title
+          button.materials-page__primary-btn type="submit" = t('app.students.share_material')
+      - else
+        p.materials-page__muted = t('app.materials.library_empty')
+
+  section.materials-page__library
+    h2 = t('app.materials.library_title')
+    - if @materials.any?
+      ul.materials-page__list
+        - @materials.each do |material|
+          li.materials-page__item
+            strong = material.title
+            span.materials-page__meta
+              = [material.teacher.display_label, material.lesson_id.present? ? t('app.materials.on_lesson') : nil, material.homework_id.present? ? t('app.materials.on_homework') : nil].compact.join(' · ')
+            - if material.access_url.present?
+              = link_to t('app.student_portal.materials.open_link'), material.access_url, class: 'materials-page__link', target: '_blank', rel: 'noreferrer'
+    - else
+      p.materials-page__muted = t('app.materials.library_empty')
+
+  section.materials-page__forms
+    h2 = t('app.materials.add_to_library')
+    .materials-page__form-grid
+      = form_with url: materials_path, method: :post, html: { multipart: true, class: 'materials-page__form' } do
+        h3 = t('app.lessons.add_material_link')
+        label
+          span = t('app.homework.link_title_placeholder')
+          input type="text" name="title"
+        label
+          span = t('app.lessons.material_link_url')
+          input type="url" name="external_url" required="required" placeholder="https://"
+        button.materials-page__secondary-btn type="submit" = t('app.lessons.add_material_link')
+      = form_with url: materials_path, method: :post, html: { multipart: true, class: 'materials-page__form' } do
+        h3 = t('app.lessons.upload_material')
+        label
+          span = t('app.homework.attach_files')
+          input type="file" name="file" required="required"
+        label
+          span = t('app.homework.link_title_placeholder')
+          input type="text" name="title"
+        button.materials-page__primary-btn type="submit" = t('app.lessons.add_material')

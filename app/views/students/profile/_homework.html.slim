@@ -35,7 +35,7 @@
               data-instructions=item[:instructions]
               data-feedback=item[:feedback]
               data-response=item[:writtenResponse]
-              data-material-ids=""
+              data-material-ids=Array(item[:materialIds]).join(',')
               data-submission-ids=""
               data-has-submission=(item[:writtenResponse].present? || item[:submittedAt].present? ? 'true' : 'false')
             ]

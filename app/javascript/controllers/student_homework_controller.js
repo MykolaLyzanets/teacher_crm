@@ -441,17 +441,49 @@ export default class extends Controller {
       return;
     }
     const nodes = materials.length
-      ? materials.map((mat) => {
-          const li = document.createElement("li");
-          li.textContent = mat.title || mat.name || mat.id;
-          return li;
-        })
+      ? materials.map((mat) => this.materialListItem(mat))
       : ids.map((id) => {
           const li = document.createElement("li");
+          li.className = "sp-hw-drawer__material";
           li.textContent = id;
           return li;
         });
     this.drawerMaterialsListTarget.replaceChildren(...nodes);
+  }
+
+  materialListItem(mat) {
+    const li = document.createElement("li");
+    li.className = "sp-hw-drawer__material";
+    const title = document.createElement("span");
+    title.className = "sp-hw-drawer__material-name";
+    title.textContent = mat.title || mat.name || mat.id;
+    li.append(title);
+    const url = mat.accessUrl || "";
+    if (!url) return li;
+    const actions = document.createElement("span");
+    actions.className = "sp-hw-drawer__material-actions";
+    const type = String(mat.type || "");
+    if (type === "video") {
+      actions.append(this.materialActionLink(this.strings.watchMaterial || "Watch", url));
+      actions.append(this.materialActionLink(this.strings.downloadMaterial || "Download", url, true));
+    } else if (type === "link") {
+      actions.append(this.materialActionLink(this.strings.openLink || "Open", url));
+    } else {
+      actions.append(this.materialActionLink(this.strings.downloadMaterial || "Download", url, true));
+    }
+    li.append(actions);
+    return li;
+  }
+
+  materialActionLink(label, url, asDownload = false) {
+    const link = document.createElement("a");
+    link.className = "sp-hw-drawer__material-link";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    if (asDownload) link.download = "";
+    link.textContent = label;
+    return link;
   }
 
   latePolicy(item) {

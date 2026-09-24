@@ -8,6 +8,7 @@ class Workspace < ApplicationRecord
   has_many :teacher_profiles, dependent: :destroy, inverse_of: :workspace
   has_many :student_profiles, dependent: :destroy, inverse_of: :workspace
   has_many :homeworks, dependent: :destroy, inverse_of: :workspace
+  has_many :materials, dependent: :destroy, inverse_of: :workspace
 
   validates :name, presence: true
   validate :owner_has_owner_role

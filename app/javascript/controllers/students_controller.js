@@ -85,7 +85,9 @@ export default class extends Controller {
 
   static values = {
     i18n: Object,
-    editing: Boolean
+    editing: Boolean,
+    studentId: String,
+    materialsUrl: { type: String, default: "/materials" },
   }
 
   connect() {
@@ -373,7 +375,10 @@ export default class extends Controller {
     event.preventDefault()
     event.stopPropagation()
     this.closeMenu()
-    this.showToast(this.t("students", "share_material_toast"))
+    const id = this.studentIdValue
+    if (!id) return
+    const base = String(this.materialsUrlValue || "/materials").replace(/\/$/, "")
+    window.location.assign(`${base}?student_id=${encodeURIComponent(id)}`)
   }
 
   filterLessons(event) {

@@ -735,6 +735,60 @@
   font-size: 13px;
 }
 
+.lessons-page__material-list {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.lessons-page__material-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.lessons-page__material-row-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lessons-page__material-forms {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.lessons-page__material-form {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.lessons-page__material-form-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lessons-page__form-flash {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--olive);
+
+  &.is-error {
+    color: var(--rose);
+  }
+}
+
 .lessons-page__text-link {
   display: inline-flex;
   align-items: center;

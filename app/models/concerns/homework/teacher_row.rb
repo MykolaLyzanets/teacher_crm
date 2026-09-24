@@ -19,6 +19,8 @@ module Homework::TeacherRow
                       student_name
                     end
     submitted_at = response&.submitted_at&.iso8601
+    homework_materials = materials.to_a
+    material_ids = homework_materials.map { |material| material.id.to_s }
     local_due_at = due_at_in_teacher_zone
     due_time = local_due_at&.strftime('%H:%M')
     due_time = nil if due_time == '00:00' && local_due_at&.sec == 0
@@ -30,8 +32,8 @@ module Homework::TeacherRow
       tab: tab_for,
       subject: subject.to_s,
       teacher: teacher.display_label,
-      submissionIds: [], # TODO: student submission material ids
-      reviewIds: [], # TODO: teacher review material ids
+      submissionIds: material_ids_for_response(response, role: Material.attachment_roles[:submission]),
+      reviewIds: material_ids_for_response(response, role: Material.attachment_roles[:review]),
       hasSubmission: response&.submitted_at.present? || response&.submitted? || response&.reviewed?,
       studentIds: student_ids_list,
       studentName: student_name,
@@ -47,8 +49,8 @@ module Homework::TeacherRow
       privateNote: private_note.to_s,
       lessonId: lesson_id&.to_s,
       lessonTitle: lesson_title_label,
-      attachments: 0, # TODO: homework material attachments count
-      materialIds: [], # TODO: homework material ids
+      attachments: material_ids.size,
+      materialIds: material_ids,
       late: response&.late? || false,
       canReview: status == 'submitted',
       homeworkResponseId: response&.id&.to_s,

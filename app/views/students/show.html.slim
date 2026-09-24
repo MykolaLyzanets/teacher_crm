@@ -21,7 +21,7 @@
   - content_for :head
     = stylesheet_link_tag 'css/homework.min', 'data-turbo-track': 'reload'
 
-  .students-page.students-page--profile data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common')
+  .students-page.students-page--profile data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-student-id-value=student[:id] data-students-materials-url-value=materials_path
     nav.students-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.students.title'), students_path
       = icon_tag 'chevron-right', size: 16
@@ -46,7 +46,7 @@
       .students-page__tab-panel class=(active_tab == 'lessons' ? nil : 'is-hidden') role="tabpanel" id="student-panel-lessons" aria-labelledby="student-tab-lessons" hidden=(active_tab == 'lessons' ? nil : true) data-profile-tabs-target="panel" data-tab="lessons"
         = render 'students/profile/lessons', student: student, lessons: lessons
 
-      .students-page__tab-panel class=(active_tab == 'homework' ? nil : 'is-hidden') role="tabpanel" id="student-panel-homework" aria-labelledby="student-tab-homework" hidden=(active_tab == 'homework' ? nil : true) data-controller="homework" data-homework-locale-value=I18n.locale data-homework-i18n-value=app_i18n_json('app.homework', 'app.common') data-homework-library-value=@materials_by_id.to_json data-profile-tabs-target="panel" data-tab="homework"
+      .students-page__tab-panel class=(active_tab == 'homework' ? nil : 'is-hidden') role="tabpanel" id="student-panel-homework" aria-labelledby="student-tab-homework" hidden=(active_tab == 'homework' ? nil : true) data-controller="homework" data-homework-locale-value=I18n.locale data-homework-i18n-value=app_i18n_json('app.homework', 'app.common') data-homework-library-value=@materials_by_id.to_json data-homework-materials-url-value=materials_path data-profile-tabs-target="panel" data-tab="homework"
         = render 'students/profile/homework', homework: homework
 
       .students-page__tab-panel class=(active_tab == 'progress' ? nil : 'is-hidden') role="tabpanel" id="student-panel-progress" aria-labelledby="student-tab-progress" hidden=(active_tab == 'progress' ? nil : true) data-profile-tabs-target="panel" data-tab="progress"

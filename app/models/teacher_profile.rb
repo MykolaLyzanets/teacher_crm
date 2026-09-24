@@ -23,6 +23,7 @@ class TeacherProfile < ApplicationRecord
   has_many :lesson_types, through: :taught_subjects
   has_many :lessons, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :restrict_with_error
   has_many :homeworks, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
+  has_many :materials, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
