@@ -41,9 +41,11 @@ module Students
     attr_reader :workspace, :actor, :params
 
     def build_records
-      password = User.generate_password
+      email = params[:email].to_s.strip
+      # TEMP: password matches email so new students can sign in before invitations are wired up.
+      password = email.presence || User.generate_password
       @user = User.new(
-        email: params[:email].to_s.strip,
+        email:,
         full_name: resolved_full_name,
         role: :student,
         workspace:,
