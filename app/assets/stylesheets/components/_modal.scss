@@ -26,7 +26,7 @@
   inset: 0;
   border: 0;
   padding: 0;
-  background: rgba(32, 35, 29, 0.4);
+  background: var(--overlay);
 }
 
 .danlio-modal__card {
@@ -37,9 +37,9 @@
   max-height: calc(100vh - 24px);
   flex-direction: column;
   overflow: hidden;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 24px 60px rgba(65, 75, 50, 0.18);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: 0 24px 60px color-mix(in oklch, black 32%, transparent);
 }
 
 .danlio-modal--sm .danlio-modal__card {
@@ -59,13 +59,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--border);
   padding: 16px 20px;
 }
 
 .danlio-modal__title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--foreground);
@@ -73,9 +73,9 @@
 
 .danlio-modal__desc {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 400;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
 
 .danlio-modal__close {
@@ -85,17 +85,17 @@
   flex-shrink: 0;
   place-items: center;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: transparent;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   text-decoration: none;
   cursor: pointer;
 
   &:hover {
-    background: var(--sage);
+    background: var(--accent);
   }
 
-  img,
+  svg.icon,
   svg {
     pointer-events: none;
   }
@@ -119,8 +119,8 @@
 
 .danlio-modal__copy {
   margin: 0;
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  color: var(--muted-foreground);
 }
 
 .danlio-modal__foot,
@@ -130,7 +130,7 @@
 }
 
 .danlio-modal__foot {
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--border);
   padding: 16px 20px;
 }
 
@@ -158,10 +158,10 @@
   height: 44px;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 0 16px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -169,35 +169,37 @@
 
 .danlio-modal__btn--primary {
   border: 0;
-  background: var(--olive);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
 
   &:hover {
-    background: var(--olive-dark);
+    background: color-mix(in oklch, var(--primary) 82%, var(--background));
   }
 
   &:disabled {
-    background: #a8ae9b;
+    background: var(--muted);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
   }
 }
 
 .danlio-modal__btn--secondary {
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--foreground);
 
   &:hover {
-    background: #f7f8f3;
+    background: var(--accent);
   }
 }
 
 .danlio-modal__btn--danger {
-  border: 1px solid #e4cfcb;
-  background: #faf4f3;
-  color: #8a5550;
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
+  background: color-mix(in oklch, var(--destructive) 16%, transparent);
+  color: var(--destructive);
 
   &:hover {
-    background: #f4e7e5;
+    background: color-mix(in oklch, var(--destructive) 16%, transparent);
   }
 
   &:disabled {

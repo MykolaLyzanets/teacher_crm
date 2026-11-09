@@ -63,3 +63,6 @@ application.register("modal", ModalController)
 
 import ProfileMenuController from "./profile_menu_controller"
 application.register("profile-menu", ProfileMenuController)
+
+import AppearanceController from "./appearance_controller"
+application.register("appearance", AppearanceController)

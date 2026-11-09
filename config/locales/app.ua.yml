@@ -1285,6 +1285,115 @@ ua:
       settings:
         title: Налаштування
         description: Налаштуйте параметри робочого простору.
+    appearance:
+      title: Вигляд
+      subtitle: Стиль, кольори та графіки кабінету.
+      style: Кути
+      styles:
+        vega: Vega
+        nova: Nova
+        maia: Maia
+        lyra: Lyra
+        mira: Mira
+        luma: Luma
+        sera: Sera
+        rhea: Rhea
+      base_color: Базовий колір
+      colors:
+        original: Оригінал
+        olive: Оливковий
+        mist: Туман
+        taupe: Сіро-бежевий
+        mauve: Бузковий
+        stone: Камінь
+        zinc: Цинк
+        neutral: Нейтральний
+      background: Фон
+      backgrounds:
+        dark: Темний
+        light: Світлий
+        classic: Оригінал
+        sage: Шавлія
+        sand: Пісок
+        mist: Туман
+        blush: Румʼянець
+        forest: Ліс
+      theme: Тема
+      themes:
+        amber: Бурштиновий
+        blue: Синій
+        cyan: Блакитний
+        emerald: Смарагдовий
+        fuchsia: Фуксія
+        green: Зелений
+        indigo: Індиго
+        lime: Лаймовий
+        orange: Помаранчевий
+        pink: Рожевий
+        purple: Фіолетовий
+        red: Червоний
+        rose: Трояндовий
+        sky: Небесний
+        teal: Бірюзовий
+        violet: Ліловий
+        yellow: Жовтий
+      chart_color: Колір графіка
+      charts:
+        amber: Бурштиновий
+        blue: Синій
+        cyan: Блакитний
+        emerald: Смарагдовий
+        fuchsia: Фуксія
+        green: Зелений
+        indigo: Індиго
+        lime: Лаймовий
+        orange: Помаранчевий
+        pink: Рожевий
+        purple: Фіолетовий
+        red: Червоний
+        rose: Трояндовий
+        sky: Небесний
+        teal: Бірюзовий
+        violet: Ліловий
+        yellow: Жовтий
+      heading: Заголовки
+      font: Шрифт
+      fonts:
+        inherit: Як у шрифті
+        geist: Geist
+        inter: Inter
+        noto-sans: Noto Sans
+        nunito-sans: Nunito Sans
+        figtree: Figtree
+        roboto: Roboto
+        raleway: Raleway
+        dm-sans: DM Sans
+        public-sans: Public Sans
+        outfit: Outfit
+        oxanium: Oxanium
+        manrope: Manrope
+        space-grotesk: Space Grotesk
+        montserrat: Montserrat
+        ibm-plex-sans: IBM Plex Sans
+        source-sans-3: Source Sans 3
+        instrument-sans: Instrument Sans
+        jetbrains-mono: JetBrains Mono
+        geist-mono: Geist Mono
+        noto-serif: Noto Serif
+        roboto-slab: Roboto Slab
+        merriweather: Merriweather
+        lora: Lora
+        playfair-display: Playfair Display
+        eb-garamond: EB Garamond
+        instrument-serif: Instrument Serif
+      radius: Радіус
+      radii:
+        default: Як у стилі
+        none: Без закруглення
+        small: Малий
+        medium: Середній
+        large: Великий
+      random: Випадково
     settings:
       title: Налаштування
       subtitle: Конфігурація всього робочого простору.

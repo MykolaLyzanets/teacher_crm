@@ -12,11 +12,27 @@ module ApplicationHelper
     I18n.locale == :ua ? 'uk' : I18n.locale.to_s
   end
 
+  ILLUSTRATION_ICONS = %w[
+    auth-botanical hero-leaf hero-botanical leaf leaf-mark leaf-deco-1 leaf-deco-2
+    cta-botanical cta-leaf showcase-botanical-1 showcase-botanical-2
+    progress-chart progress-line instagram twitter facebook linkedin
+  ].freeze
+
   def icon_tag(name, size: nil, **options)
-    options[:alt] = options.fetch(:alt, '')
+    slug = name.to_s
+    options[:alt] = options.fetch(:alt, "")
     options[:width] = size if size
     options[:height] = size if size
-    image_tag("icons/#{name}.svg", **options)
+    if slug !~ /\A[a-z0-9-]+\z/ || ILLUSTRATION_ICONS.include?(slug)
+      return image_tag("icons/#{name}.svg", **options)
+    end
+
+    css_class = ["icon", options[:class]].compact.join(" ")
+    svg = Rails.root.join("app/assets/images/icons/#{slug}.svg").read
+    svg = svg.sub(/\sclass="[^"]*"/, "").sub(/\swidth="[^"]*"/, "").sub(/\sheight="[^"]*"/, "")
+    attrs = %( class="#{ERB::Util.html_escape(css_class)}" aria-hidden="true" focusable="false")
+    attrs += %( width="#{Integer(size)}" height="#{Integer(size)}") if size
+    svg.sub("<svg", "<svg#{attrs}").html_safe
   end
 
   def calendar_preview_events

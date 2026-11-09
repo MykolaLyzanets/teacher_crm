@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_09_24_120000) do
+ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -472,6 +472,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_24_120000) do
     t.bigint "workspace_id"
     t.string "provider"
     t.string "uid"
+    t.jsonb "appearance", default: {}, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true, where: "(uid IS NOT NULL)"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

@@ -6,12 +6,14 @@ html lang="#{html_lang}"
     = favicon_link_tag 'favicon.svg'
     link rel="preconnect" href="https://fonts.googleapis.com"
     link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""
-    link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"
+    link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"
     = stylesheet_link_tag "css/application.min", "data-turbo-track": "reload"
     = stylesheet_link_tag "css/app.min", "data-turbo-track": "reload"
     = stylesheet_link_tag "css/student_portal.min", "data-turbo-track": "reload"
-    = javascript_include_tag "application", "data-turbo-track": "reload", defer: true
     = csrf_meta_tags
+    = render 'shared/appearance_boot'
+    = javascript_include_tag "theme", "data-turbo-track": "reload"
+    = javascript_include_tag "application", "data-turbo-track": "reload", defer: true
     = csp_meta_tag
 
   body.student-portal-body class="#{controller_name}-#{action_name}"

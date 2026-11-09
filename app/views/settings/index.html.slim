@@ -5,6 +5,11 @@
     h1.settings-page__title = t('app.settings.title')
     p.settings-page__subtitle = t('app.settings.subtitle')
 
+  section.settings-page__card
+    h2 = t('app.appearance.title')
+    p.settings-page__section-sub = t('app.appearance.subtitle')
+    = render 'shared/appearance'
+
   = link_to settings_lessons_path, class: 'settings-page__link-card'
     .settings-page__link-icon
       = icon_tag 'book', size: 22

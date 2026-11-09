@@ -12,7 +12,7 @@
 
   &__header h1 {
     margin: 0;
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
     font-weight: 600;
     letter-spacing: -0.02em;
   }
@@ -21,8 +21,8 @@
   &__muted,
   &__empty {
     margin: 4px 0 0;
-    font-size: 14px;
-    color: var(--text-muted);
+    font-size: var(--font-size-md);
+    color: var(--muted-foreground);
   }
 
   &__stats {
@@ -45,20 +45,20 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
     padding: 16px;
-    box-shadow: 0 8px 24px rgba(65, 75, 50, 0.04);
+    box-shadow: 0 8px 24px color-mix(in oklch, black 8%, transparent);
 
     &.is-warn {
-      border-color: #e8d9c8;
-      background: #fbf7f1;
+      border-color: color-mix(in oklch, var(--warning) 35%, transparent);
+      background: color-mix(in oklch, var(--warning) 16%, transparent);
     }
 
     strong {
       display: block;
-      font-size: 20px;
+      font-size: var(--font-size-xl);
       font-weight: 700;
       line-height: 1;
     }
@@ -66,9 +66,9 @@
     span span {
       display: block;
       margin-top: 4px;
-      font-size: 12px;
+      font-size: var(--font-size-xs);
       font-weight: 500;
-      color: var(--text-muted);
+      color: var(--muted-foreground);
     }
   }
 
@@ -78,8 +78,8 @@
     height: 44px;
     flex-shrink: 0;
     place-items: center;
-    border-radius: 12px;
-    background: var(--sage);
+    border-radius: var(--radius);
+    background: var(--accent);
   }
 
   &__grid {
@@ -105,15 +105,15 @@
   }
 
   &__card {
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
     padding: 20px;
-    box-shadow: 0 8px 24px rgba(65, 75, 50, 0.04);
+    box-shadow: 0 8px 24px color-mix(in oklch, black 8%, transparent);
 
     h2 {
       margin: 0;
-      font-size: 16px;
+      font-size: var(--font-size-lg);
       font-weight: 600;
     }
 
@@ -132,9 +132,13 @@
     gap: 12px;
 
     a {
-      font-size: 13px;
+      font-size: var(--font-size-sm);
       font-weight: 600;
-      color: var(--olive);
+      color: var(--primary);
+    }
+
+    a.dash__primary {
+      color: var(--primary-foreground);
     }
   }
 
@@ -150,8 +154,8 @@
     flex-wrap: wrap;
     gap: 4px;
     padding: 4px;
-    border-radius: 8px;
-    background: #f7f8f3;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
   }
 
   &__pill {
@@ -160,15 +164,15 @@
     border-radius: 6px;
     padding: 0 10px;
     background: transparent;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--muted-foreground);
     text-transform: capitalize;
 
     &.is-active {
-      background: #fff;
-      color: var(--olive-dark);
-      box-shadow: 0 1px 2px rgba(65, 75, 50, 0.08);
+      background: var(--card);
+      color: var(--foreground);
+      box-shadow: 0 1px 2px color-mix(in oklch, black 14%, transparent);
     }
   }
 
@@ -188,12 +192,12 @@
     justify-content: space-between;
     gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--border);
   }
 
   &__attention-title {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--font-size-md);
     font-weight: 600;
   }
 
@@ -209,9 +213,9 @@
     border: 0;
     background: none;
     padding: 0;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    color: var(--olive);
+    color: var(--primary);
     cursor: pointer;
   }
 
@@ -226,25 +230,25 @@
     }
 
     dt {
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      color: var(--muted-foreground);
     }
 
     dd {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--font-size-md);
       font-weight: 600;
     }
 
     .is-warn dd {
-      color: #8a6a3d;
+      color: var(--warning);
     }
   }
 
   &__time {
     flex-shrink: 0;
     width: 108px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     font-weight: 600;
   }
 
@@ -255,10 +259,10 @@
     flex-shrink: 0;
     place-items: center;
     border-radius: 50%;
-    background: var(--sage);
-    font-size: 12px;
+    background: var(--accent);
+    font-size: var(--font-size-xs);
     font-weight: 700;
-    color: var(--olive-dark);
+    color: var(--foreground);
   }
 
   &__primary,
@@ -266,32 +270,32 @@
     display: inline-flex;
     height: 36px;
     align-items: center;
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 0 12px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     font-weight: 600;
   }
 
   &__primary {
-    background: var(--olive);
-    color: #fff;
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 
   &__ghost {
-    border: 1px solid var(--line);
-    background: #fff;
+    border: 1px solid var(--border);
+    background: var(--card);
   }
 
   &__next h3 {
     margin: 8px 0 0;
-    font-size: 20px;
+    font-size: var(--font-size-xl);
   }
 
   &__next-kicker {
     margin: 0;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    color: var(--olive);
+    color: var(--primary);
   }
 
   &__toast {
@@ -300,12 +304,12 @@
     left: 50%;
     z-index: 80;
     transform: translateX(-50%);
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--foreground);
     padding: 10px 16px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     font-weight: 500;
-    color: #fff;
+    color: var(--background);
   }
 }
 
@@ -319,7 +323,7 @@
   font-weight: 600;
 
   &--olive { background: var(--sage); color: var(--olive-dark); }
-  &--amber { background: #f3e6d3; color: #8a6a3d; }
-  &--rose { background: #f3e0dc; color: #8a5550; }
-  &--neutral { background: #eef0ea; color: var(--text-muted); }
+  &--amber { background: color-mix(in oklch, var(--warning) 16%, transparent); color: var(--warning); }
+  &--rose { background: color-mix(in oklch, var(--destructive) 16%, transparent); color: var(--destructive); }
+  &--neutral { background: var(--muted); color: var(--muted-foreground); }
 }
