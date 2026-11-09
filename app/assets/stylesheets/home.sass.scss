@@ -92,7 +92,7 @@
   gap: 6px;
 }
 
-.trust-item img {
+.trust-item svg.icon {
   width: 16px;
   height: 16px;
 }
@@ -169,10 +169,9 @@
   box-shadow: 0 8px 24px rgba(65, 75, 50, 0.16);
 }
 
-.cal-create img {
+.cal-create svg.icon {
   width: 16px;
   height: 16px;
-  filter: brightness(0) invert(1);
 }
 
 .cal-toolbar {
@@ -210,7 +209,7 @@
   padding: 0;
 }
 
-.cal-ctrl img {
+.cal-ctrl svg.icon {
   width: 16px;
   height: 16px;
 }
@@ -456,7 +455,7 @@
   padding: 0;
 }
 
-.mini-nav img {
+.mini-nav svg.icon {
   width: 16px;
   height: 16px;
 }
@@ -538,10 +537,9 @@
   display: grid;
   place-items: center;
 
-  img {
+  svg.icon {
     width: 10px;
     height: 10px;
-    filter: brightness(0) invert(1);
   }
 }
 
@@ -630,7 +628,7 @@
   background: #eef1e6;
 }
 
-.icon-box img {
+.icon-box svg.icon {
   width: 26px;
   height: 26px;
 }
@@ -902,7 +900,7 @@
   color: var(--text-muted);
 }
 
-.next-lesson img {
+.next-lesson svg.icon {
   width: 16px;
   height: 16px;
 }
@@ -1259,7 +1257,7 @@
     gap: 6px;
   }
 
-  img {
+  svg.icon {
     width: 16px;
     height: 16px;
   }
@@ -2037,7 +2035,7 @@
     font-weight: 500;
     color: #5c6158;
 
-    img {
+    svg.icon {
       width: 16px;
       height: 16px;
     }

@@ -1277,6 +1277,115 @@ en:
       settings:
         title: Settings
         description: Configure your workspace preferences.
+    appearance:
+      title: Appearance
+      subtitle: Style, colors and charts for your cabinet — same as shadcn/ui Create.
+      style: Corners
+      styles:
+        vega: Vega
+        nova: Nova
+        maia: Maia
+        lyra: Lyra
+        mira: Mira
+        luma: Luma
+        sera: Sera
+        rhea: Rhea
+      base_color: Base Color
+      colors:
+        original: Original
+        olive: Olive
+        mist: Mist
+        taupe: Taupe
+        mauve: Mauve
+        stone: Stone
+        zinc: Zinc
+        neutral: Neutral
+      background: Background
+      backgrounds:
+        dark: Dark
+        light: Light
+        classic: Original
+        sage: Sage
+        sand: Sand
+        mist: Mist
+        blush: Blush
+        forest: Forest
+      theme: Theme
+      themes:
+        amber: Amber
+        blue: Blue
+        cyan: Cyan
+        emerald: Emerald
+        fuchsia: Fuchsia
+        green: Green
+        indigo: Indigo
+        lime: Lime
+        orange: Orange
+        pink: Pink
+        purple: Purple
+        red: Red
+        rose: Rose
+        sky: Sky
+        teal: Teal
+        violet: Violet
+        yellow: Yellow
+      chart_color: Chart Color
+      charts:
+        amber: Amber
+        blue: Blue
+        cyan: Cyan
+        emerald: Emerald
+        fuchsia: Fuchsia
+        green: Green
+        indigo: Indigo
+        lime: Lime
+        orange: Orange
+        pink: Pink
+        purple: Purple
+        red: Red
+        rose: Rose
+        sky: Sky
+        teal: Teal
+        violet: Violet
+        yellow: Yellow
+      heading: Heading
+      font: Font
+      fonts:
+        inherit: Inherit
+        geist: Geist
+        inter: Inter
+        noto-sans: Noto Sans
+        nunito-sans: Nunito Sans
+        figtree: Figtree
+        roboto: Roboto
+        raleway: Raleway
+        dm-sans: DM Sans
+        public-sans: Public Sans
+        outfit: Outfit
+        oxanium: Oxanium
+        manrope: Manrope
+        space-grotesk: Space Grotesk
+        montserrat: Montserrat
+        ibm-plex-sans: IBM Plex Sans
+        source-sans-3: Source Sans 3
+        instrument-sans: Instrument Sans
+        jetbrains-mono: JetBrains Mono
+        geist-mono: Geist Mono
+        noto-serif: Noto Serif
+        roboto-slab: Roboto Slab
+        merriweather: Merriweather
+        lora: Lora
+        playfair-display: Playfair Display
+        eb-garamond: EB Garamond
+        instrument-serif: Instrument Serif
+      radius: Radius
+      radii:
+        default: From style
+        none: None
+        small: Small
+        medium: Medium
+        large: Large
+      random: Random
     settings:
       title: Settings
       subtitle: Manage workspace-wide configuration.

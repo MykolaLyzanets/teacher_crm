@@ -68,6 +68,8 @@ Rails.application.routes.draw do
     patch 'profile', to: 'profiles#update'
     put 'profile', to: 'profiles#update'
 
+    patch 'appearance', to: 'appearances#update'
+
     get 'settings', to: 'settings#index'
     get 'settings/lessons', to: 'settings#lessons', as: :settings_lessons
     get 'settings/lessons/lesson-types', to: 'settings#lesson_types', as: :settings_lesson_types

@@ -1,0 +1,4 @@
+- if user_signed_in?
+  meta name="danlio-appearance-url" content=appearance_path
+  script#danlio-appearance type="application/json"
+    == current_user.appearance_payload.to_json

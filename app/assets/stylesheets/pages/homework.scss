@@ -21,13 +21,13 @@
 
 .homework-page__toast {
   margin: 0;
-  border: 1px solid #d8dfca;
-  background: #eef1e5;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--accent);
+  border-radius: var(--radius);
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #46512f;
+  color: var(--foreground);
 }
 
 .homework-page__header {
@@ -52,7 +52,7 @@
 
 .homework-page__subtitle {
   margin: 8px 0 0;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   font-size: 15px;
 }
 
@@ -64,16 +64,16 @@
   height: 44px;
   padding: 0 16px;
   border: 0;
-  border-radius: 12px;
-  background: var(--olive);
-  color: #fff;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--primary-foreground);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background: var(--olive-dark);
+    background: color-mix(in oklch, var(--primary) 82%, var(--background));
   }
 }
 
@@ -91,26 +91,26 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
   padding: 16px;
-  box-shadow: 0 8px 24px rgba(65, 75, 50, 0.04);
+  box-shadow: 0 8px 24px color-mix(in oklch, black 8%, transparent);
   text-align: left;
 
   &.is-warn {
-    border-color: #e8d9c8;
-    background: #fbf7f1;
+    border-color: color-mix(in oklch, var(--warning) 35%, transparent);
+    background: color-mix(in oklch, var(--warning) 16%, transparent);
 
     .homework-page__stat-icon {
-      background: #f3e6d3;
-      color: #8a6a3d;
+      background: color-mix(in oklch, var(--warning) 16%, transparent);
+      color: var(--warning);
     }
   }
 
   strong {
     display: block;
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     font-weight: 700;
     line-height: 1;
   }
@@ -118,9 +118,9 @@
   span span {
     display: block;
     margin-top: 4px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--muted-foreground);
   }
 }
 
@@ -130,17 +130,17 @@
   height: 44px;
   flex-shrink: 0;
   place-items: center;
-  border-radius: 12px;
-  background: var(--sage);
-  color: var(--olive-dark);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--foreground);
 }
 
 .homework-page__panel {
   overflow: hidden;
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 12px 36px rgba(65, 75, 50, 0.06);
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 12px 36px color-mix(in oklch, black 11%, transparent);
 }
 
 .homework-page__toolbar {
@@ -148,7 +148,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--border);
 
   @media (min-width: 640px) {
     padding: 16px 20px;
@@ -160,9 +160,9 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 4px;
-  border: 1px solid var(--line);
-  background: #f7f8f3;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--accent);
+  border-radius: var(--radius);
 }
 
 .homework-page__tab {
@@ -170,10 +170,10 @@
   flex: 1;
   padding: 0 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -182,9 +182,9 @@
   }
 
   &[aria-selected="true"] {
-    background: #fff;
-    color: var(--olive-dark);
-    box-shadow: 0 1px 2px rgba(65, 75, 50, 0.08);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: 0 1px 2px color-mix(in oklch, black 14%, transparent);
   }
 
   &:hover:not([aria-selected="true"]) {
@@ -222,7 +222,7 @@
     top: 50%;
     left: 12px;
     transform: translateY(-50%);
-    color: var(--text-subtle);
+    color: var(--muted-foreground);
     pointer-events: none;
   }
 
@@ -230,20 +230,20 @@
     width: 100%;
     height: 40px;
     padding: 0 12px 0 40px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--font-size-md);
     outline: none;
 
     &::placeholder {
-      color: #9a9e96;
+      color: var(--muted-foreground);
     }
 
     &:focus {
-      border-color: var(--olive);
-      box-shadow: 0 0 0 4px rgba(102, 115, 74, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring) 40%, transparent);
     }
   }
 }
@@ -251,17 +251,17 @@
 .homework-page__select {
   height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   outline: none;
 
   &:focus {
-    border-color: var(--olive);
-    box-shadow: 0 0 0 4px rgba(102, 115, 74, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring) 40%, transparent);
   }
 }
 
@@ -282,8 +282,8 @@
   p {
     margin: 8px 0 0;
     max-width: 24rem;
-    color: var(--text-muted);
-    font-size: 14px;
+    color: var(--muted-foreground);
+    font-size: var(--font-size-md);
   }
 
   .homework-page__primary-btn,
@@ -297,16 +297,16 @@
   place-items: center;
   width: 48px;
   height: 48px;
-  border-radius: 16px;
-  background: var(--sage);
-  color: var(--olive);
+  border-radius: var(--radius-xl);
+  background: var(--accent);
+  color: var(--primary);
 }
 
 .homework-page__clear {
   border: 0;
   background: none;
-  color: var(--olive);
-  font-size: 13px;
+  color: var(--primary);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -329,10 +329,10 @@
 
 .homework-page__head {
   padding: 12px 20px;
-  border-bottom: 1px solid var(--line-soft);
-  background: #f7f8f3;
-  color: var(--text-muted);
-  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent);
+  color: var(--muted-foreground);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -349,7 +349,7 @@
 }
 
 .homework-page__row {
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--border);
 
   &:last-child {
     border-bottom: 0;
@@ -382,14 +382,14 @@
   white-space: nowrap;
 
   @media (min-width: 1280px) {
-    font-size: 14px;
+    font-size: var(--font-size-md);
   }
 }
 
 .homework-page__muted {
   margin: 0;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__card .homework-page__muted {
@@ -405,8 +405,8 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__files {
@@ -430,15 +430,15 @@
   place-items: center;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--sage);
-  color: var(--olive-dark);
-  font-size: 13px;
+  background: var(--accent);
+  color: var(--foreground);
+  font-size: var(--font-size-sm);
   font-weight: 600;
 
   &--sm {
     width: 32px;
     height: 32px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -448,7 +448,7 @@
 
 .homework-page__cell {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -482,9 +482,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--olive);
+  color: var(--primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -494,7 +494,7 @@
   }
 
   &--muted {
-    color: var(--text-muted);
+    color: var(--muted-foreground);
   }
 }
 
@@ -516,21 +516,21 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   text-align: left;
   cursor: pointer;
 
   &:hover {
-    border-color: var(--olive);
-    background: #f7f8f3;
+    border-color: var(--primary);
+    background: var(--accent);
   }
 }
 
 .homework-page__lesson-name {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -543,33 +543,33 @@
   align-items: center;
   gap: 8px;
   padding: 32px 16px;
-  border: 1px dashed var(--line);
-  border-radius: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
   text-align: center;
-  color: var(--text-subtle);
+  color: var(--muted-foreground);
 }
 
 .homework-page__lesson-empty-title {
   margin: 0;
   color: var(--foreground);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 500;
 }
 
 .homework-page__lesson-none {
   margin: 0;
   padding: 24px 4px;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
 .homework-page__summary-card {
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: #faf9f5;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
   padding: 12px 14px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__summary-title {
@@ -586,7 +586,7 @@
 
 .homework-page__field span,
 .homework-page__field-label {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
 }
 
@@ -594,21 +594,21 @@
 .homework-page__field textarea,
 .homework-page__field select {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   padding: 10px 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   outline: none;
 
   &:focus {
-    border-color: var(--olive);
-    box-shadow: 0 0 0 4px rgba(102, 115, 74, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring) 40%, transparent);
   }
 
   &[readonly] {
-    background: #f7f8f3;
+    background: var(--accent);
   }
 }
 
@@ -623,38 +623,38 @@
 
 .homework-page__hint {
   margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-xs);
 }
 
 .homework-page__req {
   margin-left: 2px;
-  color: #a3453f;
+  color: var(--destructive);
   text-decoration: none;
 }
 
 .homework-page__error {
   margin: 0;
-  color: #a3453f;
-  font-size: 13px;
+  color: var(--destructive);
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__warn {
   margin: 0;
-  border: 1px solid #e8dfc4;
-  border-radius: 12px;
-  background: #f7f1e2;
+  border: 1px solid color-mix(in oklch, var(--warning) 35%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--warning) 16%, transparent);
   padding: 10px 12px;
-  color: #6a5630;
-  font-size: 12px;
+  color: var(--warning);
+  font-size: var(--font-size-xs);
 }
 
 .homework-page__check-list {
   margin: 0;
   padding: 10px;
   list-style: none;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .homework-page__check {
@@ -662,12 +662,12 @@
   align-items: center;
   gap: 10px;
   padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
   cursor: pointer;
 
   &:hover {
-    background: #f7f8f3;
+    background: var(--accent);
   }
 }
 
@@ -678,7 +678,7 @@
 
   h3 {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--font-size-md);
     font-weight: 600;
   }
 }
@@ -686,8 +686,8 @@
 .homework-page__details-copy {
   margin: 0;
   white-space: pre-wrap;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__material-list {
@@ -700,22 +700,22 @@
 }
 
 .homework-page__material {
-  border: 1px solid var(--line-soft);
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .homework-page__written {
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 10px 12px;
 }
 
 .homework-page__written-label {
   margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
@@ -736,29 +736,29 @@
 
   h3 {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--font-size-md);
     font-weight: 600;
   }
 }
 
 .homework-page__late {
   display: inline-flex;
-  border: 1px solid #ead8d6;
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
   border-radius: 999px;
-  background: #f8efee;
+  background: color-mix(in oklch, var(--destructive) 16%, transparent);
   padding: 2px 8px;
-  color: #8a5550;
+  color: var(--destructive);
   font-size: 11px;
   font-weight: 600;
 }
 
 .homework-page__revision-btn {
-  border: 1px solid #e8dfc4;
-  background: #f7f1e2;
-  color: #6a5630;
+  border: 1px solid color-mix(in oklch, var(--warning) 35%, transparent);
+  background: color-mix(in oklch, var(--warning) 16%, transparent);
+  color: var(--warning);
 
   &:hover {
-    background: #f3ead4;
+    background: color-mix(in oklch, var(--warning) 16%, transparent);
   }
 }
 
@@ -774,7 +774,7 @@
 
 .homework-page__materials-title {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
 }
 
@@ -796,17 +796,17 @@
   justify-content: center;
   gap: 6px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   color: var(--foreground);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background: #f7f8f3;
+    background: var(--accent);
   }
 }
 
@@ -820,19 +820,19 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  border: 1px dashed var(--line);
-  border-radius: 12px;
-  background: #fcfcfa;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   color: var(--foreground);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 
   svg {
-    color: var(--olive);
+    color: var(--primary);
   }
 
   &.is-dragging {
-    border-color: var(--olive);
-    background: var(--sage);
+    border-color: var(--primary);
+    background: var(--accent);
   }
 }
 
@@ -840,9 +840,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--olive);
+  color: var(--primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -853,7 +853,7 @@
 
 .homework-page__materials-limits {
   margin: 0;
-  color: var(--text-subtle);
+  color: var(--muted-foreground);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -863,9 +863,9 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: #faf9f5;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
 }
 
 .homework-page__link-actions {
@@ -877,22 +877,22 @@
 .homework-page__link-cancel {
   height: 36px;
   padding: 0 12px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
 }
 
 .homework-page__link-add {
   border: 0;
-  background: var(--olive);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .homework-page__link-cancel {
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--card);
 }
 
 .homework-page__attachment-list,
@@ -911,8 +911,8 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .homework-page__attachment-icon {
@@ -921,9 +921,9 @@
   height: 36px;
   flex-shrink: 0;
   place-items: center;
-  border-radius: 8px;
-  background: var(--sage);
-  color: var(--olive);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--primary);
 }
 
 .homework-page__attachment-copy {
@@ -933,7 +933,7 @@
 
 .homework-page__attachment-name {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -942,7 +942,7 @@
 
 .homework-page__attachment-meta {
   margin: 2px 0 0;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   font-size: 11px;
 }
 
@@ -951,8 +951,8 @@
   width: 100%;
   max-height: 240px;
   margin-top: 8px;
-  border-radius: 8px;
-  background: #000;
+  border-radius: var(--radius-sm);
+  background: var(--background);
 }
 
 .homework-page__attachment-actions {
@@ -969,9 +969,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--olive);
+  color: var(--primary);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -989,8 +989,8 @@
 
 .homework-page__submission-progress {
   margin: 4px 0 0;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
@@ -1002,9 +1002,9 @@
 
 .homework-page__student-submission {
   padding: 12px 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: var(--surface-muted, #fafaf8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
 }
 
 .homework-page__student-submission-head {
@@ -1024,6 +1024,6 @@
 
 .homework-page__student-submission-name {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
 }

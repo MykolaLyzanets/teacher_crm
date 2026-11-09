@@ -12,7 +12,7 @@
 
 .materials-page__header p {
   margin: 0;
-  color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 .materials-page__list {
@@ -26,15 +26,15 @@
 .materials-page__item {
   padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   display: grid;
   gap: 4px;
 }
 
 .materials-page__meta,
 .materials-page__muted {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: var(--font-size-sm);
+  color: var(--muted-foreground);
 }
 
 .materials-page__form-grid {
@@ -48,12 +48,12 @@
   gap: 10px;
   padding: 14px;
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
 }
 
 .materials-page__form h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-md);
 }
 
 .materials-page__share-form {
@@ -67,23 +67,23 @@
   justify-self: start;
   height: 40px;
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   font-weight: 600;
   cursor: pointer;
 }
 
 .materials-page__primary-btn {
   border: 0;
-  background: var(--olive);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .materials-page__secondary-btn {
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--card);
 }
 
 .materials-page__link {
-  font-size: 13px;
-  color: var(--olive);
+  font-size: var(--font-size-sm);
+  color: var(--primary);
 }

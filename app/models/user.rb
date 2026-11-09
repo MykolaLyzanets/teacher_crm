@@ -28,8 +28,26 @@ class User < ApplicationRecord
   validates :workspace_id, absence: true, if: :admin?
   validate :single_profile_type
 
+  APPEARANCE_KEYS = %w[style color background theme chart font heading radius].freeze
+  APPEARANCE_VALUE = /\A[a-z0-9-]+\z/
+
   def self.generate_password
     "Aa1#{SecureRandom.base58(12)}"
+  end
+
+  def self.sanitize_appearance(raw)
+    source = raw.respond_to?(:to_h) ? raw.to_h.stringify_keys : {}
+    APPEARANCE_KEYS.each_with_object({}) do |key, hash|
+      value = source[key].to_s
+      next if value.blank?
+      next if value !~ APPEARANCE_VALUE
+
+      hash[key] = value
+    end
+  end
+
+  def appearance_payload
+    self.class.sanitize_appearance(appearance)
   end
 
   private

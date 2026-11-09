@@ -1,1 +1,7 @@
 - content_for :title, "#{t('app.student_portal.pages.profile.title')} | danlio"
+
+.appearance-page
+  .appearance-page__header
+    h1.appearance-page__title = t('app.appearance.title')
+    p.appearance-page__subtitle = t('app.appearance.subtitle')
+  = render 'shared/appearance'
