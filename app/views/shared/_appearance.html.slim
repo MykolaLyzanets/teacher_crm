@@ -8,6 +8,7 @@
 - radii = %w[default none small medium large]
 
 .appearance-menu data-controller="appearance"
+  span.sr-only data-appearance-preset-label="true" = t('app.appearance.product_default')
   .appearance-menu__stack
     .appearance-menu__item-wrap
       button.appearance-menu__item type="button" aria-haspopup="listbox" aria-expanded="false" data-appearance-target="styleTrigger" data-action="appearance#toggleKind" data-appearance-kind-param="style"
@@ -17,6 +18,7 @@
         span.appearance-menu__trailing
           span.appearance-menu__glyph aria-hidden="true" data-appearance-target="styleGlyph"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="stylePanel"
+        = render 'shared/appearance_preset_option', kind: 'style'
         - styles.each do |style|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="style" data-value=style data-action="appearance#chooseKind" data-appearance-kind-param="style"
             span.appearance-menu__glyph aria-hidden="true" data-appearance-target="styleOptionGlyph" data-style=style
@@ -30,6 +32,7 @@
           span.appearance-menu__value data-appearance-target="colorValue" Neutral
         span.appearance-menu__swatch data-appearance-target="colorSwatch"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="colorPanel"
+        = render 'shared/appearance_preset_option', kind: 'color'
         - colors.each do |color|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="color" data-value=color data-action="appearance#chooseKind" data-appearance-kind-param="color"
             span.appearance-menu__swatch data-appearance-target="colorOptionSwatch" data-color=color
@@ -43,6 +46,7 @@
           span.appearance-menu__value data-appearance-target="backgroundValue" Dark
         span.appearance-menu__swatch data-appearance-target="backgroundSwatch"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="backgroundPanel"
+        = render 'shared/appearance_preset_option', kind: 'background'
         - backgrounds.each do |background|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="background" data-value=background data-action="appearance#chooseKind" data-appearance-kind-param="background"
             span.appearance-menu__swatch data-appearance-target="backgroundOptionSwatch" data-background=background
@@ -56,6 +60,7 @@
           span.appearance-menu__value data-appearance-target="themeValue" Blue
         span.appearance-menu__swatch data-appearance-target="themeSwatch"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="themePanel"
+        = render 'shared/appearance_preset_option', kind: 'theme'
         - themes.each do |theme|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="theme" data-value=theme data-action="appearance#chooseKind" data-appearance-kind-param="theme"
             span.appearance-menu__swatch data-appearance-target="themeOptionSwatch" data-theme=theme
@@ -69,6 +74,7 @@
           span.appearance-menu__value data-appearance-target="chartValue" Blue
         span.appearance-menu__swatch data-appearance-target="chartSwatch"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="chartPanel"
+        = render 'shared/appearance_preset_option', kind: 'chart'
         - charts.each do |chart|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="chart" data-value=chart data-action="appearance#chooseKind" data-appearance-kind-param="chart"
             span.appearance-menu__swatch data-appearance-target="chartOptionSwatch" data-chart=chart
@@ -82,6 +88,7 @@
           span.appearance-menu__value data-appearance-target="headingValue" Inherit
         span.appearance-menu__aa aria-hidden="true" Aa
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="headingPanel"
+        = render 'shared/appearance_preset_option', kind: 'heading'
         - headings.each do |heading|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="heading" data-value=heading data-action="appearance#chooseKind" data-appearance-kind-param="heading"
             span.appearance-menu__option-label = t("app.appearance.fonts.#{heading}")
@@ -94,6 +101,7 @@
           span.appearance-menu__value data-appearance-target="fontValue" Inter
         span.appearance-menu__aa aria-hidden="true" Aa
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="fontPanel"
+        = render 'shared/appearance_preset_option', kind: 'font'
         - fonts.each do |font|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="font" data-value=font data-action="appearance#chooseKind" data-appearance-kind-param="font"
             span.appearance-menu__option-label = t("app.appearance.fonts.#{font}")
@@ -107,12 +115,17 @@
         span.appearance-menu__trailing
           span.appearance-menu__glyph aria-hidden="true" data-appearance-target="radiusGlyph"
       .appearance-menu__panel hidden="hidden" role="listbox" data-appearance-target="radiusPanel"
+        = render 'shared/appearance_preset_option', kind: 'radius'
         - radii.each do |radius|
           button.appearance-menu__option type="button" role="option" data-appearance-kind="radius" data-value=radius data-action="appearance#chooseKind" data-appearance-kind-param="radius"
             span.appearance-menu__glyph aria-hidden="true" data-appearance-target="radiusOptionGlyph" data-radius=radius
             span.appearance-menu__option-label = t("app.appearance.radii.#{radius}")
             = icon_tag 'check', size: 16
 
-    button.appearance-menu__random type="button" data-action="appearance#random"
-      = icon_tag 'dices', size: 16
-      span = t('app.appearance.random')
+    .appearance-menu__actions
+      button.appearance-menu__reset-default type="button" data-action="appearance#resetDefault"
+        = icon_tag 'adjustments', size: 16
+        span = t('app.appearance.reset_default')
+      button.appearance-menu__random type="button" data-action="appearance#random"
+        = icon_tag 'dices', size: 16
+        span = t('app.appearance.random')

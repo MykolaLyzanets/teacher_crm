@@ -115,7 +115,10 @@
         .students-page__profile-panel-head
           h2 = t('app.students.lesson_pricing')
           - if can_manage_payments?
-            button.students-page__text-link.students-page__text-link--lg type="button" data-action="students#toastMessage" data-message=t('app.payments.payment_added') = t('app.students.add_payment')
+            - overview_currency = pricing&.dig(:currency).presence || finance&.dig(:currency).presence || 'UAH'
+            - overview_name = student[:displayName].presence || student_display_name(student)
+            - overview_price = pricing&.dig(:defaultPriceCents).to_i
+            button.students-page__text-link.students-page__text-link--lg type="button" data-action="payments#openPayment" data-student-id=student[:id] data-student-name=overview_name data-currency=overview_currency data-balance-cents=balance_cents data-reference-price-cents=(overview_price if overview_price.positive?) = t('app.students.add_payment')
         span.students-page__admin-chip
           = icon_tag 'lock', size: 14
           = t('app.students.payments_admin_only')
@@ -127,7 +130,7 @@
           span.students-page__info-value = t('app.students.minutes', count: pricing[:defaultDurationMinutes] || 60)
         .students-page__info
           span = t('app.students.current_balance')
-          span.students-page__info-value class=("students-page__balance-due" if balance_cents.to_i.negative?) = student_balance_label(balance_cents, pricing[:currency] || finance&.dig(:currency) || 'EUR')
+          span.students-page__info-value class=("students-page__balance-due" if balance_cents.to_i.negative?) = student_balance_label(balance_cents, pricing&.dig(:currency) || finance&.dig(:currency) || 'UAH')
         .students-page__info
           span = t('app.students.payment_status')
           span.students-page__info-value = student_payment_status_label(balance_cents)

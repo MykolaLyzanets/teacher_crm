@@ -22,6 +22,12 @@ class User < ApplicationRecord
                                        inverse_of: :assigned_by_user, dependent: :nullify
   has_many :reviewed_homework_responses, class_name: 'HomeworkResponse', foreign_key: :reviewed_by_id,
                                          inverse_of: :reviewed_by, dependent: :nullify
+  has_many :created_student_transactions, class_name: 'StudentTransaction', foreign_key: :created_by_id,
+                                          inverse_of: :created_by, dependent: :restrict_with_error
+  has_many :confirmed_student_transactions, class_name: 'StudentTransaction', foreign_key: :confirmed_by_id,
+                                            inverse_of: :confirmed_by, dependent: :restrict_with_error
+  has_many :created_teacher_payouts, class_name: 'TeacherPayout', foreign_key: :created_by_id,
+                                     inverse_of: :created_by, dependent: :restrict_with_error
 
   validates :full_name, presence: true, length: { minimum: 2 }
   validates :workspace, presence: true, unless: :workspace_optional?

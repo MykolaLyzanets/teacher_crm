@@ -1,0 +1,32 @@
+- initial = Array(student[:lessonPricing]).map(&:symbolize_keys)
+section.students-page__card#lesson-pricing
+  h2 = t('app.students.lesson_prices_form.title')
+  p.students-page__section-sub = t('app.students.lesson_prices_form.sub')
+
+  .sp-pricing data-controller="student-lesson-pricing" data-student-lesson-pricing-initial-value=initial.to_json data-student-lesson-pricing-catalog-url-value=catalog_subjects_path data-student-lesson-pricing-currency-value="UAH" data-student-lesson-pricing-i18n-value=app_i18n_json('app.students.lesson_prices_form', 'app.students', 'app.common')
+    input type="hidden" name="lesson_pricing" value=initial.to_json data-student-lesson-pricing-target="payload"
+
+    span.students-page__admin-chip
+      = icon_tag 'lock', size: 14
+      = t('app.students.lesson_prices_form.admin_only')
+
+    .students-page__fields.sp-pricing__add
+      label.students-page__field
+        span = t('app.students.lesson_prices_form.add_label')
+        select data-student-lesson-pricing-target="typeSelect" data-action="change->student-lesson-pricing#prefillDraftPrice"
+      label.students-page__field
+        span = t('app.students.lesson_prices_form.price_label')
+        .students-page__affix-input
+          span.students-page__affix-prefix UAH
+          input type="text" inputmode="decimal" placeholder="0" data-student-lesson-pricing-target="priceInput"
+      .sp-pricing__add-action
+        button.students-page__olive-btn type="button" data-slp-add=true
+          = icon_tag 'plus', size: 16
+          span = t('app.students.lesson_prices_form.add_btn')
+
+    p.students-page__field-error hidden="hidden" data-student-lesson-pricing-target="addError"
+
+    p.sp-pricing__empty data-student-lesson-pricing-target="empty" hidden=(initial.any? ? true : nil)
+      = t('app.students.lesson_prices_form.empty')
+
+    ul.sp-pricing__list data-student-lesson-pricing-target="list" hidden=(initial.any? ? nil : true)

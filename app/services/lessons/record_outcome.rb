@@ -34,9 +34,18 @@ module Lessons
       return false unless ok
       return true if @lesson.completed? && outcome == 'completed' && !@lesson.changed?
 
-      return true if @lesson.save
-
-      errors.merge!(@lesson.errors)
+      success = false
+      ActiveRecord::Base.transaction do
+        lesson.save!
+        success = save_finance!(outcome)
+        raise ActiveRecord::Rollback if !success
+      end
+      success
+    rescue ActiveRecord::RecordInvalid => e
+      errors.merge!(e.record.errors)
+      false
+    rescue ActiveRecord::RecordNotFound => e
+      errors.add(:base, e.message)
       false
     end
 
@@ -176,6 +185,49 @@ module Lessons
 
     def first_value(*keys)
       keys.lazy.map { |key| @params[key] }.find { |value| !value.nil? }
+    end
+
+    def save_finance!(outcome)
+      return undo_lesson_finance! if outcome == 'confirmed'
+
+      actor = finance_actor
+      service = case outcome
+                when 'completed'
+                  Finance::TakeLessonPayment.new(lesson:, created_by: actor)
+                when 'cancelled'
+                  Finance::TakeCancellationPayment.new(lesson:, created_by: actor)
+                end
+      return true if service.nil?
+
+      return true if service.save(use_transaction: false)
+
+      errors.merge!(service.errors)
+      false
+    end
+
+    # Undo lesson and cancellation charges when staff move a lesson back to confirmed.
+    def undo_lesson_finance!
+      actor = finance_actor
+      charge_types = StudentTransaction.transaction_types.values_at(:lesson_charge, :cancellation_charge)
+      charges = StudentTransaction.confirmed.where(lesson_id: lesson.id, transaction_type: charge_types)
+
+      charges.find_each do |charge|
+        undo = Finance::UndoTransaction.new(
+          transaction: charge,
+          created_by: actor,
+          reason: 'Lesson corrected'
+        )
+        next if undo.save(use_transaction: false)
+
+        errors.merge!(undo.errors)
+        return false
+      end
+      true
+    end
+
+    # Lesson charges are saved on behalf of the workspace owner, not the teacher.
+    def finance_actor
+      lesson.teacher_profile.workspace.owner
     end
   end
 end

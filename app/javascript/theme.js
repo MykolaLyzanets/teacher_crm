@@ -1354,13 +1354,98 @@ const CHART_COLORS = {
     swatch: "oklch(0.795 0.184 86.047)"
   }
 }
-const DEFAULTS = { style: "nova", color: "neutral", theme: "blue", chart: "blue", font: "inter", heading: "inherit", radius: "default", background: "dark" }
+// Resolved picker values for the v1 prototype (globals.css) — not shadcn random combos.
+const V1_DEFAULTS = {
+  style: "nova",
+  color: "original",
+  background: "classic",
+  theme: "green",
+  chart: "green",
+  heading: "inherit",
+  font: "manrope",
+  radius: "default"
+}
+const APPEARANCE_KINDS = ["style", "color", "background", "theme", "chart", "heading", "font", "radius"]
+const PRESET = "preset"
+
+function storedAppearance() {
+  const fromServer = serverAppearance()
+  if (fromServer !== null) return fromServer
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
+  } catch {
+    return {}
+  }
+}
+
+function resolveKind(key, stored, allowed) {
+  const raw = stored[key]
+  if (!raw || raw === PRESET) return V1_DEFAULTS[key]
+  return allowed[raw] ? raw : V1_DEFAULTS[key]
+}
+
+function isAppearancePreset(kind, raw = storedAppearance()) {
+  const value = raw[kind]
+  return !value || value === PRESET
+}
+
+function appearanceIsAllPreset(raw = storedAppearance()) {
+  return APPEARANCE_KINDS.every((kind) => isAppearancePreset(kind, raw))
+}
+
+function applyV1DanlioAppearance() {
+  const style = V1_DEFAULTS.style
+  const color = V1_DEFAULTS.color
+  const background = V1_DEFAULTS.background
+  const theme = V1_DEFAULTS.theme
+  const chart = V1_DEFAULTS.chart
+  const font = V1_DEFAULTS.font
+  const heading = V1_DEFAULTS.heading
+  const radius = V1_DEFAULTS.radius
+  const root = document.documentElement
+  const palette = PALETTES.original.light
+
+  Object.entries(palette).forEach(([name, value]) => {
+    if (name === "swatch") return
+    root.style.setProperty(`--${name}`, value)
+  })
+  root.style.setProperty("--background", BACKGROUNDS.classic.background)
+  root.style.setProperty("--radius", RADII[radius].value || STYLES[style].radius)
+  root.style.setProperty("--font-sans", FONTS.manrope.family)
+  root.style.setProperty("--font-heading", "var(--font-sans)")
+  root.style.setProperty("--olive", "#66734a")
+  root.style.setProperty("--olive-dark", "#414b32")
+  root.style.setProperty("--olive-deep", "#46512f")
+  root.style.setProperty("--sage", "#e8ecdf")
+  root.style.setProperty("--surface", "#ffffff")
+  root.style.setProperty("--surface-muted", "#fdfdfb")
+  root.style.setProperty("--line", "#e1e4da")
+  root.style.setProperty("--line-soft", "#ecefe6")
+  root.style.setProperty("--text-muted", "#70756b")
+  root.style.setProperty("--text-subtle", "#8b9086")
+  root.style.setProperty("--overlay", "rgba(32, 35, 29, 0.4)")
+  root.style.setProperty("--shadow-card", "0 18px 45px rgba(66, 75, 49, 0.1)")
+  applyFonts(font, heading)
+  root.style.colorScheme = "light"
+  root.dataset.themeStyle = style
+  root.dataset.themeColor = color
+  root.dataset.theme = theme
+  root.dataset.themeChart = chart
+  root.dataset.themeFont = font
+  root.dataset.themeHeading = heading
+  root.dataset.themeRadius = radius
+  root.dataset.themeBackground = background
+  root.dataset.themeMode = "light"
+  root.dataset.themeV1 = "true"
+  return { style, color, theme, chart, font, heading, radius, background }
+}
 
 function readBackground(stored) {
+  if (!stored.background || stored.background === PRESET) return V1_DEFAULTS.background
   if (BACKGROUNDS[stored.background]) return stored.background
   if (BACKGROUNDS[stored.theme] && !THEMES[stored.theme]) return stored.theme
   if (stored.mode === "light") return "light"
-  return DEFAULTS.background
+  return V1_DEFAULTS.background
 }
 
 function serverAppearance() {
@@ -1373,23 +1458,31 @@ function serverAppearance() {
   }
 }
 
+function readRawAppearance() {
+  return storedAppearance()
+}
+
 function readAppearance() {
   try {
-    const fromServer = serverAppearance()
-    const stored = fromServer !== null ? fromServer : JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
+    const stored = storedAppearance()
     const background = readBackground(stored)
+    const headingRaw = stored.heading
+    let heading = V1_DEFAULTS.heading
+    if (headingRaw && headingRaw !== PRESET) {
+      heading = headingRaw === "inherit" || FONTS[headingRaw] ? headingRaw : V1_DEFAULTS.heading
+    }
     return {
-      style: STYLES[stored.style] ? stored.style : DEFAULTS.style,
-      color: PALETTES[stored.color] ? stored.color : DEFAULTS.color,
-      theme: THEMES[stored.theme] ? stored.theme : DEFAULTS.theme,
-      chart: CHART_COLORS[stored.chart] ? stored.chart : DEFAULTS.chart,
-      font: FONTS[stored.font] ? stored.font : DEFAULTS.font,
-      heading: stored.heading === "inherit" || FONTS[stored.heading] ? stored.heading : DEFAULTS.heading,
-      radius: RADII[stored.radius] ? stored.radius : DEFAULTS.radius,
+      style: resolveKind("style", stored, STYLES),
+      color: resolveKind("color", stored, PALETTES),
+      theme: resolveKind("theme", stored, THEMES),
+      chart: resolveKind("chart", stored, CHART_COLORS),
+      font: resolveKind("font", stored, FONTS),
+      heading,
+      radius: resolveKind("radius", stored, RADII),
       background
     }
   } catch {
-    return { ...DEFAULTS }
+    return { ...V1_DEFAULTS }
   }
 }
 
@@ -1406,15 +1499,21 @@ function applyFonts(font, heading) {
   link.href = `https://fonts.googleapis.com/css2?${unique.map((name) => `family=${FONTS[name].google}`).join("&")}&display=swap`
 }
 
-function applyAppearance(next = readAppearance()) {
-  const style = STYLES[next.style] ? next.style : DEFAULTS.style
-  const color = PALETTES[next.color] ? next.color : DEFAULTS.color
-  const theme = THEMES[next.theme] ? next.theme : DEFAULTS.theme
-  const chart = CHART_COLORS[next.chart] ? next.chart : DEFAULTS.chart
-  const font = FONTS[next.font] ? next.font : DEFAULTS.font
-  const heading = next.heading === "inherit" || FONTS[next.heading] ? next.heading : DEFAULTS.heading
-  const radius = RADII[next.radius] ? next.radius : DEFAULTS.radius
-  const background = BACKGROUNDS[next.background] ? next.background : DEFAULTS.background
+function applyAppearance(rawInput) {
+  const raw = rawInput ?? storedAppearance()
+  if (appearanceIsAllPreset(raw)) {
+    return applyV1DanlioAppearance()
+  }
+
+  const next = readAppearance()
+  const style = STYLES[next.style] ? next.style : V1_DEFAULTS.style
+  const color = PALETTES[next.color] ? next.color : V1_DEFAULTS.color
+  const theme = THEMES[next.theme] ? next.theme : V1_DEFAULTS.theme
+  const chart = CHART_COLORS[next.chart] ? next.chart : V1_DEFAULTS.chart
+  const font = FONTS[next.font] ? next.font : V1_DEFAULTS.font
+  const heading = next.heading === "inherit" || FONTS[next.heading] ? next.heading : V1_DEFAULTS.heading
+  const radius = RADII[next.radius] ? next.radius : V1_DEFAULTS.radius
+  const background = BACKGROUNDS[next.background] ? next.background : V1_DEFAULTS.background
   const canvas = BACKGROUNDS[background]
   const mode = canvas.mode
   const root = document.documentElement
@@ -1463,6 +1562,7 @@ function applyAppearance(next = readAppearance()) {
   root.dataset.themeRadius = radius
   root.dataset.themeBackground = background
   root.dataset.themeMode = mode
+  delete root.dataset.themeV1
   return { style, color, theme, chart, font, heading, radius, background }
 }
 
@@ -1484,13 +1584,15 @@ function persistAppearance(applied) {
 }
 
 function saveAppearance(next) {
-  const applied = applyAppearance(next)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(applied))
+  const stored = { ...next }
+  applyAppearance(stored)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
   const el = document.getElementById("danlio-appearance")
-  if (el) el.textContent = JSON.stringify(applied)
-  persistAppearance(applied)
-  window.dispatchEvent(new CustomEvent("danlio:appearance", { detail: applied }))
-  return applied
+  if (el) el.textContent = JSON.stringify(stored)
+  persistAppearance(stored)
+  const detail = readAppearance()
+  window.dispatchEvent(new CustomEvent("danlio:appearance", { detail }))
+  return stored
 }
 
 function appearanceMeta() {
@@ -1508,4 +1610,14 @@ function appearanceMeta() {
 }
 
 applyAppearance()
-window.DanlioAppearance = { readAppearance, applyAppearance, saveAppearance, appearanceMeta }
+window.DanlioAppearance = {
+  readAppearance,
+  readRawAppearance,
+  applyAppearance,
+  saveAppearance,
+  appearanceMeta,
+  v1Defaults: V1_DEFAULTS,
+  isAppearancePreset,
+  appearanceIsAllPreset,
+  appearancePreset: PRESET
+}

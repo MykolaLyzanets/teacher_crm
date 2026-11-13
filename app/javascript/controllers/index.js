@@ -16,11 +16,23 @@ application.register("students", StudentsController)
 import TeachersController from "./teachers_controller"
 application.register("teachers", TeachersController)
 
+import TeacherAvailabilityController from "./teacher_availability_controller"
+application.register("teacher-availability", TeacherAvailabilityController)
+
+import StudentLessonPricingController from "./student_lesson_pricing_controller"
+application.register("student-lesson-pricing", StudentLessonPricingController)
+
 import CalendarController from "./calendar_controller"
 application.register("calendar", CalendarController)
 
 import StudentPortalController from "./student_portal_controller"
 application.register("student-portal", StudentPortalController)
+
+import StudentPortalPaymentsController from "./student_portal_payments_controller"
+application.register("student-portal-payments", StudentPortalPaymentsController)
+
+import StudentProfilePaymentsController from "./student_profile_payments_controller"
+application.register("student-profile-payments", StudentProfilePaymentsController)
 
 import StudentCalendarController from "./student_calendar_controller"
 application.register("student-calendar", StudentCalendarController)
@@ -57,6 +69,9 @@ application.register("notifications", NotificationsController)
 
 import LessonTypesController from "./lesson_types_controller"
 application.register("lesson-types", LessonTypesController)
+
+import TeacherCompensationController from "./teacher_compensation_controller"
+application.register("teacher-compensation", TeacherCompensationController)
 
 import ModalController from "./modal_controller"
 application.register("modal", ModalController)

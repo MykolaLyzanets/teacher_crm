@@ -9,6 +9,12 @@ class Workspace < ApplicationRecord
   has_many :student_profiles, dependent: :destroy, inverse_of: :workspace
   has_many :homeworks, dependent: :destroy, inverse_of: :workspace
   has_many :materials, dependent: :destroy, inverse_of: :workspace
+  has_many :subjects, dependent: :destroy, inverse_of: :workspace
+  has_many :catalog_subjects, -> { catalog }, class_name: 'Subject', inverse_of: :workspace
+  has_many :student_transactions, dependent: :restrict_with_error, inverse_of: :workspace
+  has_many :teacher_earnings, dependent: :restrict_with_error, inverse_of: :workspace
+  has_many :teacher_payouts, dependent: :restrict_with_error, inverse_of: :workspace
+  has_many :student_lesson_type_prices, dependent: :destroy, inverse_of: :workspace
 
   validates :name, presence: true
   validate :owner_has_owner_role

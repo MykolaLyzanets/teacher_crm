@@ -367,14 +367,120 @@ module StudentsHelper
     end
   end
 
-  def student_payment_status_label(cents)
-    if cents.to_i.positive?
-      t('app.students.payment_credit')
-    elsif cents.to_i.negative?
-      t('app.students.payment_due')
+  def student_payment_status_label(cents, currency = 'UAH')
+    student_profile_balance_status(cents, currency, nil)[:hint]
+  end
+
+  def student_profile_balance_status(balance_cents, currency, reference_price_cents)
+    reference = reference_price_cents.to_i
+    cents = balance_cents.to_i
+    if cents.negative?
+      {
+        state: :negative,
+        health: 'debt',
+        hint: t('app.students.balance_owed', amount: money_label(cents.abs, currency))
+      }
+    elsif reference.positive? && cents < reference
+      {
+        state: :low,
+        health: 'low_balance',
+        hint: t('app.students.balance_low_hint', amount: money_label(reference, currency))
+      }
     else
-      t('app.students.payment_balanced')
+      hint =
+        if reference.positive?
+          t('app.students.balance_covers_lessons', count: cents / reference)
+        else
+          t('app.students.available_credit')
+        end
+      {
+        state: :healthy,
+        health: 'healthy',
+        hint:
+      }
     end
+  end
+
+  def student_balance_status_badge(health)
+    tone = payment_status_tone(health)
+    label =
+      if health.to_s == 'debt'
+        t('app.students.negative_balance_badge')
+      else
+        t("app.payments.status_#{health}", default: health.to_s.humanize)
+      end
+    icon = pay_health_badge_icon(health)
+    tag.span(class: "pay-status-badge pay-status-badge--#{tone}") do
+      safe_join([icon_tag(icon, size: 14), label])
+    end
+  end
+
+  def student_ledger_date_label(value)
+    raw = value.to_s[0, 10]
+    return if raw.blank?
+
+    date = Date.iso8601(raw)
+    if I18n.locale.to_s.downcase.start_with?('en')
+      format = I18n.t('app.students.ledger_date_format', default: '%b %-d, %Y')
+      date.strftime(format)
+    else
+      format_lesson_day_long(raw)
+    end
+  rescue ArgumentError, TypeError
+    raw
+  end
+
+  def student_ledger_filter_label(key)
+    if key.to_s == 'all'
+      t('app.students.ledger_filter_all')
+    else
+      t("app.students.ledger_filter_#{key}", default: t("app.student_portal.payments.filter_#{key}", default: key.humanize))
+    end
+  end
+
+  def student_ledger_type_badge_tone(category)
+    case category.to_s
+    when 'top_ups' then 'olive'
+    when 'refunds' then 'amber'
+    else 'neutral'
+    end
+  end
+
+  def student_ledger_unconfirmed?(item)
+    %w[pending rejected].include?(item[:confirmationStatus].to_s)
+  end
+
+  def student_topped_up_hint(pending_count)
+    if pending_count.to_i.positive?
+      t('app.students.pending_awaiting_confirmation', count: pending_count.to_i)
+    else
+      t('app.students.confirmed_payments')
+    end
+  end
+
+  def student_profile_transaction_status(item)
+    key = item[:confirmationStatus].presence || item[:status].presence
+    return '—' if key.blank?
+
+    I18n.t("app.payments.tx_status_#{key}", default: key.to_s.humanize)
+  end
+
+  def student_profile_finance_paths
+    {
+      studentPayment: payments_student_payment_path,
+      confirmPayment: payments_confirm_payment_path,
+      rejectPayment: payments_reject_payment_path,
+      adjustment: payments_adjustment_path,
+      refund: payments_refund_path
+    }
+  end
+
+  def student_ledger_filter_counts(ledger)
+    rows = Array(ledger)
+    counts = Finance::StudentLedgerCategories::FILTER_KEYS.index_with do |key|
+      rows.count { |item| item[:category].to_s == key }
+    end
+    counts.merge(all: rows.size).with_indifferent_access
   end
 
   def student_ledger_rows(transactions)

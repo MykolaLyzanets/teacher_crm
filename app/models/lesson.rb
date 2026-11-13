@@ -20,6 +20,8 @@ class Lesson < ApplicationRecord
                           association_foreign_key: :student_id
   has_one :homework, dependent: :nullify, inverse_of: :lesson
   has_many :materials, dependent: :nullify, inverse_of: :lesson
+  has_many :student_transactions, dependent: :restrict_with_error, inverse_of: :lesson
+  has_many :teacher_earnings, dependent: :restrict_with_error, inverse_of: :lesson
 
   scope :overlapping, lambda { |starts_at, ends_at|
     where('lessons.starts_at < ? AND lessons.ends_at > ?', ends_at, starts_at)
@@ -42,7 +44,7 @@ class Lesson < ApplicationRecord
   end
 
   def billed_currency
-    currency.presence || lesson_type&.currency
+    Finance::FinanceHelper::FINANCE_CURRENCY_CODE
   end
 
   def as_catalog

@@ -201,9 +201,7 @@ module LessonsHelper
     cents = lesson[:priceCents]
     return '—' if cents.nil?
 
-    currency = lesson[:currency].presence || 'UAH'
-    amount = (cents.to_i.abs / 100.0).round
-    currency == 'EUR' ? "€#{amount}" : "#{currency} #{amount}"
+    money_label(cents, Finance::FinanceHelper::FINANCE_CURRENCY_CODE)
   end
 
   def lesson_homework_status(lesson)
@@ -285,7 +283,8 @@ module LessonsHelper
   def lesson_row_payload(lesson)
     review = lesson_review_status(lesson)
     teacher_id = lesson[:teacherId]
-    students = Array(lesson[:students]).map { |student| lesson_student_payload(student, teacher_id) }
+    lesson_currency = lesson[:currency]
+    students = Array(lesson[:students]).map { |student| lesson_student_payload(student, teacher_id, lesson_currency) }
     homework = lesson_homework_status(lesson)
     {
       id: lesson[:id],
@@ -339,7 +338,7 @@ module LessonsHelper
     }
   end
 
-  def lesson_student_payload(student, teacher_id)
+  def lesson_student_payload(student, teacher_id, lesson_currency = nil)
     record = student.respond_to?(:[]) ? student : {}
     id = record[:id]
     name = record[:name].presence || t('app.common.student')
@@ -352,14 +351,21 @@ module LessonsHelper
       grade: record[:grade].presence || t('app.common.student'),
       assigned:,
       url: id.present? ? student_path(id) : nil,
-      balanceCents: demo_student_balance_cents(name)
+      balanceCents: lesson_student_balance_cents(id, lesson_currency)
     }
   end
 
-  def demo_student_balance_cents(name)
-    needle = name.to_s.downcase.strip
-    catalog = Demo::Catalog.students.find { |student| Demo::Catalog.student_name(student).downcase == needle }
-    Demo::Finance.balance_cents(catalog[:id]) if catalog
+  def lesson_student_balance_cents(student_id, _lesson_currency = nil)
+    return if !can_view_finance?
+    return if student_id.blank?
+
+    workspace_id = current_user&.workspace_id
+    return if workspace_id.blank?
+
+    profile = StudentProfile.find_by(id: student_id, workspace_id:)
+    return if profile.nil?
+
+    Finance::StudentBalance.new(student_profile: profile).balance_cents
   end
 
   def lesson_details_turbo
@@ -441,8 +447,8 @@ module LessonsHelper
     l(time, format: :short)
   end
 
-  def format_lesson_balance(cents, currency)
-    amount = lesson_price_label(priceCents: cents.to_i.abs, currency:)
+  def format_lesson_balance(cents, _currency = nil)
+    amount = lesson_price_label(priceCents: cents.to_i.abs)
     if cents.to_i.positive?
       t('app.lessons.balance_credit', amount:)
     elsif cents.to_i.negative?

@@ -9,6 +9,7 @@ class LessonType < ApplicationRecord
 
   belongs_to :subject, inverse_of: :lesson_types
   has_many :lessons, dependent: :restrict_with_error, inverse_of: :lesson_type
+  has_many :student_lesson_type_prices, dependent: :restrict_with_error, inverse_of: :lesson_type
 
   before_validation :normalize_name
 
@@ -26,7 +27,7 @@ class LessonType < ApplicationRecord
       mode:,
       defaultDurationMinutes: default_duration_minutes,
       priceCents: price_cents,
-      currency:,
+      currency: Finance::FinanceHelper::FINANCE_CURRENCY_CODE,
       isActive: is_active,
       subjectId: subject_id
     }

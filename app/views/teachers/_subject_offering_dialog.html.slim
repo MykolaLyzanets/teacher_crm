@@ -1,0 +1,35 @@
+.danlio-modal.danlio-modal--md.danlio-modal--offering hidden="hidden" data-lesson-types-target="offeringDialog" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" aria-label=t('app.common.close') data-action="lesson-types#closeOfferingDialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="subject-offering-title"
+    .danlio-modal__head
+      div
+        h2#subject-offering-title.danlio-modal__title data-lesson-types-target="offeringTitle" = t('app.teachers.offering_add_title')
+        p.danlio-modal__desc data-lesson-types-target="offeringDescription" = t('app.teachers.offering_add_description')
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="lesson-types#closeOfferingDialog"
+        = icon_tag 'x', size: 20
+    .danlio-modal__body
+      p.lt-field-error hidden="hidden" data-lesson-types-target="offeringError"
+      label.lt-field data-lesson-types-target="offeringSubjectField"
+        span
+          = t('app.teachers.offering_subject')
+          abbr.lt-req *
+        select data-lesson-types-target="offeringSubject" data-action="change->lesson-types#offeringSubjectChanged"
+      .lt-offering-empty hidden="hidden" data-lesson-types-target="offeringNoSubjects"
+        p.lt-offering-empty__title = t('app.teachers.offering_no_subjects_title')
+        p = t('app.teachers.offering_no_subjects_text')
+        - if can_manage_workspace_catalog?
+          = link_to settings_lesson_types_path, class: 'lt-teaching-actions__manage' do
+            = icon_tag 'settings', size: 16
+            span = t('app.teachers.manage_subjects_lesson_types')
+      .lt-offering-empty hidden="hidden" data-lesson-types-target="offeringEmpty"
+        p.lt-offering-empty__title = t('app.teachers.offering_no_types_title')
+        p = t('app.teachers.offering_no_types_text')
+        - if can_manage_workspace_catalog?
+          = link_to settings_lesson_types_path, class: 'lt-teaching-actions__manage' do
+            = icon_tag 'settings', size: 16
+            span = t('app.teachers.manage_subjects_lesson_types')
+      .lt-offering-types hidden="hidden" data-lesson-types-target="offeringTypes"
+      ul.lt-offering-chips hidden="hidden" data-lesson-types-target="offeringChips" aria-live="polite"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="lesson-types#closeOfferingDialog" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-lesson-types-target="offeringSubmit" data-action="lesson-types#confirmOffering" = t('app.common.save')

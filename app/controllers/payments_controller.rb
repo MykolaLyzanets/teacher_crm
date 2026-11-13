@@ -3,104 +3,135 @@
 class PaymentsController < AppController
   helper LessonsHelper
 
-  def index
-    unless can_view_finance?
-      @forbidden = true
-      return
-    end
+  before_action :require_finance_access!
+  before_action :require_manage_access!, only: %i[
+    create_student_payment confirm_payment reject_payment create_adjustment create_teacher_payout create_refund
+  ]
 
-    @overview = Demo::Finance.workspace_overview
+  def index
+    return if @forbidden
+
     @school = current_workspace.blank? || current_workspace.school? || current_user.admin?
-    @balances = student_balance_rows
-    @payouts = teacher_payout_rows
-    @transactions = unified_transactions
-    @students = Demo::Catalog.active_students
-    @currencies = @transactions.map { |item| item[:currency] }.uniq.sort
+    page = page_data
+    @overview = page.overview
+    @balances = page.balance_rows
+    @payouts = page.payout_rows
+    @transactions = page.transaction_rows
+    @students = page.student_filter_options
+    @currencies = page.currencies
+  end
+
+  def create_student_payment
+    student = student_profiles_scope.find(params.require(:student_profile_id))
+    workspace = student.workspace
+    service = Finance::AddStudentPayment.new(
+      workspace:,
+      student_profile: student,
+      created_by: current_user,
+      amount_cents: params.require(:amount_cents),
+      method: params.require(:method),
+      reference: params[:reference],
+      internal_note: params[:internal_note],
+      confirm: boolean_param(params[:confirm])
+    )
+    render_finance_result(service)
+  end
+
+  def confirm_payment
+    payment = find_workspace_payment!(params.require(:payment_id))
+    service = Finance::ConfirmPayment.new(payment:, confirmed_by: current_user)
+    render_finance_result(service)
+  end
+
+  def reject_payment
+    payment = find_workspace_payment!(params.require(:payment_id))
+    service = Finance::RejectPayment.new(payment:)
+    render_finance_result(service)
+  end
+
+  def create_adjustment
+    student = student_profiles_scope.find(params.require(:student_profile_id))
+    workspace = student.workspace
+    service = Finance::ChangeStudentBalance.new(
+      workspace:,
+      student_profile: student,
+      created_by: current_user,
+      amount_cents: params.require(:amount_cents),
+      reason: params.require(:reason)
+    )
+    render_finance_result(service)
+  end
+
+  def create_refund
+    payment = find_workspace_payment!(params.require(:payment_id))
+    if payment.confirmed?
+      service = Finance::RefundPayment.new(
+        payment:,
+        created_by: current_user,
+        amount_cents: params.require(:amount_cents),
+        reason: params[:reason]
+      )
+      render_finance_result(service)
+    else
+      render json: { errors: [I18n.t('app.payments.refund_not_allowed')] }, status: :unprocessable_entity
+    end
+  end
+
+  def create_teacher_payout
+    teacher = teacher_profiles_scope.find(params.require(:teacher_profile_id))
+    workspace = teacher.workspace
+    paid_at = Time.zone.parse(params.require(:paid_at).to_s)
+    service = Finance::PayTeacher.new(
+      workspace:,
+      teacher_profile: teacher,
+      created_by: current_user,
+      amount_cents: params.require(:amount_cents),
+      method: params.require(:method),
+      paid_at:,
+      reference: params[:reference],
+      note: params[:note]
+    )
+    render_finance_result(service)
   end
 
   private
 
-  def can_view_finance?
-    current_user.owner? || current_user.admin?
+  def page_data
+    Payments::PageData.new(
+      workspace: current_workspace,
+      students: student_profiles_scope,
+      teachers: teacher_profiles_scope
+    )
   end
 
-  def student_balance_rows
-    Demo::Catalog.active_students.map do |student|
-      student_id = student[:id]
-      pricing = Demo::Finance.pricing_for(student_id)
-      next_lesson = Demo::Finance.next_lesson_for_student(student)
-      {
-        student: student,
-        name: Demo::Catalog.student_name(student),
-        teacher: student[:teacher].presence || t('app.common.unassigned'),
-        availableCents: Demo::Finance.available_balance_cents(student_id),
-        debtCents: Demo::Finance.debt_cents(student_id),
-        currency: pricing&.dig(:currency).presence || 'EUR',
-        lessonsCovered: lessons_covered(student_id, pricing),
-        nextLessonDate: next_lesson&.dig(:date),
-        status: Demo::Finance.student_balance_status(student_id)
-      }.with_indifferent_access
-    end.sort_by { |row| -row[:debtCents].to_i }
+  def require_finance_access!
+    return if can_view_finance?
+
+    @forbidden = true
+    head :forbidden if action_name != 'index'
   end
 
-  def lessons_covered(student_id, pricing)
-    price = pricing&.dig(:defaultPriceCents).to_i
-    return 0 unless price.positive?
+  def require_manage_access!
+    return if can_manage_payments?
 
-    Demo::Finance.available_balance_cents(student_id) / price
+    render json: { errors: [I18n.t('app.payments.forbidden_text')] }, status: :forbidden
   end
 
-  def teacher_payout_rows
-    Demo::Catalog.teachers.map do |teacher|
-      summary = Demo::Finance.teacher_payout_summary(teacher[:id])
-      {
-        teacher: teacher,
-        name: Demo::Catalog.teacher_name(teacher),
-        summary: summary
-      }.with_indifferent_access
+  def find_workspace_payment!(id)
+    scope = StudentTransaction.transaction_payment
+    scope = scope.where(workspace_id: current_workspace.id) if current_workspace.present?
+    scope.find(id)
+  end
+
+  def render_finance_result(service)
+    if service.save
+      render json: { ok: true }, status: :ok
+    else
+      render json: { errors: service.error_messages }, status: :unprocessable_entity
     end
   end
 
-  def unified_transactions
-    rows = Demo::Catalog.transactions.map do |item|
-      {
-        id: item[:id],
-        date: item[:date],
-        kind: item[:type],
-        party: item[:student],
-        description: item[:description],
-        amountCents: item[:amountCents],
-        currency: item[:currency],
-        status: item[:confirmationStatus]
-      }
-    end
-
-    Demo::Catalog.earnings.each do |item|
-      rows << {
-        id: item[:id],
-        date: item[:createdAt].to_s[0, 10],
-        kind: 'teacher_earning',
-        party: item[:teacher],
-        description: item[:kind].to_s == 'cancellation_charged' ? 'Charged cancellation' : 'Lesson completed',
-        amountCents: item[:earningCents],
-        currency: item[:currency],
-        status: item[:reversedAt].present? ? 'reversed' : nil
-      }
-    end
-
-    Demo::Catalog.payouts.each do |item|
-      rows << {
-        id: item[:id],
-        date: item[:date],
-        kind: 'teacher_payout',
-        party: item[:teacher],
-        description: item[:note].presence || 'Teacher payout',
-        amountCents: -item[:amountCents].to_i,
-        currency: item[:currency],
-        status: nil
-      }
-    end
-
-    rows.map(&:with_indifferent_access).sort_by { |item| item[:date].to_s }.reverse
+  def boolean_param(value)
+    %w[1 true yes on].include?(value.to_s.downcase)
   end
 end

@@ -39,8 +39,9 @@ class LessonTypesController < AppController
   private
 
   def find_subject
-    subject = Subject.where(teacher_id: teacher_profiles_scope.select(:id)).find_by(id: params[:subject_id])
-    if subject.blank? || teacher_forbidden?(subject.teacher_profile)
+    subject = workspace_subjects_scope.find_by(id: params[:subject_id])
+    denied = subject.blank? || subject_access_denied?(subject, manage: action_name != 'index')
+    if denied
       render json: { error: 'Not found' }, status: :not_found
       return
     end
@@ -49,15 +50,23 @@ class LessonTypesController < AppController
   end
 
   def find_lesson_type
-    lesson_type = LessonType.joins(subject: :teacher_profile)
-                            .merge(Subject.where(teacher_id: teacher_profiles_scope.select(:id)))
-                            .find_by(id: params[:id])
-    if lesson_type.blank? || teacher_forbidden?(lesson_type.subject.teacher_profile)
+    lesson_type = LessonType.joins(:subject).merge(workspace_subjects_scope).find_by(id: params[:id])
+    if lesson_type.blank? || subject_access_denied?(lesson_type.subject, manage: true)
       render json: { error: 'Not found' }, status: :not_found
       return
     end
 
     lesson_type
+  end
+
+  def subject_access_denied?(subject, manage: false)
+    if subject.catalog?
+      return !can_manage_workspace_catalog? if manage
+
+      return !can_view_workspace_catalog?
+    end
+
+    teacher_forbidden?(subject.teacher_profile)
   end
 
   def teacher_forbidden?(teacher)
@@ -76,8 +85,9 @@ class LessonTypesController < AppController
     duration = params[:default_duration_minutes].presence || params[:defaultDurationMinutes]
     attrs[:default_duration_minutes] = duration if duration.present?
     attrs[:price_cents] = price_cents_param if params.key?(:price_cents) || params.key?(:priceCents)
-    currency = params[:currency]
-    attrs[:currency] = currency if currency.present? || params.key?(:currency)
+    if attrs.key?(:price_cents)
+      attrs[:currency] = Finance::FinanceHelper::FINANCE_CURRENCY_CODE
+    end
     flag = cast_active_param
     attrs[:is_active] = flag unless flag.nil?
     attrs

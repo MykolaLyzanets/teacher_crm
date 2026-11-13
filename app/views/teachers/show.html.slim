@@ -64,7 +64,7 @@
           div
             dt = t('app.teachers.default_lesson')
             dd
-              = "#{t('app.teachers.minutes', count: teacher[:defaultLessonDurationMinutes] || 60)} · "
+              = "#{t('app.teachers.minutes', count: teacher[:defaultLessonDurationMinutes] || TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES)} · "
               = Array(teacher[:lessonFormats]).map { |f| lesson_format_label(f) }.join(', ')
           div
             dt = t('app.teachers.timezone')
@@ -77,34 +77,11 @@
               - else
                 = t('app.teachers.has_workspace_access')
 
-    section#lesson-types.teachers-page__card.teachers-page__card--lesson-types
-      = render 'lesson_types/manager', heading: :h2, title: t('app.lesson_types.lessons_pricing'), description: t('app.lesson_types.lessons_pricing_hint')
+    section#lesson-types.teachers-page__card--lesson-types
+      = render 'teachers/teaching_section', show_step: true, manager: { show_toast: true }
 
-    - if can_view_finance? && @earnings
-      section.teachers-page__card
-        .teachers-page__section-head
-          div
-            h2 = t('app.teachers.earnings')
-            p.teachers-page__section-sub = t('app.teachers.earnings_hint')
-          - if can_manage_payments?
-            button.teachers-page__ghost-btn type="button" data-action="teachers#toast" data-message=t('app.payments.payout_recorded')
-              = t('app.payments.record_payout')
-        dl.teachers-page__dl.teachers-page__dl--stats
-          div
-            dt = t('app.teachers.total_earnings')
-            dd = money_label(@earnings[:totalEarningsCents], @earnings[:currency])
-          div
-            dt = t('app.teachers.paid_out')
-            dd = money_label(@earnings[:paidCents], @earnings[:currency])
-          div
-            dt = t('app.teachers.remaining')
-            dd = money_label(@earnings[:remainingCents], @earnings[:currency])
-          div
-            dt = t('app.teachers.completed_lessons')
-            dd = @earnings[:completedLessons]
-          div
-            dt = t('app.teachers.charged_cancellations')
-            dd = @earnings[:chargedCancellations]
+    - if can_view_finance? && @teacher_finance
+      = render 'teachers/finance_section', teacher_finance: @teacher_finance
 
     - if can_manage_teachers?
       section.teachers-page__card data-teachers-target="absenceSection"

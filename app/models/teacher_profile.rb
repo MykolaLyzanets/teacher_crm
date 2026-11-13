@@ -8,6 +8,7 @@ class TeacherProfile < ApplicationRecord
   CALENDAR_COLORS = { olive: 0, slate: 1, amber: 2, plum: 3, terra: 4, teal: 5 }.freeze
   DEFAULT_TIMEZONE = 'Europe/Kyiv'
   DEFAULT_COMPENSATION_PERCENT = 60
+  DEFAULT_LESSON_DURATION_MINUTES = 60
 
   enum status: STATUSES
   enum preferred_contact_method: CONTACT_METHODS, _prefix: :contact
@@ -24,6 +25,8 @@ class TeacherProfile < ApplicationRecord
   has_many :lessons, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :restrict_with_error
   has_many :homeworks, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
   has_many :materials, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
+  has_many :teacher_earnings, dependent: :restrict_with_error, inverse_of: :teacher_profile
+  has_many :teacher_payouts, dependent: :restrict_with_error, inverse_of: :teacher_profile
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
@@ -51,7 +54,7 @@ class TeacherProfile < ApplicationRecord
     compensation_percent
   end
 
-  def as_catalog
+  def as_catalog(assigned_count: nil)
     {
       id:,
       firstName: first_name,
@@ -73,7 +76,8 @@ class TeacherProfile < ApplicationRecord
       tags: Array(tags),
       workingDays: Array(working_days),
       workingHours: Array(working_hours),
-      defaultLessonDurationMinutes: default_lesson_duration_minutes,
+      availabilitySlots: availability_slots_for_catalog,
+      defaultLessonDurationMinutes: default_lesson_duration_minutes || DEFAULT_LESSON_DURATION_MINUTES,
       lessonFormats: Array(lesson_formats),
       defaultMeetingLink: default_meeting_link,
       maxLessonsPerDay: max_lessons_per_day,
@@ -82,7 +86,7 @@ class TeacherProfile < ApplicationRecord
       inviteToWorkspace: true,
       invitationStatus: invited? ? 'sent' : 'active',
       notes:,
-      assignedCount: student_profiles.count { |profile| profile.deleted_at.nil? },
+      assignedCount: assigned_count.nil? ? student_profiles.kept.count : assigned_count.to_i,
       createdAt: created_at&.iso8601
     }.with_indifferent_access
   end
@@ -104,5 +108,11 @@ class TeacherProfile < ApplicationRecord
     return if unknown.empty?
 
     errors.add(:lesson_formats, 'contains an unsupported format')
+  end
+
+  def availability_slots_for_catalog
+    return [] unless has_attribute?(:availability_slots)
+
+    TeacherAvailability.slots_for_form(self)
   end
 end

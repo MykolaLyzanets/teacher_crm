@@ -431,6 +431,7 @@ export default class extends Controller {
     this.studentIds = uniqueIds(ids)
     if (this.lessonType !== "group") this.studentIds = this.studentIds.slice(-1)
     this.syncLessonTypeUi()
+    this.refreshLessonPrice()
     this.syncDrawerFields()
   }
 
@@ -615,6 +616,7 @@ export default class extends Controller {
     await this.rebuildLessonTypeSelect()
     this.autoSelectSingleLessonType()
     this.autoSelectSingleStudent()
+    this.refreshLessonPrice()
     this.setDrawerMode("create")
   }
 
@@ -673,7 +675,7 @@ export default class extends Controller {
     if (this.studentIds.length) return
     const students = this.assignedStudents()
     if (students.length !== 1) return
-    this.studentIds = [String(students[0].id)]
+    this.setStudentIds([String(students[0].id)])
   }
 
   teacherRecord(id) {
@@ -724,12 +726,46 @@ export default class extends Controller {
     this.syncLessonTypeUi()
   }
 
+  resolveLessonPrice(type) {
+    if (!type) return { cents: null, currency: "UAH" }
+    if (this.lessonType !== "group" && this.studentIds.length === 1) {
+      const student = this.studentRecord(this.studentIds[0])
+      const match = this.studentLessonPriceRow(student, type)
+      if (match && match.priceCents != null && match.priceCents !== "") {
+        return { cents: Number(match.priceCents), currency: match.currency || "UAH" }
+      }
+    }
+    return lessonMoney(type)
+  }
+
+  studentLessonPriceRow(student, type) {
+    const rows = Array.isArray(student?.lessonPricing) ? student.lessonPricing : []
+    if (rows.length === 0) return null
+    const typeId = String(type.id)
+    const byId = rows.find((row) => String(row.lessonTypeId) === typeId)
+    if (byId) return byId
+    const subjectName = normalizeLessonLabel(this.selectedSubjectName())
+    const typeName = normalizeLessonLabel(type.name)
+    if (!subjectName || !typeName) return null
+    return rows.find((row) =>
+      normalizeLessonLabel(row.subjectName) === subjectName &&
+      normalizeLessonLabel(row.lessonTypeName) === typeName
+    ) || null
+  }
+
   applyLessonTypeDefaults(type) {
     const duration = Number(type?.defaultDurationMinutes || type?.default_duration_minutes) || 60
     if (this.hasDraftStartTarget && this.hasDraftEndTarget) {
       this.draftEndTarget.value = minutesToTime(timeToMinutes(this.draftStartTarget.value) + duration)
     }
-    const { cents, currency } = lessonMoney(type)
+    const { cents, currency } = this.resolveLessonPrice(type)
+    this.setDraftMoney(cents, currency)
+  }
+
+  refreshLessonPrice() {
+    const type = this.currentLessonType()
+    if (!type) return
+    const { cents, currency } = this.resolveLessonPrice(type)
     this.setDraftMoney(cents, currency)
   }
 
@@ -778,6 +814,7 @@ export default class extends Controller {
   lessonTypeOptionLabel(item) {
     const duration = Number(item.defaultDurationMinutes || item.default_duration_minutes) || 60
     const base = `${item.name} · ${duration} ${this.t("calendar", "min")}`
+    if (!this.showPriceValue) return base
     const { cents, currency } = lessonMoney(item)
     if (cents == null) return base
     const price = cents === 0 ? this.t("calendar", "free") : formatMoney(cents, currency)
@@ -1833,6 +1870,10 @@ function minutesToTime(total) {
 
 function uniqueIds(ids) {
   return [...new Set((ids || []).filter(Boolean).map(String))]
+}
+
+function normalizeLessonLabel(value) {
+  return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ")
 }
 
 function bookableStudent(student) {

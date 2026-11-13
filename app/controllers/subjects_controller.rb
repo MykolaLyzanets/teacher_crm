@@ -54,13 +54,23 @@ class SubjectsController < AppController
   end
 
   def find_subject
-    subject = Subject.where(teacher_id: teacher_profiles_scope.select(:id)).find_by(id: params[:id])
-    if subject.blank? || teacher_forbidden?(subject.teacher_profile)
+    subject = workspace_subjects_scope.find_by(id: params[:id])
+    if subject.blank? || subject_access_denied?(subject, manage: true)
       render json: { error: 'Not found' }, status: :not_found
       return
     end
 
     subject
+  end
+
+  def subject_access_denied?(subject, manage: false)
+    if subject.catalog?
+      return !can_manage_workspace_catalog? if manage
+
+      return !can_view_workspace_catalog?
+    end
+
+    teacher_forbidden?(subject.teacher_profile)
   end
 
   def teacher_forbidden?(teacher)

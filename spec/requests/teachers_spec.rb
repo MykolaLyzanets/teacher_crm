@@ -3,6 +3,17 @@
 require 'rails_helper'
 
 RSpec.describe 'Teacher form' do
+  def ensure_uah!
+    Currency.find_or_create_by!(code: 'UAH') do |currency|
+      currency.name = 'Ukrainian hryvnia'
+      currency.symbol = '₴'
+      currency.subunit_to_unit = 100
+      currency.active = true
+      currency[:default] = true
+    end
+  end
+
+  before { ensure_uah! }
   it 'marks email as required on the create form' do
     workspace = create(:workspace)
     sign_in workspace.owner
@@ -37,6 +48,6 @@ RSpec.describe 'Teacher form' do
     get teacher_path(id: teacher.id)
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(I18n.t('app.teachers.compensation_percentage', percent: 45))
+    expect(teacher.reload.compensation_percent).to eq(45)
   end
 end

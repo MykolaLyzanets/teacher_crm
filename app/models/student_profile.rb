@@ -22,6 +22,10 @@ class StudentProfile < ApplicationRecord
   has_many :homeworks, through: :homework_students
   has_many :material_students, foreign_key: :student_id, inverse_of: :student, dependent: :destroy
   has_many :materials, through: :material_students
+  has_many :student_transactions, dependent: :restrict_with_error, inverse_of: :student_profile
+  has_many :teacher_earnings, dependent: :restrict_with_error, inverse_of: :student_profile
+  has_many :student_lesson_type_prices, foreign_key: :student_id, dependent: :destroy,
+                                       inverse_of: :student_profile
 
   validates :first_name, presence: true
   validates :user_id, uniqueness: true
@@ -82,8 +86,8 @@ class StudentProfile < ApplicationRecord
     )
   end
 
-  def as_catalog
-    {
+  def as_catalog(teacher_name: nil, lesson_pricing: true)
+    payload = {
       id:,
       firstName: first_name,
       lastName: last_name,
@@ -96,7 +100,7 @@ class StudentProfile < ApplicationRecord
       phone:,
       address:,
       teacherId: teacher_id,
-      teacher: teacher_profile&.display_label,
+      teacher: teacher_name || teacher_profile&.display_label,
       assignmentRevision: assignment_revision,
       assignedAt: assigned_at&.iso8601,
       assignedBy: self[:assigned_by],
@@ -119,7 +123,9 @@ class StudentProfile < ApplicationRecord
       notes:,
       deletedAt: deleted_at&.iso8601,
       createdAt: created_at&.iso8601
-    }.with_indifferent_access
+    }
+    payload[:lessonPricing] = Students::LessonPricing.catalog_rows(self) if lesson_pricing
+    payload.with_indifferent_access
   end
 
   private

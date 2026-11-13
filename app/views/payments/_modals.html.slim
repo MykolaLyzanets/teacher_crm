@@ -1,0 +1,237 @@
+.danlio-modal.danlio-modal--md.pay__modal hidden="hidden" data-payments-target="paymentModal" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" aria-label=t('app.common.close') data-action="payments#closePaymentModal"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="pay-add-funds-title"
+    .danlio-modal__head
+      div
+        h2#pay-add-funds-title.danlio-modal__title data-payments-target="paymentTitle" = t('app.payments.add_funds_title')
+        p.danlio-modal__desc data-payments-target="paymentDesc" = t('app.payments.add_funds_desc')
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="payments#closePaymentModal" data-modal-focus="true"
+    .danlio-modal__body data-payments-target="paymentFormStep"
+      .pay__modal-stack
+        .pay__modal-form
+          .pay__modal-student
+            span = t('app.payments.col_student')
+            strong data-payments-target="paymentStudentName"
+          .pay__fields
+            label.pay__field
+              span.pay__label
+                = t('app.payments.amount')
+                span.pay__required *
+              input.pay__input type="number" min="0" step="0.01" inputmode="decimal" placeholder=t('app.payments.amount_placeholder') autofocus="autofocus" data-payments-target="paymentAmount" data-action="input->payments#clearPaymentError"
+              p.pay__field-hint = t('app.payments.amount_uah_hint')
+            label.pay__field
+              span.pay__label
+                = t('app.payments.date')
+                span.pay__required *
+              input.pay__input type="date" data-payments-target="paymentDate"
+            .pay__direction role="radiogroup" aria-label=t('app.payments.payment_status_aria')
+              button.pay__direction-btn.is-selected type="button" role="radio" aria-checked="true" data-status="pending" data-payments-target="paymentStatusBtn" data-action="payments#pickPaymentStatus"
+                = t('app.payments.payment_status_pending')
+              button.pay__direction-btn type="button" role="radio" aria-checked="false" data-status="confirmed" data-payments-target="paymentStatusBtn" data-action="payments#pickPaymentStatus"
+                = t('app.payments.payment_status_confirmed')
+            label.pay__field
+              span.pay__label
+                = t('app.payments.method')
+                span.pay__required *
+              select.pay__input data-payments-target="paymentMethod"
+                - payment_method_keys.each do |method_key|
+                  option value=method_key = t("app.payments.methods.#{method_key}")
+            label.pay__field
+              span.pay__label = t('app.payments.reference')
+              input.pay__input type="text" placeholder=t('app.payments.reference_placeholder') data-payments-target="paymentReference"
+            label.pay__field
+              span.pay__label = t('app.payments.note_internal')
+              textarea.pay__input rows="3" placeholder=t('app.payments.note_internal_placeholder') data-payments-target="paymentNote"
+              p.pay__field-hint.pay__field-hint--inline
+                = icon_tag 'lock', size: 14
+                span = t('app.payments.note_internal_hint')
+        p.pay__error hidden="hidden" role="alert" data-payments-target="paymentError"
+    .danlio-modal__body.pay__confirm-body hidden="hidden" data-payments-target="paymentReviewStep"
+      .pay__modal-stack
+        .pay__balance-confirm
+          .pay__balance-compare
+            div
+              p.pay__balance-cap = t('app.payments.current_balance')
+              p.pay__balance-amount data-payments-target="paymentReviewBefore"
+            span.pay__balance-arrow aria-hidden="true" →
+            div.pay__balance-compare-end
+              p.pay__balance-cap = t('app.payments.new_balance')
+              p.pay__balance-amount data-payments-target="paymentReviewAfter"
+          .pay__balance-delta
+            span = t('app.payments.top_up_label')
+            strong data-payments-target="paymentReviewChange"
+          p.pay__balance-alert hidden="hidden" role="status" data-payments-target="paymentReviewAlert"
+          p.pay__field-hint.pay__field-hint--inline hidden="hidden" data-payments-target="paymentPendingHint"
+            = t('app.payments.payment_pending_review_hint')
+          dl.pay__confirm-details
+            .pay__confirm-row
+              dt = t('app.payments.col_student')
+              dd data-payments-target="paymentReviewStudent"
+            .pay__confirm-row
+              dt = t('app.payments.date')
+              dd data-payments-target="paymentReviewDate"
+            .pay__confirm-row
+              dt = t('app.payments.method')
+              dd data-payments-target="paymentReviewMethod"
+            .pay__confirm-row hidden="hidden" data-payments-target="paymentReviewReferenceRow"
+              dt = t('app.payments.reference')
+              dd data-payments-target="paymentReviewReference"
+            .pay__confirm-row hidden="hidden" data-payments-target="paymentReviewNoteRow"
+              dt = t('app.payments.note_internal')
+              dd data-payments-target="paymentReviewNote"
+        p.pay__error hidden="hidden" role="alert" data-payments-target="paymentReviewError"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-payments-target="paymentBack" data-action="payments#paymentBackOrCancel" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-payments-target="paymentSubmit" data-action="payments#paymentPrimaryAction" = t('app.payments.review')
+
+.danlio-modal.danlio-modal--md.pay__modal hidden="hidden" data-payments-target="adjustmentModal" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" aria-label=t('app.common.close') data-action="payments#closeAdjustmentModal"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="pay-adjust-title"
+    .danlio-modal__head
+      div
+        h2#pay-adjust-title.danlio-modal__title data-payments-target="adjustmentTitle" = t('app.payments.adjust_title')
+        p.danlio-modal__desc data-payments-target="adjustmentDesc" = t('app.payments.adjust_desc')
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="payments#closeAdjustmentModal" data-modal-focus="true"
+    .danlio-modal__body data-payments-target="adjustmentFormStep"
+      .pay__modal-stack
+        .pay__modal-form
+          .pay__modal-student
+            span = t('app.payments.col_student')
+            strong data-payments-target="adjustmentStudentName"
+          .pay__fields
+            .pay__direction role="radiogroup" aria-label=t('app.payments.adjust_direction_aria')
+              button.pay__direction-btn.is-selected type="button" role="radio" aria-checked="true" data-direction="credit" data-payments-target="adjustmentDirectionBtn" data-action="payments#pickAdjustmentDirection"
+                = t('app.payments.adjust_credit')
+              button.pay__direction-btn type="button" role="radio" aria-checked="false" data-direction="debit" data-payments-target="adjustmentDirectionBtn" data-action="payments#pickAdjustmentDirection"
+                = t('app.payments.adjust_debit')
+            label.pay__field
+              span.pay__label
+                span data-payments-target="adjustmentAmountLabel"
+                span.pay__required aria-hidden="true" *
+              input.pay__input type="number" min="0" step="0.01" inputmode="decimal" placeholder=t('app.payments.adjust_amount_placeholder') data-payments-target="adjustmentAmount" data-action="input->payments#adjustmentAmountInput"
+              p.pay__field-hint.pay__field-hint--amount hidden="hidden" data-payments-target="adjustmentAmountHint"
+            label.pay__field
+              span.pay__label
+                = t('app.payments.adjust_reason')
+                span.pay__required *
+              input.pay__input type="text" placeholder=t('app.payments.adjust_reason_placeholder') data-payments-target="adjustmentReason" data-action="input->payments#clearAdjustmentError"
+              p.pay__field-hint.pay__field-hint--inline
+                = icon_tag 'eye', size: 14
+                span = t('app.payments.adjust_reason_visible')
+            label.pay__field
+              span.pay__label = t('app.payments.note_internal')
+              textarea.pay__input rows="3" placeholder=t('app.payments.adjust_note_placeholder') data-payments-target="adjustmentNote"
+              p.pay__field-hint.pay__field-hint--inline
+                = icon_tag 'lock', size: 14
+                span = t('app.payments.note_internal_hint')
+            label.pay__field
+              span.pay__label
+                = t('app.payments.date')
+                span.pay__required *
+              input.pay__input type="date" data-payments-target="adjustmentDate"
+        p.pay__error hidden="hidden" role="alert" data-payments-target="adjustmentError"
+    .danlio-modal__body.pay__confirm-body hidden="hidden" data-payments-target="adjustmentReviewStep"
+      .pay__modal-stack
+        .pay__balance-confirm
+          .pay__balance-compare
+            div
+              p.pay__balance-cap = t('app.payments.current_balance')
+              p.pay__balance-amount data-payments-target="adjustmentReviewBefore"
+            span.pay__balance-arrow aria-hidden="true" →
+            div.pay__balance-compare-end
+              p.pay__balance-cap = t('app.payments.new_balance')
+              p.pay__balance-amount data-payments-target="adjustmentReviewAfter"
+          .pay__balance-delta
+            span = t('app.payments.adjustment_label')
+            strong data-payments-target="adjustmentReviewChange"
+          p.pay__balance-alert hidden="hidden" role="status" data-payments-target="adjustmentReviewAlert"
+          dl.pay__confirm-details
+            .pay__confirm-row
+              dt = t('app.payments.col_student')
+              dd data-payments-target="adjustmentReviewStudent"
+            .pay__confirm-row
+              dt = t('app.payments.date')
+              dd data-payments-target="adjustmentReviewDate"
+            .pay__confirm-row
+              dt = t('app.payments.adjust_reason_student')
+              dd data-payments-target="adjustmentReviewReason"
+            .pay__confirm-row hidden="hidden" data-payments-target="adjustmentReviewNoteRow"
+              dt = t('app.payments.note_internal')
+              dd data-payments-target="adjustmentReviewNote"
+        p.pay__error hidden="hidden" role="alert" data-payments-target="adjustmentReviewError"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-payments-target="adjustmentBack" data-action="payments#adjustmentBackOrCancel" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-payments-target="adjustmentSubmit" data-action="payments#adjustmentPrimaryAction" = t('app.payments.review')
+
+.danlio-modal.danlio-modal--md.pay__modal hidden="hidden" data-payments-target="payoutModal" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" aria-label=t('app.common.close') data-action="payments#closePayoutModal"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="pay-payout-title"
+    .danlio-modal__head
+      div
+        h2#pay-payout-title.danlio-modal__title = t('app.payments.record_payout')
+        p.danlio-modal__desc data-payments-target="payoutDesc"
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="payments#closePayoutModal" data-modal-focus="true"
+    .danlio-modal__body
+      .pay__modal-stack
+        .pay__modal-form
+          .pay__fields
+            label.pay__field
+              span.pay__label
+                = t('app.payments.amount')
+                span.pay__required *
+              input.pay__input type="number" min="0" step="1" inputmode="decimal" autofocus="autofocus" data-payments-target="payoutAmount"
+            label.pay__field
+              span.pay__label = t('app.payments.col_currency')
+              input.pay__input type="text" readonly="readonly" data-payments-target="payoutCurrency"
+            label.pay__field
+              span.pay__label
+                = t('app.payments.payment_date')
+                span.pay__required *
+              input.pay__input type="date" data-payments-target="payoutDate"
+            label.pay__field
+              span.pay__label
+                = t('app.payments.payment_method')
+                span.pay__required *
+              select.pay__input data-payments-target="payoutMethod"
+                - payment_method_keys.each do |method_key|
+                  option value=method_key = t("app.payments.methods.#{method_key}")
+            label.pay__field
+              span.pay__label = t('app.payments.note_internal')
+              textarea.pay__input rows="3" placeholder=t('app.payments.payout_note_placeholder') data-payments-target="payoutNote"
+        p.pay__error hidden="hidden" role="alert" data-payments-target="payoutError"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="payments#closePayoutModal" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="payments#savePayout" = t('app.payments.record_payout_submit')
+
+.danlio-modal.danlio-modal--md.pay__modal hidden="hidden" data-payments-target="refundModal" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" aria-label=t('app.common.close') data-action="payments#closeRefundModal"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="pay-refund-title"
+    .danlio-modal__head
+      div
+        h2#pay-refund-title.danlio-modal__title = t('app.payments.refund_title')
+        p.danlio-modal__desc data-payments-target="refundDesc"
+      button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="payments#closeRefundModal" data-modal-focus="true"
+    .danlio-modal__body
+      .pay__modal-stack
+        .pay__modal-form
+          .pay__modal-student
+            span = t('app.payments.original_payment')
+            strong data-payments-target="refundPaymentSummary"
+          .pay__fields
+            label.pay__field
+              span.pay__label
+                = t('app.payments.refund_remaining')
+                span.pay__required *
+              input.pay__input type="text" readonly="readonly" data-payments-target="refundRemaining"
+            label.pay__field
+              span.pay__label
+                = t('app.payments.amount')
+                span.pay__required *
+              input.pay__input type="number" min="0" step="0.01" inputmode="decimal" autofocus="autofocus" data-payments-target="refundAmount"
+            label.pay__field
+              span.pay__label = t('app.payments.note_internal')
+              textarea.pay__input rows="3" placeholder=t('app.payments.refund_note_placeholder') data-payments-target="refundNote"
+        p.pay__error hidden="hidden" role="alert" data-payments-target="refundError"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="payments#closeRefundModal" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="payments#saveRefund" = t('app.payments.refund_submit')

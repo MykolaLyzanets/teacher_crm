@@ -17,8 +17,21 @@ class DashboardController < AppController
         homework_review:
       )
     else
-      @dashboard = Demo::Dashboards.admin(lessons:, now: @now)
+      @dashboard = admin_dashboard(lessons)
       @lessons_by_date = lessons.group_by { |lesson| lesson[:date].to_s }
     end
+  end
+
+  private
+
+  def admin_dashboard(lessons)
+    dashboard = Demo::Dashboards.admin(lessons:, now: @now)
+    return dashboard if !can_view_finance? || current_workspace.blank?
+
+    Dashboard::FinanceData.new(
+      workspace: current_workspace,
+      students: student_profiles_scope,
+      teachers: teacher_profiles_scope
+    ).apply(dashboard)
   end
 end

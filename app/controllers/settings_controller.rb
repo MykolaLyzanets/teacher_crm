@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 class SettingsController < AppController
+  before_action :require_workspace_catalog_settings!, except: :index
+
   def index; end
 
   def lessons; end
 
-  def lesson_types
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name)
-    @preset_teacher_id = preset_teacher_id
-    @lock_teacher = current_user.teacher? || @teachers.size <= 1
-  end
+  def lesson_types; end
 
   def lesson_type_dialog
     @subject_id = params[:subject_id].to_s
@@ -32,8 +30,10 @@ class SettingsController < AppController
 
   private
 
-  def preset_teacher_id
-    params[:teacher_id].presence || current_user.teacher_profile&.id || (@teachers.first&.id if @teachers.one?)
+  def require_workspace_catalog_settings!
+    return if can_manage_workspace_catalog?
+
+    redirect_to settings_path, alert: I18n.t('app.settings.lessons_owner_only')
   end
 
   def render_lesson_type_frame(view)

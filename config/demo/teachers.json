@@ -119,7 +119,7 @@
         "endTime": "16:00"
       }
     ],
-    "defaultLessonDurationMinutes": 45,
+    "defaultLessonDurationMinutes": 60,
     "lessonFormats": [
       "online",
       "in_person"

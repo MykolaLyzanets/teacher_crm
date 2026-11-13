@@ -1,0 +1,39 @@
+- duration_preset = teacher_duration_preset(teacher)
+- initial = { id: teacher[:id], workingDays: Array(teacher[:workingDays]), workingHours: Array(teacher[:workingHours]), lessonFormats: Array(teacher[:lessonFormats]), availabilitySlots: Array(teacher[:availabilitySlots]) }
+
+section.teachers-page__card#availability.ta-section.tc-scroll-anchor
+  h2 = t('app.teachers.availability')
+  p.teachers-page__section-sub = t('app.teachers.availability_sub')
+
+  .ta-layout data-controller="teacher-availability" data-teacher-availability-initial-value=initial.to_json data-teacher-availability-i18n-value=app_i18n_json('app.teachers.availability_slots', 'app.teachers', 'app.common') data-teacher-availability-catalog-url-value=catalog_subjects_path
+    input type="hidden" name="availability_slots" value="[]" data-teacher-availability-target="payload"
+    .ta-editor-block
+      .ta-editor data-teacher-availability-target="editor"
+      p.teachers-page__field-error.ta-summary-error hidden="hidden" data-teacher-availability-target="summaryError"
+
+    .ta-settings
+      .teachers-page__fields.ta-settings__duration
+        label.teachers-page__field
+          span = t('app.teachers.default_duration')
+          - default_duration = teacher[:defaultLessonDurationMinutes].presence || TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES
+          input type="hidden" name="default_lesson_duration_minutes" value=(duration_preset == 'custom' ? default_duration : duration_preset) data-teachers-target="durationValue"
+          select data-teachers-target="durationPreset" data-action="change->teachers#toggleCustomDuration" name="duration_preset"
+            - [30, 45, 60, 90].each do |minutes|
+              option value=minutes selected=(duration_preset == minutes.to_s) = t('app.teachers.minutes', count: minutes)
+            option value="custom" selected=(duration_preset == 'custom') = t('app.teachers.custom_duration')
+        label.teachers-page__field data-teachers-target="customDuration" hidden=(duration_preset == 'custom' ? nil : true)
+          span
+            = t('app.teachers.custom_duration_minutes')
+            span.teachers-page__req *
+          input type="number" name="custom_duration" min="1" step="1" placeholder="75" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : nil) data-teachers-target="customMinutes" data-action="input->teachers#syncCustomMinutes blur->teachers#markTouched"
+          p.teachers-page__field-error hidden="hidden" data-error-for="customDuration"
+
+      fieldset.ta-calendar-colors
+        legend.ta-calendar-colors__legend = t('app.teachers.calendar_color')
+        p.ta-calendar-colors__hint = t('app.teachers.calendar_color_hint')
+        input type="hidden" name="calendar_color" value=(teacher[:calendarColor].presence || 'olive') data-teachers-target="calendarColor"
+        .ta-color-btns
+          - TeachersHelper::CALENDAR_COLORS.each do |id, hex|
+            button.ta-color-btn type="button" data-color=id data-action="teachers#setCalendarColor" aria-pressed=(id.to_s == (teacher[:calendarColor].presence || 'olive').to_s) aria-label=teacher_color_label(id)
+              span.ta-color-btn__dot style="background-color: #{hex}"
+              = teacher_color_label(id)

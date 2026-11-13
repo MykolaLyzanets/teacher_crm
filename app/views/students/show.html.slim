@@ -21,14 +21,18 @@
   - content_for :head
     = stylesheet_link_tag 'css/homework.min', 'data-turbo-track': 'reload'
 
-  .students-page.students-page--profile data-controller="students" data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-student-id-value=student[:id] data-students-materials-url-value=materials_path
+  - profile_controllers = ['students']
+  - profile_controllers << 'payments' if can_manage_payments?
+  - payments_paths = student_profile_finance_paths.to_json if can_manage_payments?
+  - payments_i18n = app_i18n_json('app.payments', 'app.common') if can_manage_payments?
+  .students-page.students-page--profile data-controller=profile_controllers.join(' ') data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-student-id-value=student[:id] data-students-materials-url-value=materials_path data-payments-i18n-value=payments_i18n data-payments-can-manage-value=(can_manage_payments?.to_s if can_manage_payments?) data-payments-paths-value=payments_paths
     nav.students-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.students.title'), students_path
       = icon_tag 'chevron-right', size: 16
       span = name
 
     = render 'students/profile/header', student: student, name: name
-    p.students-page__toast hidden="hidden" role="status" data-students-target="toast"
+    p.students-page__toast hidden="hidden" role="status" data-students-target="toast" data-payments-target="toast"
     = render 'students/profile/stats', stats: stats
 
     - active_tab = @profile_tab.presence || 'overview'
@@ -64,4 +68,6 @@
       = turbo_frame_tag 'unassign_dialog'
 
     = turbo_frame_tag 'delete_dialog'
+    - if can_manage_payments?
+      = render 'payments/modals'
     .students-page__cancel-tip hidden="hidden" role="tooltip" data-students-target="cancelTip"

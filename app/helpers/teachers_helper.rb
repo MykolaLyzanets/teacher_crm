@@ -215,10 +215,10 @@ module TeachersHelper
 
   def teacher_duration_preset(teacher)
     minutes = teacher.with_indifferent_access[:defaultLessonDurationMinutes]
-    return '' if minutes.blank?
+    minutes = TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES if minutes.blank?
 
     minutes = minutes.to_i
-    return '' unless minutes.positive?
+    return TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES.to_s if !minutes.positive?
 
     LESSON_DURATION_PRESETS.include?(minutes) ? minutes.to_s : 'custom'
   end

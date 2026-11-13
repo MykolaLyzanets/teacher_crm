@@ -9,14 +9,14 @@ class StudentsController < AppController
   before_action :set_student_record, only: %i[show edit update destroy unassign unassign_dialog]
 
   def index
-    @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @students = student_catalog_payloads
+    @teachers = teacher_catalog_payloads
     @stats = calculate_stats(@students)
   end
 
   def show
-    @student = @student_record&.as_catalog
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @student = @student_record&.as_catalog(lesson_pricing: false)
+    @teachers = teacher_catalog_payloads
     @teacher = @student_record&.teacher_profile&.as_catalog
     @catalog_student = Demo::Catalog.match_student(@student) if @student
     @student_homework = HomeworkStudent.portal_items_for(@student_record) if @student_record
@@ -27,10 +27,13 @@ class StudentsController < AppController
     @pricing = nil
     @balance_cents = 0
     @student_lessons = Demo::Portal.lessons_for_student(@student_record)
+    if @student_record
+      profile_finance = Students::ProfileFinance.new(student_profile: @student_record)
+      @finance = profile_finance.summary
+      @balance_cents = profile_finance.balance_cents
+      @pricing = profile_finance.pricing
+    end
     if @catalog_student
-      @finance = Demo::Finance.portal_finance(@catalog_student[:id])
-      @pricing = Demo::Finance.pricing_for(@catalog_student[:id])
-      @balance_cents = Demo::Finance.balance_cents(@catalog_student[:id])
       @student_progress = Demo::Portal.progress_for(@catalog_student[:id])
       @student_notes = Demo::Portal.notes_for(@catalog_student[:id])
     end
@@ -40,7 +43,7 @@ class StudentsController < AppController
 
   def new
     @student = default_student_attrs
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = teacher_catalog_payloads
     @editing = false
   end
 
@@ -48,7 +51,7 @@ class StudentsController < AppController
     return if @student_record.blank?
 
     @student = @student_record.as_catalog
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = teacher_catalog_payloads
     @editing = true
     render :new
   end
@@ -61,7 +64,7 @@ class StudentsController < AppController
       redirect_to student_path(service.student_profile), notice:
     else
       @student = student_form_attrs
-      @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+      @teachers = teacher_catalog_payloads
       @editing = false
       flash.now[:alert] = service.error_messages.to_sentence
       render :new, status: :unprocessable_entity
@@ -79,7 +82,7 @@ class StudentsController < AppController
       redirect_to student_path(service.student_profile), notice:
     else
       @student = student_form_attrs(record: @student_record)
-      @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+      @teachers = teacher_catalog_payloads
       @editing = true
       flash.now[:alert] = service.error_messages.to_sentence
       render :new, status: :unprocessable_entity
@@ -119,7 +122,7 @@ class StudentsController < AppController
       return
     end
 
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = teacher_catalog_payloads
     @selected_teacher_id =
       if @student_ids.one?
         student_profiles_scope.find_by(id: @student_ids.first)&.teacher_id
@@ -222,14 +225,17 @@ class StudentsController < AppController
       :teacher_id, :email, :phone, :address, :parent_name, :relationship, :parent_email,
       :parent_phone, :grade, :student_code, :enrollment_date, :academic_year, :level,
       :location_preference, :preferred_time_notes, :emergency_name, :emergency_relationship,
-      :emergency_phone, :notes, :photo, :remove_photo, :invite_to_workspace, subjects: [], preferred_days: []
+      :emergency_phone, :notes, :photo, :remove_photo, :invite_to_workspace, :lesson_pricing,
+      subjects: [], preferred_days: []
     )
     permitted.delete(:teacher_id) unless can_assign_teacher?
     permitted
   end
 
   def set_student_record
-    @student_record = student_profiles_scope.find_by(id: params[:id])
+    @student_record = student_profiles_scope
+                        .includes(student_lesson_type_prices: { lesson_type: :subject })
+                        .find_by(id: params[:id])
   end
 
   def require_assign_permission!
@@ -265,7 +271,8 @@ class StudentsController < AppController
       parentEmail: '',
       parentPhone: '',
       notes: '',
-      teacherId: nil
+      teacherId: nil,
+      lessonPricing: []
     }.with_indifferent_access
   end
 
@@ -298,8 +305,33 @@ class StudentsController < AppController
       parentPhone: data[:parent_phone].to_s,
       notes: data[:notes].to_s,
       photo:,
-      inviteToWorkspace: data[:invite_to_workspace].to_s == '1'
+      inviteToWorkspace: data[:invite_to_workspace].to_s == '1',
+      lessonPricing: parse_lesson_pricing(data[:lesson_pricing])
     ).with_indifferent_access
+  end
+
+  def parse_lesson_pricing(raw)
+    data = raw.is_a?(String) ? JSON.parse(raw) : raw
+    return [] unless data.is_a?(Array)
+
+    data.filter_map do |row|
+      next if row.blank?
+
+      h = row.with_indifferent_access
+      lesson_type_id = h[:lessonTypeId].to_s.presence
+      next if lesson_type_id.blank?
+
+      {
+        lessonTypeId: lesson_type_id,
+        subjectId: h[:subjectId].to_s,
+        subjectName: h[:subjectName].to_s,
+        lessonTypeName: h[:lessonTypeName].to_s,
+        priceCents: h[:priceCents].to_i,
+        currency: h[:currency].presence || Finance::FinanceHelper::FINANCE_CURRENCY_CODE
+      }
+    end
+  rescue JSON::ParserError
+    []
   end
 
   def calculate_stats(students)

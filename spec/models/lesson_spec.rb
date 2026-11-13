@@ -319,4 +319,11 @@ RSpec.describe Lesson do
     expect(catalog[:priceCents]).to eq(80_000)
     expect(catalog[:currency]).to eq('UAH')
   end
+
+  it 'presents billed currency as UAH even when the stored lesson currency is EUR' do
+    lesson = create(:lesson, price_cents: 2500, currency: 'EUR')
+
+    expect(lesson.billed_currency).to eq('UAH')
+    expect(lesson.as_catalog[:currency]).to eq('UAH')
+  end
 end

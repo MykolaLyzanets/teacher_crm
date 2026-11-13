@@ -142,11 +142,9 @@ module Teachers
         bio: params[:bio].to_s.strip.presence,
         languages: Array(params[:languages]).compact_blank,
         tags: Array(params[:tags]).compact_blank,
-        working_days: Array(params[:working_days]).compact_blank,
-        working_hours: normalized_working_hours,
+        **availability_fields,
         default_lesson_duration_minutes: lesson_duration_minutes,
         max_lessons_per_day: integer_or_nil(params[:max_lessons_per_day]),
-        lesson_formats: Array(params[:lesson_formats]).compact_blank,
         default_meeting_link: params[:default_meeting_link].to_s.strip.presence,
         calendar_color: params[:calendar_color].presence || 'olive',
         notes: params[:notes].to_s.strip.presence
@@ -157,28 +155,24 @@ module Teachers
       ActiveModel::Type::Boolean.new.cast(params[:invite_to_workspace]) ? 'invited' : 'active'
     end
 
-    def normalized_working_hours
-      hours = params[:working_hours]
-      days = Array(params[:working_days]).compact_blank
-      return [] unless hours.respond_to?(:to_h)
-
-      days.filter_map do |day|
-        row = hours[day] || hours[day.to_sym]
-        next if row.blank?
-
-        start_time = row[:start] || row['start'] || row[:startTime] || row['startTime']
-        end_time = row[:end] || row['end'] || row[:endTime] || row['endTime']
-        next if start_time.blank? || end_time.blank?
-
-        { 'day' => day, 'startTime' => start_time, 'endTime' => end_time }
-      end
+    def availability_fields
+      slots = TeacherAvailability.parse_slots(params[:availability_slots])
+      legacy = TeacherAvailability.derive_legacy(slots)
+      fields = {
+        working_days: legacy[:working_days],
+        working_hours: legacy[:working_hours],
+        lesson_formats: legacy[:lesson_formats]
+      }
+      fields[:availability_slots] = slots if TeacherProfile.column_names.include?('availability_slots')
+      fields
     end
 
     def lesson_duration_minutes
+      default = TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES
       if params[:duration_preset].to_s == 'custom'
-        integer_or_nil(params[:custom_duration])
+        integer_or_nil(params[:custom_duration]) || default
       else
-        integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes])
+        integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes]) || default
       end
     end
 

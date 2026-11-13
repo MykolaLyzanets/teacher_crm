@@ -249,7 +249,6 @@ class LessonsController < AppController
       assign_optional(hash, permitted, :location_text, :locationText)
       hash[:notes] = permitted[:notes] if permitted.key?(:notes)
       assign_price(hash, permitted)
-      hash[:currency] = permitted[:currency] if permitted.key?(:currency)
     end
   end
 

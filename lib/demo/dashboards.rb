@@ -2,12 +2,21 @@
 
 module Demo
   module Dashboards
+    EMPTY_PAYMENTS_OVERVIEW = {
+      paymentsReceived: {},
+      lessonRevenue: {},
+      outstandingDebt: {},
+      teacherEarnings: {},
+      teacherPayouts: {},
+      schoolGrossProfit: {}
+    }.freeze
+
     module_function
 
     def admin(lessons:, now: Time.zone.now)
       today = now.to_date
       today_lessons = lessons_on(lessons, today)
-      attention = needs_attention(lessons, now)
+      attention = lesson_needs_attention(lessons, now)
       teachers = Catalog.teachers
 
       {
@@ -22,9 +31,9 @@ module Demo
         needsAttention: attention,
         todayLessons: today_lessons.sort_by { |lesson| lesson[:startTime].to_s },
         availability: teacher_availability(teachers, today_lessons, now),
-        payments: Finance.workspace_overview,
-        pendingCount: Catalog.transactions.count { |item| item[:confirmationStatus].to_s == 'pending' },
-        payoutsRemaining: payouts_remaining
+        payments: EMPTY_PAYMENTS_OVERVIEW.dup,
+        pendingCount: 0,
+        payoutsRemaining: {}
       }.with_indifferent_access
     end
 
@@ -57,10 +66,10 @@ module Demo
       lessons.select { |lesson| lesson[:date].to_s == key && lesson[:status].to_s != 'cancelled' }
     end
 
-    def needs_attention(lessons, now)
+    def lesson_needs_attention(lessons, now)
       items = []
       lessons.each do |lesson|
-        next unless past?(lesson, now) && upcoming?(lesson)
+        next if !past?(lesson, now) || !upcoming?(lesson)
 
         items << {
           id: "outcome-#{lesson[:id]}",
@@ -74,69 +83,6 @@ module Demo
           lessonId: lesson[:id]
         }
       end
-
-      Catalog.active_students.each do |student|
-        debt = Finance.debt_cents(student[:id])
-        if debt.positive?
-          items << {
-            id: "debt-#{student[:id]}",
-            category: 'students',
-            kind: 'student_debt',
-            title: "#{Catalog.student_name(student)} has outstanding debt",
-            subtitle: Finance.format_money(debt, Finance.pricing_for(student[:id])&.dig(:currency) || 'EUR'),
-            dateLabel: Date.current.iso8601,
-            badge: 'Debt',
-            action: 'View student balance',
-            studentId: student[:id]
-          }
-        elsif Finance.student_balance_status(student[:id]) == 'low_balance'
-          items << {
-            id: "low-#{student[:id]}",
-            category: 'students',
-            kind: 'low_balance',
-            title: "#{Catalog.student_name(student)} may not cover the next lesson",
-            subtitle: Catalog.student_name(student),
-            dateLabel: Date.current.iso8601,
-            badge: 'Low balance',
-            action: 'View student balance',
-            studentId: student[:id]
-          }
-        end
-      end
-
-      Catalog.transactions.select { |item| item[:confirmationStatus].to_s == 'pending' }.each do |item|
-        items << {
-          id: "pay-#{item[:id]}",
-          category: 'payments',
-          kind: 'pending_payment',
-          title: 'Payment awaiting confirmation',
-          subtitle: "#{item[:student]} · #{Finance.format_money(item[:amountCents], item[:currency])}",
-          dateLabel: item[:date],
-          badge: 'Pending',
-          action: 'Confirm',
-          transactionId: item[:id]
-        }
-      end
-
-      Catalog.teachers.each do |teacher|
-        summary = Finance.teacher_payout_summary(teacher[:id])
-        next unless summary[:remainingCents].to_i.positive?
-
-        items << {
-          id: "payout-#{teacher[:id]}",
-          category: 'teachers',
-          kind: 'payout_due',
-          title: "Payout remaining for #{Catalog.teacher_name(teacher)}",
-          subtitle: Catalog.teacher_name(teacher),
-          dateLabel: Date.current.iso8601,
-          badge: 'Payout due',
-          action: 'Record payout',
-          teacherId: teacher[:id],
-          remainingCents: summary[:remainingCents],
-          currency: summary[:currency]
-        }
-      end
-
       items
     end
 
@@ -163,13 +109,6 @@ module Demo
           status: status
         }
       end
-    end
-
-    def payouts_remaining
-      totals = Hash.new(0)
-      Finance.workspace_overview[:teacherEarnings].each { |currency, cents| totals[currency] += cents }
-      Finance.workspace_overview[:teacherPayouts].each { |currency, cents| totals[currency] -= cents }
-      totals
     end
 
     def upcoming?(lesson)

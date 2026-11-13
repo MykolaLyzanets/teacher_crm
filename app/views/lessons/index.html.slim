@@ -56,13 +56,15 @@
       p = t('app.lessons.none_text')
       button.lessons-page__clear type="button" data-action="lessons#clearFilters" = t('app.common.clear_filters')
 
-    .lessons-page__table data-lessons-target="table" hidden=(true if @lessons.empty?)
+    - show_lesson_price = can_view_finance?
+    .lessons-page__table class=('lessons-page__table--no-price' unless show_lesson_price) data-lessons-target="table" hidden=(true if @lessons.empty?)
       .lessons-page__head
         span = t('app.lessons.col_when')
         span = t('app.lessons.col_party')
         span = t('app.lessons.col_teacher')
         span = t('app.lessons.col_subject')
-        span = t('app.lessons.col_price')
+        - if show_lesson_price
+          span = t('app.lessons.col_price')
         span = t('app.lessons.col_status')
         span = t('app.lessons.col_outcome')
         span.lessons-page__head-actions = t('app.lessons.col_actions')

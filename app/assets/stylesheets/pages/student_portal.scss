@@ -1628,6 +1628,315 @@
 
 .sp-pay {
   max-width: 900px;
+  gap: 20px;
+}
+
+.sp-pay__balance {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  padding: 20px;
+  box-shadow: 0 8px 24px color-mix(in oklch, black 4%, transparent);
+}
+
+.sp-pay__balance-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  .pay-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    &--olive {
+      border-color: #d8dfca;
+      background: #eef1e5;
+      color: #46512f;
+    }
+
+    &--amber {
+      border-color: #e8dfc4;
+      background: #f7f1e2;
+      color: #6a5630;
+    }
+
+    &--rose {
+      border-color: #ead8d6;
+      background: #f8efee;
+      color: #8a5550;
+    }
+  }
+}
+
+.sp-pay__balance-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sp-pay__balance-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: var(--radius-xl);
+  background: var(--accent);
+  color: var(--primary);
+}
+
+.sp-pay__balance-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.sp-pay__balance-value {
+  margin: 4px 0 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.sp-pay__balance-value--debt {
+  color: #8a5550;
+}
+
+.sp-pay__balance-value--low {
+  color: #6a5630;
+}
+
+.sp-pay__balance-alert {
+  margin: 16px 0 0;
+  border-radius: var(--radius-xl);
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.sp-pay__balance-alert--debt {
+  border: 1px solid #ead8d6;
+  background: #f8efee;
+  color: #8a5550;
+}
+
+.sp-pay__balance-alert--low {
+  border: 1px solid #e8dfc4;
+  background: #f7f1e2;
+  color: #6a5630;
+}
+
+.sp-pay__balance-foot {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.sp-pay__balance-meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+
+  strong {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+}
+
+.sp-pay__history {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: 0 12px 36px color-mix(in oklch, black 6%, transparent);
+}
+
+.sp-pay__history-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.sp-pay__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sp-pay__chip {
+  display: inline-flex;
+  height: 32px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: pointer;
+
+  &.is-active,
+  &:hover {
+    border-color: var(--primary);
+    background: var(--accent);
+    color: var(--primary);
+  }
+}
+
+.sp-pay__ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sp-pay__ledger-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding: 14px 20px;
+
+  &:first-child {
+    border-top: 0;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.sp-pay__ledger-date {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.sp-pay__ledger-label {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.sp-pay__reversed {
+  margin-left: 8px;
+  display: inline-flex;
+  border-radius: 999px;
+  background: #f1f2ed;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.sp-pay__ledger-detail {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.sp-pay__lesson-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.sp-pay__ledger-amount {
+  flex-shrink: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .is-neg {
+    color: #8a5550;
+  }
+
+  .is-pos {
+    color: #46512f;
+  }
+}
+
+.sp-pay__ledger-balance {
+  margin-top: 2px !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: var(--muted-foreground) !important;
+}
+
+.sp-pay__filter-empty {
+  margin: 0;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.sp-pay__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--muted-foreground);
+
+  svg {
+    color: var(--muted-foreground);
+  }
+}
+
+.sp-pay__empty-title {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .sp-pay__stat {

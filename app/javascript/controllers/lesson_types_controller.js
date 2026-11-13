@@ -1,13 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
-import { closeModal } from "../lib/modal"
-import { formatMoney, formatPriceInput, parsePriceAmount } from "../lib/money"
+import { closeModal, openModal } from "../lib/modal"
+import { formatMoney } from "../lib/money"
 
-const KIND_NAMES = {
-  individual: "Individual",
-  group: "Group",
-  trial: "Trial"
-}
+const DELIVERY_MODES = ["online", "in_person"]
 
 const ICONS = {
   plus: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -31,28 +27,32 @@ export default class extends Controller {
     "dialogSubject",
     "dialogSubmit",
     "formError",
-    "kind",
     "name",
-    "customNameWrap",
-    "mode",
-    "modeWrap",
-    "priceTypeWrap",
-    "priceType",
+    "namePresets",
+    "modeRadio",
+    "participationHint",
     "duration",
-    "price",
-    "currency",
-    "free",
-    "freeHint",
-    "perStudentHint",
     "description",
     "active",
     "nameError",
     "durationError",
-    "priceError",
     "deleteDialog",
     "deleteName",
     "subjectDeleteDialog",
-    "subjectDeleteName"
+    "subjectDeleteName",
+    "assignmentList",
+    "offeringDialog",
+    "offeringTitle",
+    "offeringDescription",
+    "offeringSubjectField",
+    "offeringSubject",
+    "offeringTypes",
+    "offeringChips",
+    "offeringEmpty",
+    "offeringNoSubjects",
+    "offeringError",
+    "offeringSubmit",
+    "offeringAddBtn"
   ]
 
   static values = {
@@ -66,11 +66,16 @@ export default class extends Controller {
     dialogUrl: String,
     deleteDialogUrl: String,
     subjectDeleteDialogUrl: String,
-    editUrl: String
+    editUrl: String,
+    workspaceCatalogUrl: String,
+    canManage: { type: Boolean, default: true }
   }
 
   connect() {
     this.subjects = []
+    this.workspaceCatalog = []
+    this.offeringEditingSubject = null
+    this.offeringModesByType = {}
     this.renamingSubjectId = null
     this.dialogTargetId = null
     this.dialogSubjectId = ""
@@ -80,6 +85,10 @@ export default class extends Controller {
     this.pendingSeq = 0
     this["addSubject"] = this.addSubject.bind(this)
     this["stopBubble"] = this.stopBubble.bind(this)
+    if (this.teacherAssign()) {
+      this.loadWorkspaceCatalogAndDraft()
+      return
+    }
     this.loadCatalog()
   }
 
@@ -87,6 +96,7 @@ export default class extends Controller {
     if (this.hasDialogTarget) closeModal(this.dialogTarget)
     if (this.hasDeleteDialogTarget) closeModal(this.deleteDialogTarget)
     if (this.hasSubjectDeleteDialogTarget) closeModal(this.subjectDeleteDialogTarget)
+    if (this.hasOfferingDialogTarget) closeModal(this.offeringDialogTarget)
   }
 
   drafting() {
@@ -120,6 +130,7 @@ export default class extends Controller {
             kind: type.kind || "individual",
             mode: type.mode || "individual",
             defaultDurationMinutes: Number(type.defaultDurationMinutes || type.default_duration_minutes || 60),
+            deliveryModes: normalizeDeliveryModes(type.deliveryModes || type.delivery_modes),
             isActive: type.isActive !== false
           }))
         }
@@ -141,13 +152,55 @@ export default class extends Controller {
         kind: type.kind,
         mode: type.mode,
         defaultDurationMinutes: type.defaultDurationMinutes,
+        deliveryModes: normalizeDeliveryModes(type.deliveryModes),
         isActive: type.isActive !== false
       }))
     })))
+    this.draftPayloadTarget.dispatchEvent(new CustomEvent("lesson-catalog:change", { bubbles: true }))
   }
 
   t(key, fallback) {
     return this.i18nValue?.lesson_types?.[key] || fallback || key
+  }
+
+  tTeachers(key, fallback) {
+    return this.i18nValue?.teachers?.[key] || fallback || key
+  }
+
+  tCommon(key, fallback) {
+    return this.i18nValue?.common?.[key] || fallback || key
+  }
+
+  teacherAssign() {
+    return this.modeValue === "teacher_assign"
+  }
+
+  async loadWorkspaceCatalogAndDraft() {
+    if (this.drafting()) {
+      this.subjects = this.readDraft()
+    } else {
+      this.subjects = []
+    }
+    if (!this.hasWorkspaceCatalogUrlValue) {
+      this.render()
+      return
+    }
+    try {
+      this.workspaceCatalog = await this.fetchJson(this.workspaceCatalogSubjectsUrl())
+      if (!Array.isArray(this.workspaceCatalog)) this.workspaceCatalog = []
+    } catch (error) {
+      console.error("lesson-types workspace catalog", error)
+      this.workspaceCatalog = []
+      this.showToast(this.t("save_failed", "Could not save changes."))
+    }
+    this.render()
+    this.syncOfferingAddButton()
+  }
+
+  workspaceCatalogSubjectsUrl() {
+    const url = new URL(this.workspaceCatalogUrlValue, window.location.origin)
+    url.searchParams.set("include_inactive", "0")
+    return `${url.pathname}${url.search}`
   }
 
   showToast(message) {
@@ -164,13 +217,20 @@ export default class extends Controller {
     this.loadCatalog()
   }
 
+  focusAddSubject() {
+    if (!this.hasNewSubjectTarget) return
+    const wrap = this.newSubjectTarget.closest(".lt-add-lesson")
+    if (wrap) wrap.hidden = false
+    this.newSubjectTarget.focus()
+  }
+
   async loadCatalog() {
     if (this.drafting()) {
       this.subjects = this.readDraft()
       this.render()
       return
     }
-    if (!this.teacherIdValue) {
+    if (!this.teacherIdValue && !this.isWorkspaceCatalogMode()) {
       this.subjects = []
       this.render()
       return
@@ -186,13 +246,29 @@ export default class extends Controller {
     this.render()
   }
 
+  isWorkspaceCatalogMode() {
+    return this.modeValue === "workspace_catalog"
+  }
+
+  canEditWorkspaceCatalog() {
+    if (!this.isWorkspaceCatalogMode()) return true
+    return this.canManageValue
+  }
+
   subjectsIndexUrl() {
-    const url = new URL(this.expandUrl(this.subjectsUrlValue, this.teacherIdValue), window.location.origin)
+    const path = this.isWorkspaceCatalogMode()
+      ? this.subjectsUrlValue
+      : this.expandUrl(this.subjectsUrlValue, this.teacherIdValue)
+    const url = new URL(path, window.location.origin)
     if (this.modeValue !== "readonly") url.searchParams.set("include_inactive", "1")
     return `${url.pathname}${url.search}`
   }
 
   render() {
+    if (this.teacherAssign()) {
+      this.renderAssignments()
+      return
+    }
     if (this.modeValue === "readonly") {
       this.renderReadonly()
       return
@@ -200,9 +276,319 @@ export default class extends Controller {
     this.renderCatalog()
   }
 
+  renderAssignments() {
+    if (!this.hasAssignmentListTarget) return
+    const subjects = this.subjects
+    if (this.hasEmptyTarget) this.emptyTarget.hidden = subjects.length > 0
+    this.assignmentListTarget.hidden = subjects.length === 0
+    if (!subjects.length) {
+      this.assignmentListTarget.innerHTML = ""
+      this.syncOfferingAddButton()
+      return
+    }
+    this.assignmentListTarget.innerHTML = subjects.map((subject) => this.assignmentCard(subject)).join("")
+    this.syncOfferingAddButton()
+  }
+
+  assignmentCard(subject) {
+    const types = (subject.lessonTypes || []).flatMap((item) => {
+      const modes = normalizeDeliveryModes(item.deliveryModes)
+      if (!modes.length) return []
+      const mode = this.t(item.mode, item.mode)
+      const name = String(item.name || "").trim()
+      const showMode = mode && mode.trim().toLowerCase() !== name.toLowerCase()
+      const typeLabel = showMode ? `${esc(name)} · ${esc(mode)}` : esc(name)
+      return modes.map((delivery) => {
+        const deliveryLabel = this.tCommon(delivery, delivery)
+        return `<li class="lt-teaching-option">${typeLabel} · ${esc(deliveryLabel)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}</li>`
+      })
+    }).join("")
+    return `<article class="lt-teaching-assigned">
+      <div class="lt-teaching-assigned__head">
+        <p class="lt-teaching-assigned__name">${esc(subject.name)}</p>
+        <div class="lt-row__actions">
+          <button type="button" class="lt-icon-btn" title="${esc(this.tTeachers("offering_edit", "Edit"))}" data-action="lesson-types#openOfferingDialog" data-subject-name="${esc(subject.name)}">${ICONS.pencil}</button>
+          <button type="button" class="lt-icon-btn lt-icon-btn--danger" title="${esc(this.tTeachers("offering_remove", "Remove"))}" data-action="lesson-types#removeAssignment" data-subject-name="${esc(subject.name)}">${ICONS.trash}</button>
+        </div>
+      </div>
+      <ul class="lt-teaching-assigned__types">${types}</ul>
+    </article>`
+  }
+
+  syncOfferingAddButton() {
+    if (!this.hasOfferingAddBtnTarget) return
+    this.offeringAddBtnTarget.disabled = false
+  }
+
+  availableCatalogSubjects({ excludeSubjectName = null, forAdding = false } = {}) {
+    const catalog = this.workspaceCatalog || []
+    if (!forAdding) return catalog
+    const skipName = (excludeSubjectName || "").trim().toLowerCase()
+    const assignedNames = new Set(
+      this.subjects.map((item) => item.name.trim().toLowerCase()).filter((name) => name && name !== skipName)
+    )
+    const assignedIds = new Set(
+      this.subjects
+        .map((item) => String(item.catalogSubjectId || item.id || ""))
+        .filter((id) => id && !id.startsWith("pending-"))
+    )
+    return catalog.filter((item) => {
+      if (assignedIds.has(String(item.id))) return false
+      return !assignedNames.has(item.name.trim().toLowerCase())
+    })
+  }
+
+  catalogSubjectByName(name) {
+    const needle = (name || "").trim().toLowerCase()
+    return (this.workspaceCatalog || []).find((item) => item.name.trim().toLowerCase() === needle)
+  }
+
+  async openOfferingDialog(event) {
+    const subjectName = event?.currentTarget?.dataset?.subjectName || null
+    this.offeringEditingSubject = subjectName
+    if (!this.hasOfferingDialogTarget) return
+    if (this.hasWorkspaceCatalogUrlValue) {
+      try {
+        this.workspaceCatalog = await this.fetchJson(this.workspaceCatalogSubjectsUrl())
+        if (!Array.isArray(this.workspaceCatalog)) this.workspaceCatalog = []
+      } catch (error) {
+        console.error("lesson-types workspace catalog", error)
+      }
+    }
+    this.syncOfferingAddButton()
+    this.clearOfferingError()
+    const adding = !subjectName
+    if (this.hasOfferingTitleTarget) {
+      this.offeringTitleTarget.textContent = adding
+        ? this.tTeachers("offering_add_title", "Add subject")
+        : subjectName
+    }
+    if (this.hasOfferingDescriptionTarget) {
+      this.offeringDescriptionTarget.textContent = this.tTeachers(
+        "offering_add_description",
+        "Tick each lesson type and delivery mode this teacher offers."
+      )
+    }
+    const catalog = this.workspaceCatalog || []
+    const unassigned = this.availableCatalogSubjects({ forAdding: true })
+    let options
+    if (adding) {
+      options = unassigned.length > 0 ? unassigned : catalog
+    } else {
+      options = catalog.filter((item) => item.name.toLowerCase() === subjectName.toLowerCase())
+    }
+    const emptyCatalog = catalog.length === 0
+    if (this.hasOfferingNoSubjectsTarget) this.offeringNoSubjectsTarget.hidden = !emptyCatalog
+    if (this.hasOfferingSubjectFieldTarget) this.offeringSubjectFieldTarget.hidden = !adding || emptyCatalog
+    if (this.hasOfferingSubjectTarget) {
+      this.offeringSubjectTarget.innerHTML = options.map((item) => `<option value="${esc(item.name)}">${esc(item.name)}</option>`).join("")
+      if (options[0] && (adding || !this.offeringSubjectTarget.value)) this.offeringSubjectTarget.value = options[0].name
+    }
+    if (this.hasOfferingSubmitTarget) this.offeringSubmitTarget.disabled = emptyCatalog
+    this.offeringSubjectChanged()
+    this.offeringDialogTarget.hidden = false
+    openModal(this.offeringDialogTarget, {
+      onClose: () => this.closeOfferingDialog(),
+      focus: this.hasOfferingSubjectTarget && !this.offeringSubjectFieldTarget.hidden ? this.offeringSubjectTarget : null
+    })
+  }
+
+  offeringSubjectChanged() {
+    const subjectName = this.hasOfferingSubjectTarget
+      ? this.offeringSubjectTarget.value
+      : (this.offeringEditingSubject || "")
+    const catalogSubject = this.catalogSubjectByName(subjectName)
+    const assigned = this.subjects.find((item) => item.name.toLowerCase() === subjectName.toLowerCase())
+    if (!catalogSubject || !(catalogSubject.lessonTypes || []).length) {
+      if (this.hasOfferingTypesTarget) this.offeringTypesTarget.hidden = true
+      if (this.hasOfferingChipsTarget) {
+        this.offeringChipsTarget.hidden = true
+        this.offeringChipsTarget.innerHTML = ""
+      }
+      if (this.hasOfferingEmptyTarget) this.offeringEmptyTarget.hidden = !subjectName
+      return
+    }
+    if (this.hasOfferingEmptyTarget) this.offeringEmptyTarget.hidden = true
+    this.offeringModesByType = {}
+    const activeTypes = (catalogSubject.lessonTypes || []).filter((item) => item.isActive !== false)
+    activeTypes.forEach((type) => {
+      const existing = (assigned?.lessonTypes || []).find((item) => String(item.id) === String(type.id))
+      this.offeringModesByType[String(type.id)] = normalizeDeliveryModes(existing?.deliveryModes)
+    })
+    if (this.hasOfferingTypesTarget) {
+      this.offeringTypesTarget.hidden = false
+      this.renderOfferingGrid(subjectName, activeTypes)
+    }
+    this.updateOfferingSubmitLabel()
+    this.updateOfferingChips(subjectName, activeTypes)
+  }
+
+  renderOfferingGrid(subjectName, types) {
+    if (!this.hasOfferingTypesTarget) return
+    const typeCol = this.tTeachers("offering_col_lesson_type", "Lesson type")
+    const header = DELIVERY_MODES.map((mode) => {
+      const label = this.tCommon(mode, mode)
+      return `<span class="lt-offering-grid__col-delivery">${esc(label)}</span>`
+    }).join("")
+    const rows = types.map((type) => {
+      const mode = this.t(type.mode, type.mode)
+      const name = String(type.name || "").trim()
+      const showMode = mode && mode.trim().toLowerCase() !== name.toLowerCase()
+      const meta = showMode ? `${esc(mode)} · ${type.defaultDurationMinutes} ${esc(this.t("min", "min"))}` : `${type.defaultDurationMinutes} ${esc(this.t("min", "min"))}`
+      const cells = DELIVERY_MODES.map((delivery) => {
+        const modes = this.offeringModesByType[String(type.id)] || []
+        const checked = modes.includes(delivery) ? "checked" : ""
+        return `<label class="lt-offering-grid__check"><input type="checkbox" data-type-id="${esc(type.id)}" data-delivery-mode="${esc(delivery)}" ${checked} data-action="change->lesson-types#offeringDeliveryToggle" aria-label="${esc(name)} ${esc(this.tCommon(delivery, delivery))}"></label>`
+      }).join("")
+      return `<div class="lt-offering-grid__row" role="row">
+        <div class="lt-offering-grid__cell-name" role="cell">
+          <p class="lt-offering-grid__type-name">${esc(name)}</p>
+          <p class="lt-offering-grid__type-meta">${meta}</p>
+        </div>
+        ${cells}
+      </div>`
+    }).join("")
+    this.offeringTypesTarget.innerHTML = `<div class="lt-offering-grid" role="table" aria-label="${esc(subjectName)}">
+      <div class="lt-offering-grid__head" role="row">
+        <span class="lt-offering-grid__col-type" role="columnheader">${esc(typeCol)}</span>
+        ${header}
+      </div>
+      ${rows}
+    </div>`
+  }
+
+  offeringDeliveryToggle(event) {
+    const input = event.currentTarget
+    const typeId = input.dataset.typeId
+    const delivery = input.dataset.deliveryMode
+    if (!typeId || !delivery) return
+    const current = this.offeringModesByType[typeId] || []
+    const next = current.includes(delivery)
+      ? current.filter((item) => item !== delivery)
+      : DELIVERY_MODES.filter((item) => item === delivery || current.includes(item))
+    this.offeringModesByType[typeId] = next
+    if (!this.hasOfferingTypesTarget) return
+    DELIVERY_MODES.forEach((mode) => {
+      const box = this.offeringTypesTarget.querySelector(`input[data-type-id="${typeId}"][data-delivery-mode="${mode}"]`)
+      if (box && box !== input) box.checked = next.includes(mode)
+    })
+    input.checked = next.includes(delivery)
+    this.updateOfferingSubmitLabel()
+    const subjectName = this.hasOfferingSubjectTarget ? this.offeringSubjectTarget.value : this.offeringEditingSubject
+    const catalogSubject = this.catalogSubjectByName(subjectName)
+    const activeTypes = (catalogSubject?.lessonTypes || []).filter((item) => item.isActive !== false)
+    this.updateOfferingChips(subjectName, activeTypes)
+  }
+
+  updateOfferingChips(subjectName, types) {
+    if (!this.hasOfferingChipsTarget) return
+    const catalogSubject = this.catalogSubjectByName(subjectName)
+    const list = types || (catalogSubject?.lessonTypes || []).filter((item) => item.isActive !== false)
+    const chips = list.flatMap((type) => {
+      const modes = this.offeringModesByType[String(type.id)] || []
+      return modes.map((delivery) => {
+        const deliveryLabel = this.tCommon(delivery, delivery)
+        return `<li class="lt-offering-chip">${esc(type.name)} · ${esc(deliveryLabel)}</li>`
+      })
+    })
+    this.offeringChipsTarget.innerHTML = chips.join("")
+    this.offeringChipsTarget.hidden = chips.length === 0
+  }
+
+  selectedOfferingCount() {
+    return Object.values(this.offeringModesByType || {}).reduce((sum, modes) => sum + (modes?.length || 0), 0)
+  }
+
+  updateOfferingSubmitLabel() {
+    if (!this.hasOfferingSubmitTarget) return
+    const count = this.selectedOfferingCount()
+    const base = this.tTeachers("offering_save", "Save")
+    this.offeringSubmitTarget.textContent = count > 0 ? `${base} (${count})` : base
+  }
+
+  clearOfferingError() {
+    if (this.hasOfferingErrorTarget) {
+      this.offeringErrorTarget.hidden = true
+      this.offeringErrorTarget.textContent = ""
+    }
+  }
+
+  closeOfferingDialog() {
+    if (!this.hasOfferingDialogTarget) return
+    closeModal(this.offeringDialogTarget)
+    this.offeringDialogTarget.hidden = true
+    this.offeringEditingSubject = null
+    this.offeringModesByType = {}
+    if (this.hasOfferingNoSubjectsTarget) this.offeringNoSubjectsTarget.hidden = true
+    if (this.hasOfferingChipsTarget) {
+      this.offeringChipsTarget.hidden = true
+      this.offeringChipsTarget.innerHTML = ""
+    }
+    if (this.hasOfferingSubmitTarget) this.offeringSubmitTarget.disabled = false
+    this.clearOfferingError()
+  }
+
+  confirmOffering() {
+    this.clearOfferingError()
+    const subjectName = this.hasOfferingSubjectTarget ? this.offeringSubjectTarget.value : this.offeringEditingSubject
+    const catalogSubject = this.catalogSubjectByName(subjectName)
+    if (!catalogSubject) {
+      this.showOfferingError(this.tTeachers("offering_pick_subject", "Choose a subject."))
+      return
+    }
+    const types = (catalogSubject.lessonTypes || [])
+      .filter((item) => item.isActive !== false)
+      .map((item) => ({
+        type: item,
+        deliveryModes: normalizeDeliveryModes(this.offeringModesByType[String(item.id)])
+      }))
+      .filter((row) => row.deliveryModes.length > 0)
+      .map((row) => ({
+        id: row.type.id,
+        name: row.type.name,
+        kind: row.type.kind,
+        mode: row.type.mode,
+        defaultDurationMinutes: row.type.defaultDurationMinutes,
+        deliveryModes: row.deliveryModes,
+        isActive: row.type.isActive !== false
+      }))
+    if (!types.length) {
+      this.showOfferingError(this.tTeachers("offering_pick_type", "Tick at least one teaching option."))
+      return
+    }
+    const next = {
+      id: catalogSubject.id,
+      catalogSubjectId: catalogSubject.id,
+      name: catalogSubject.name,
+      isActive: true,
+      lessonTypes: types
+    }
+    const without = this.subjects.filter((item) => item.name.toLowerCase() !== catalogSubject.name.toLowerCase())
+    this.subjects = [...without, next].sort((a, b) => a.name.localeCompare(b.name))
+    this.syncDraft()
+    this.render()
+    this.closeOfferingDialog()
+    this.showToast(this.tTeachers("offering_saved", "Teaching options updated."))
+  }
+
+  removeAssignment(event) {
+    const name = event.currentTarget.dataset.subjectName
+    if (!name) return
+    this.subjects = this.subjects.filter((item) => item.name.toLowerCase() !== name.toLowerCase())
+    this.syncDraft()
+    this.render()
+    this.showToast(this.tTeachers("offering_removed", "Subject removed."))
+  }
+
+  showOfferingError(message) {
+    if (!this.hasOfferingErrorTarget) return
+    this.offeringErrorTarget.textContent = message
+    this.offeringErrorTarget.hidden = false
+  }
+
   renderCatalog() {
     if (!this.hasListTarget) return
-    if (!this.teacherIdValue && !this.drafting()) {
+    if (!this.teacherIdValue && !this.drafting() && !this.isWorkspaceCatalogMode()) {
       if (this.hasEmptyTarget) this.emptyTarget.hidden = true
       this.listTarget.hidden = false
       const message = this.hasTeacherSelectTarget
@@ -242,17 +628,26 @@ export default class extends Controller {
   subjectCard(subject) {
     const types = subject.lessonTypes || []
     const body = types.map((item) => this.catalogRow(item, subject)).join("")
+    const addType = this.canEditWorkspaceCatalog()
+      ? `<button type="button" class="lt-add-type" data-action="lesson-types#openNewForSubject" data-subject-id="${esc(subject.id)}" data-subject="${esc(subject.name)}">
+        ${ICONS.plus}
+        ${esc(this.t("add_lesson_type", "Add lesson type"))}
+      </button>`
+      : ""
     return `<article class="lt-subject">
       ${this.subjectHeader(subject, types.length)}
       ${body ? `<div class="lt-subject__types">${body}</div>` : ""}
-      <button type="button" class="lt-add-type" data-action="lesson-types#openNewForSubject" data-subject-id="${esc(subject.id)}" data-subject="${esc(subject.name)}">
-        ${ICONS.plus}
-        ${esc(this.t("add_lesson_type", "Add lesson type"))}
-      </button>
+      ${addType}
     </article>`
   }
 
   subjectHeader(subject, typeCount) {
+    if (!this.canEditWorkspaceCatalog()) {
+      const inactive = subject.isActive === false
+      return `<div class="lt-subject__head">
+        <p class="lt-subject__name">${esc(subject.name)}${inactive ? ` · ${esc(this.t("inactive", "Inactive"))}` : ""}</p>
+      </div>`
+    }
     if (this.renamingSubjectId && String(this.renamingSubjectId) === String(subject.id)) {
       return `<div class="lt-subject__rename">
         <input type="text" value="${esc(subject.name)}" aria-label="${esc(this.t("lesson_name", "Lesson name"))}" data-role="rename-input" data-action="keydown.enter->lesson-types#confirmRename">
@@ -277,6 +672,17 @@ export default class extends Controller {
     const mode = this.t(item.mode, item.mode)
     const status = item.isActive ? this.t("active", "Active") : this.t("inactive", "Inactive")
     const statusClass = item.isActive ? "olive" : "neutral"
+    if (!this.canEditWorkspaceCatalog()) {
+      return `<article class="lt-row ${item.isActive ? "" : "is-inactive"}">
+      <div>
+        <div class="lt-row__title">
+          <p>${esc(item.name)}</p>
+          <span class="status-badge status-badge--${statusClass}">${esc(status)}</span>
+        </div>
+        <p class="lt-row__meta">${esc(mode)} · ${item.defaultDurationMinutes} ${esc(this.t("min", "min"))}${this.typePriceMeta(item)}</p>
+      </div>
+    </article>`
+    }
     const deleteBtn = item.isActive
       ? `<button type="button" class="lt-icon-btn lt-icon-btn--danger" data-action="lesson-types#askDelete" data-id="${esc(item.id)}" aria-label="${esc(this.t("delete", "Delete"))}">${ICONS.trash}</button>`
       : `<button type="button" class="lt-text-btn" data-action="lesson-types#reactivate" data-id="${esc(item.id)}">${esc(this.t("reactivate", "Reactivate"))}</button>`
@@ -349,12 +755,15 @@ export default class extends Controller {
       input?.focus()
       return
     }
-    if (!this.teacherIdValue) {
+    if (!this.teacherIdValue && !this.isWorkspaceCatalogMode()) {
       this.showAddError(this.t("select_teacher", "Select a teacher to manage their lessons."))
       return
     }
     try {
-      const subject = await this.sendJson("POST", this.expandUrl(this.subjectsUrlValue, this.teacherIdValue), { name })
+      const createUrl = this.isWorkspaceCatalogMode()
+        ? this.subjectsUrlValue
+        : this.expandUrl(this.subjectsUrlValue, this.teacherIdValue)
+      const subject = await this.sendJson("POST", createUrl, { name })
       if (input) input.value = ""
       subject.lessonTypes = subject.lessonTypes || []
       this.subjects = [...this.subjects, subject].sort((a, b) => a.name.localeCompare(b.name))
@@ -509,55 +918,75 @@ export default class extends Controller {
         ? this.t("save_changes", "Save changes")
         : this.t("add_lesson_type", "Add lesson type")
     }
-    if (this.hasKindTarget) this.kindTarget.value = item?.kind || "individual"
-    if (this.hasNameTarget) this.nameTarget.value = item?.kind === "custom" ? (item.name || "") : ""
-    if (this.hasModeTarget) this.modeTarget.value = item?.mode || "individual"
-    if (this.hasPriceTypeTarget) this.priceTypeTarget.value = "per_lesson"
+    this.dialogOriginalMode = item?.mode || "individual"
+    if (this.hasNameTarget) this.nameTarget.value = item?.name || ""
+    this.setMode(item?.mode || "individual")
     if (this.hasDurationTarget) this.durationTarget.value = item?.defaultDurationMinutes || 60
-    if (this.hasPriceTarget) this.priceTarget.value = item?.priceCents == null ? "" : formatPriceInput(item.priceCents)
-    if (this.hasCurrencyTarget) this.currencyTarget.value = item?.currency || "UAH"
     if (this.hasDescriptionTarget) this.descriptionTarget.value = ""
     if (this.hasActiveTarget) this.activeTarget.checked = item ? item.isActive !== false : true
-    if (this.hasFreeTarget) this.freeTarget.checked = item?.priceCents === 0
+    if (this.hasNamePresetsTarget) this.namePresetsTarget.hidden = Boolean(item)
     this.clearDialogErrors()
-    this.syncKindFields()
+    this.syncParticipationUI()
+    this.syncPresetButtons()
   }
 
-  onKindChange() {
-    const kind = this.kindTarget.value
-    if (kind === "group") this.modeTarget.value = "group"
-    if (kind === "individual" || kind === "trial") this.modeTarget.value = "individual"
-    if (kind === "trial" && (!this.dialogTargetId || this.dialogTargetId === "new")) {
-      this.durationTarget.value = 30
+  applyPreset(event) {
+    const button = event.currentTarget
+    if (!this.hasNameTarget) return
+    this.nameTarget.value = button.dataset.name || ""
+    if (button.dataset.duration && this.hasDurationTarget) {
+      this.durationTarget.value = button.dataset.duration
     }
-    this.syncKindFields()
+    if (button.dataset.mode) this.setMode(button.dataset.mode)
+    this.syncPresetButtons()
+    this.syncParticipationUI()
   }
 
   onModeChange() {
-    this.syncKindFields()
+    this.syncParticipationUI()
+    this.syncPresetButtons()
   }
 
-  toggleFree() {
-    this.syncKindFields()
+  selectedMode() {
+    const checked = this.modeRadioTargets.find((radio) => radio.checked)
+    return checked?.value || "individual"
   }
 
-  syncKindFields() {
-    if (!this.hasKindTarget || !this.hasModeTarget) return
-    const kind = this.kindTarget.value
-    const custom = kind === "custom"
-    if (kind === "group") this.modeTarget.value = "group"
-    if (kind === "individual" || kind === "trial") this.modeTarget.value = "individual"
-    if (this.hasCustomNameWrapTarget) this.customNameWrapTarget.hidden = !custom
-    if (this.hasModeWrapTarget) this.modeWrapTarget.hidden = !custom
-    if (this.hasPriceTypeWrapTarget) this.priceTypeWrapTarget.hidden = this.modeTarget.value !== "group"
-    const isFree = this.hasFreeTarget && this.freeTarget.checked
-    if (this.hasPriceTarget) this.priceTarget.disabled = isFree
-    if (this.hasCurrencyTarget) this.currencyTarget.disabled = isFree
-    if (isFree && this.hasPriceTarget) this.priceTarget.value = ""
-    if (this.hasFreeHintTarget) this.freeHintTarget.hidden = !isFree
-    if (this.hasPerStudentHintTarget) {
-      this.perStudentHintTarget.hidden = isFree || (this.hasPriceTypeTarget && this.priceTypeTarget.value !== "per_student")
+  setMode(mode) {
+    this.modeRadioTargets.forEach((radio) => { radio.checked = radio.value === mode })
+  }
+
+  syncParticipationUI() {
+    const mode = this.selectedMode()
+    this.modeRadioTargets.forEach((radio) => {
+      const card = radio.closest(".lt-participation__card")
+      if (card) card.classList.toggle("is-selected", radio.checked)
+    })
+    const editing = this.dialogTargetId && this.dialogTargetId !== "new"
+    if (this.hasParticipationHintTarget) {
+      this.participationHintTarget.hidden = !editing || mode === this.dialogOriginalMode
     }
+  }
+
+  syncPresetButtons() {
+    if (!this.hasNamePresetsTarget || !this.hasNameTarget) return
+    const needle = this.nameTarget.value.trim().toLowerCase()
+    this.namePresetsTarget.querySelectorAll(".lt-preset").forEach((button) => {
+      const active = (button.dataset.name || "").trim().toLowerCase() === needle
+      button.classList.toggle("is-active", active)
+      button.setAttribute("aria-pressed", active ? "true" : "false")
+    })
+  }
+
+  inferKind(name, mode) {
+    const needle = name.trim().toLowerCase()
+    const individual = this.t("preset_individual", "Individual").toLowerCase()
+    const group = this.t("preset_group", "Group").toLowerCase()
+    const trial = this.t("preset_trial", "Trial").toLowerCase()
+    if (needle === individual && mode === "individual") return "individual"
+    if (needle === group && mode === "group") return "group"
+    if (needle === trial && mode === "individual") return "trial"
+    return "custom"
   }
 
   closeDialog() {
@@ -572,7 +1001,7 @@ export default class extends Controller {
       this.formErrorTarget.hidden = true
       this.formErrorTarget.textContent = ""
     }
-    ;["nameError", "durationError", "priceError"].forEach((name) => {
+    ;["nameError", "durationError"].forEach((name) => {
       if (this[`has${capitalize(name)}Target`]) {
         this[`${name}Target`].hidden = true
         this[`${name}Target`].textContent = ""
@@ -583,23 +1012,17 @@ export default class extends Controller {
   async submitDialog(event) {
     event.preventDefault()
     this.clearDialogErrors()
-    const kind = this.kindTarget.value
-    const customName = this.nameTarget.value.trim()
-    const name = kind === "custom" ? customName : (this.t(kind, KIND_NAMES[kind] || kind))
+    const name = this.nameTarget.value.trim()
+    const mode = this.selectedMode()
+    const kind = this.inferKind(name, mode)
     const duration = Number(this.durationTarget.value)
     let invalid = false
-    if (kind === "custom" && !customName) {
-      this.showFieldError("nameError", this.t("custom_name_blank", "Enter a name for this custom lesson type."))
+    if (!name) {
+      this.showFieldError("nameError", this.t("name_blank", "Enter a lesson type name."))
       invalid = true
     }
     if (!Number.isInteger(duration) || duration <= 0) {
       this.showFieldError("durationError", this.t("duration_invalid", "Enter a duration greater than zero."))
-      invalid = true
-    }
-    const isFree = this.hasFreeTarget && this.freeTarget.checked
-    const priceCents = isFree ? 0 : parsePriceAmount(this.hasPriceTarget ? this.priceTarget.value : "")
-    if (!isFree && (priceCents == null || priceCents < 0)) {
-      this.showFieldError("priceError", this.t("price_invalid", "Enter zero or a positive price."))
       invalid = true
     }
     if (!this.dialogSubjectId) {
@@ -614,10 +1037,8 @@ export default class extends Controller {
     const payload = {
       name,
       kind,
-      mode: this.hasModeTarget ? this.modeTarget.value : "individual",
+      mode,
       defaultDurationMinutes: duration,
-      priceCents,
-      currency: this.hasCurrencyTarget ? this.currencyTarget.value : "UAH",
       isActive: this.hasActiveTarget ? this.activeTarget.checked : true
     }
 
@@ -789,6 +1210,11 @@ export default class extends Controller {
     }
     return data
   }
+}
+
+function normalizeDeliveryModes(raw) {
+  if (!Array.isArray(raw)) return []
+  return raw.map((item) => String(item)).filter((item) => DELIVERY_MODES.includes(item))
 }
 
 function esc(value) {

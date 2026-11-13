@@ -14,24 +14,8 @@ module Demo
       @teachers ||= load_json('teachers.json')
     end
 
-    def transactions
-      @transactions ||= load_json('transactions.json')
-    end
-
-    def pricing
-      @pricing ||= load_json('pricing.json')
-    end
-
     def notifications
       @notifications ||= load_json('notifications.json')
-    end
-
-    def earnings
-      @earnings ||= load_json('teacher_earnings.json')
-    end
-
-    def payouts
-      @payouts ||= load_json('teacher_payouts.json')
     end
 
     def homework
@@ -85,8 +69,8 @@ module Demo
     end
 
     def reload!
-      @students = @teachers = @transactions = @pricing = @notifications = nil
-      @earnings = @payouts = @homework = @materials = @progress = @notes = nil
+      @students = @teachers = @notifications = nil
+      @homework = @materials = @progress = @notes = nil
     end
 
     def load_json(filename)

@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
 class TeachersController < AppController
+  helper FinanceHelper
+  helper LessonsHelper
+
   before_action :require_owner_staff!
   before_action :require_workspace!, only: %i[new create edit update destroy delete_dialog assign_dialog unassign_dialog]
   before_action :set_teacher_record, only: %i[show edit update destroy]
 
   def index
-    records = teacher_profiles_scope.order(:first_name, :last_name)
-    @teachers = records.map(&:as_catalog)
-    @students = student_profiles_scope.map(&:as_catalog)
+    @teachers = teacher_catalog_payloads
+    @students = student_catalog_payloads
     @stats = calculate_stats(@teachers, @students, catalog_lessons)
   end
 
@@ -16,10 +18,14 @@ class TeachersController < AppController
     @teacher = @teacher_record&.as_catalog
     return unless @teacher_record
 
-    assigned = @teacher_record.student_profiles.kept.includes(:user, :teacher_profile)
-    @assigned_students = assigned.map(&:as_catalog)
+    assigned = @teacher_record.student_profiles.kept.includes(:user)
+    teacher_label = @teacher_record.display_label
+    @assigned_students = assigned.map { |student| student.as_catalog(teacher_name: teacher_label, lesson_pricing: false) }
     @catalog_teacher = Demo::Catalog.match_teacher(@teacher)
-    @earnings = Demo::Finance.teacher_payout_summary(@catalog_teacher[:id]) if @catalog_teacher
+    if can_view_finance?
+      @teacher_finance = Teachers::ProfileFinance.new(teacher_profile: @teacher_record).call
+      @earnings = @teacher_finance[:primary][:summary]
+    end
     @school_workspace = current_workspace.blank? || current_workspace.school? || current_user.admin?
   end
 
@@ -129,10 +135,10 @@ class TeachersController < AppController
       :default_lesson_duration_minutes, :duration_preset, :custom_duration,
       :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
-      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog,
+      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog, :availability_slots,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
     )
-    permitted[:working_hours] = permitted_working_hours
+    permitted[:working_hours] = permitted_working_hours if params[:working_hours].present?
     permitted
   end
 
@@ -167,13 +173,14 @@ class TeachersController < AppController
       bio: '',
       tags: [],
       workingDays: [],
-      defaultLessonDurationMinutes: nil,
+      defaultLessonDurationMinutes: TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES,
       lessonFormats: [],
       calendarColor: 'olive',
       inviteToWorkspace: false,
       invitationTiming: 'send_now',
       notes: '',
-      lessonCatalog: '[]'
+      lessonCatalog: '[]',
+      availabilitySlots: []
     }.with_indifferent_access
   end
 
@@ -188,12 +195,15 @@ class TeachersController < AppController
         data[:duration_preset].presence || data[:default_lesson_duration_minutes].presence ||
           fallback[:defaultLessonDurationMinutes]
       end
-    working_days = Array(data[:working_days]).compact_blank
-    hours = data[:working_hours]
+    slots = TeacherAvailability.parse_slots(data[:availability_slots])
+    legacy = slots.any? ? TeacherAvailability.derive_legacy(slots) : nil
+    working_days = legacy ? legacy[:working_days] : Array(data[:working_days]).compact_blank
     working_hours =
-      if hours.respond_to?(:to_h)
+      if legacy
+        legacy[:working_hours]
+      elsif data[:working_hours].respond_to?(:to_h)
         working_days.filter_map do |day|
-          row = hours[day] || hours[day.to_sym]
+          row = data[:working_hours][day] || data[:working_hours][day.to_sym]
           next if row.blank?
 
           start_time = row[:start] || row['start']
@@ -204,6 +214,20 @@ class TeachersController < AppController
         end
       else
         fallback[:workingHours]
+      end
+    lesson_formats =
+      if legacy
+        legacy[:lesson_formats]
+      else
+        Array(data[:lesson_formats]).compact_blank.presence || fallback[:lessonFormats]
+      end
+    availability_slots =
+      if record && TeacherProfile.column_names.include?('availability_slots')
+        TeacherAvailability.slots_for_form(record)
+      elsif slots.any?
+        slots
+      else
+        fallback[:availabilitySlots]
       end
 
     fallback.merge(
@@ -224,8 +248,10 @@ class TeachersController < AppController
       tags: data.key?(:tags) ? Array(data[:tags]).compact_blank : fallback[:tags],
       workingDays: working_days,
       workingHours: working_hours,
-      defaultLessonDurationMinutes: duration.to_i.positive? ? duration.to_i : fallback[:defaultLessonDurationMinutes],
-      lessonFormats: Array(data[:lesson_formats]).compact_blank.presence || fallback[:lessonFormats],
+      availabilitySlots: availability_slots,
+      defaultLessonDurationMinutes: duration.to_i.positive? ? duration.to_i : fallback[:defaultLessonDurationMinutes] ||
+        TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES,
+      lessonFormats: lesson_formats,
       defaultMeetingLink: data[:default_meeting_link].to_s,
       maxLessonsPerDay: data[:max_lessons_per_day],
       calendarColor: data[:calendar_color].presence || fallback[:calendarColor],

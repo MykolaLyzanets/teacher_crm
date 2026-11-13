@@ -70,11 +70,22 @@ module Lessons
 
     def assign_money(attrs)
       attrs[:price_cents] = coerce_price_cents if @params.key?(:price_cents)
-      attrs[:currency] = @params[:currency].presence if @params.key?(:currency)
-      return unless @lesson.new_record?
+      if @lesson.new_record? && attrs[:price_cents].nil?
+        attrs[:price_cents] = student_price_cents || lesson_type&.price_cents
+      end
+      attrs[:currency] = Finance::FinanceHelper::FINANCE_CURRENCY_CODE
+    end
 
-      attrs[:price_cents] = lesson_type&.price_cents if attrs[:price_cents].nil?
-      attrs[:currency] ||= lesson_type&.currency
+    def student_price_cents
+      return if lesson_type.blank?
+
+      ids = Array(@params[:student_ids]).flatten.compact_blank.map(&:to_i).uniq
+      return if ids.size != 1
+
+      student = StudentProfile.kept.find_by(id: ids.first)
+      return if student.blank?
+
+      Students::LessonPricing.price_cents_for_lesson_type(student_profile: student, lesson_type:)
     end
 
     def apply_overlap_override(attrs)

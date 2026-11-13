@@ -195,6 +195,21 @@ en:
       preferred_time_hint: e.g. After 4 PM on weekdays
       lesson_preferences: Lesson preferences
       lesson_preferences_sub: Help schedule future lessons around what works best.
+      lesson_prices_form:
+        title: Lesson pricing
+        sub: Set a price for each lesson type from your catalog. Saved on the student profile.
+        admin_only: Administrators only
+        add_label: Lesson and type
+        price_label: Price per lesson
+        add_btn: Add
+        empty: No prices yet. Choose a lesson type and enter a price.
+        select_type: Select lesson type
+        pick_type: Choose a lesson type.
+        already_added: This lesson type is already on the list.
+        price_invalid: Enter a price (0 or more).
+        catalog_default: Catalog default
+        remove: Remove
+        price_aria: Lesson price
       emergency: Emergency contact
       emergency_sub: Optional details for urgent situations.
       contact_name: Contact name
@@ -389,15 +404,49 @@ en:
       note_student: Student-visible
       note_teacher: Teacher-visible
       restricted: Restricted
-      payments_intro: Current balance is calculated from payments, lesson charges, refunds, and adjustments.
+      balance_payments_title: Balance & payments
+      payments_intro: Calculated from the history below. Completed lessons are deducted automatically.
+      total_topped_up: Total topped up
+      set_opening_balance: Set opening balance
+      adjust_balance: Adjust balance
+      balance_low_hint: "Doesn’t cover the next lesson (%{amount})"
+      balance_covers_lessons:
+        one: Covers 1 lesson
+        other: Covers %{count} lessons
+      balance_not_applied: Not applied
+      pending_awaiting_confirmation:
+        one: 1 awaiting confirmation
+        other: "%{count} awaiting confirmation"
+      pending_payments_banner_html: "%{count} payments awaiting confirmation — not counted in the balance until confirmed below."
+      pending_payment_banner_html: "1 payment awaiting confirmation — not counted in the balance until confirmed below."
+      ledger_show_all: Show all transactions
+      no_transactions_hint_admin: Start by setting the opening balance or adding funds. Completed lessons will be deducted here automatically.
+      ledger_by: By %{name}
+      ledger_system: System
+      ledger_internal: "Internal:"
+      ledger_filter_all: All
+      ledger_filter_top_ups: Top-ups
+      ledger_filter_lessons: Lessons
+      ledger_filter_adjustments: Adjustments
+      ledger_filter_refunds: Refunds & reversals
+      ledger_lesson_auto_note: Recorded automatically for a lesson completed before automatic charging.
+      ledger_date_format: "%b %-d, %Y"
+      ledger_view_lesson: View lesson
+      col_details: Details
+      col_balance: Balance
+      payments_intro_legacy: Current balance is calculated from payments, lesson charges, refunds, and adjustments.
       available_credit: Available credit
       confirmed_payments: Confirmed payments
       amount_due: Amount due
       nothing_due: Nothing due
       default_per_lesson: "Default %{price} / lesson"
       completed_lessons_only: Completed lessons only
+      uses_lesson_prices: Uses each lesson’s price
       transaction_history: Transaction history
-      transaction_history_hint: Every balance change is recorded here. Completed lessons create lesson charges; scheduled future lessons do not.
+      transaction_history_hint: Entries are never edited — corrections appear as new lines.
+      negative_balance_badge: Negative balance
+      balance_owed: "%{amount} owed"
+      ledger_filter_count: "%{label} (%{count})"
       no_transactions: No transactions yet
       no_transactions_hint: Payments, lesson charges, refunds, and adjustments will appear here.
       col_amount: Amount
@@ -465,7 +514,7 @@ en:
       absence_recorded: Absence recorded.
       absence_history: Absence history
       no_absences: No absences recorded yet.
-      compensation: Compensation
+      compensation_col: Compensation
       compensation_percentage: "%{percent}% of lesson price"
       earnings: Earnings
       earnings_hint: Derived from completed lessons and charged cancellations.
@@ -474,6 +523,14 @@ en:
       remaining: Remaining
       completed_lessons: Completed lessons
       charged_cancellations: Charged cancellations
+      earnings_history: Earnings by lesson
+      payout_history: Payout history
+      payout_allocations: Included earnings
+      payout_allocation_item: "%{date} · %{student} · %{amount}"
+      no_earnings: No earnings recorded yet.
+      no_payouts: No payouts recorded yet.
+      lesson_price: Lesson price
+      earning_amount: Teacher earning
       absence_types:
         sick_leave: Sick leave
         vacation: Vacation
@@ -525,9 +582,142 @@ en:
       location: Location
       teaching: Teaching details
       teaching_sub: What does this teacher teach?
+      teaching_section_title: 1. What does this teacher teach?
+      teaching_section_description: Subject, lesson type and delivery mode — each combination is one teaching option.
+      teaching_empty_title: No subjects yet
+      teaching_empty_text: Add the subjects this teacher teaches and the exact lesson types and delivery modes they offer.
+      add_subject: Add subject
+      manage_subjects_lesson_types: Manage subjects & lesson types
+      offering_add_title: Add subject
+      offering_add_description: Tick each lesson type and delivery mode this teacher offers.
+      offering_col_lesson_type: Lesson type
+      offering_subject: Subject
+      offering_no_subjects_title: Every catalog subject is already assigned
+      offering_no_subjects_text: Add another subject in settings, or edit an assigned one (pencil) to pick more lesson types — for example individual and group under English.
+      offering_no_types_title: This subject has no lesson types yet
+      offering_no_types_text: Lesson types are set up once for the school in settings, then chosen here.
+      offering_pick_subject: Choose a subject.
+      offering_pick_type: Tick at least one lesson type.
+      offering_save: Save
+      offering_saved: Teaching options updated.
+      offering_removed: Subject removed.
+      offering_edit: Edit
+      offering_remove: Remove
+      compensation:
+        section_title: 2. How much does this teacher earn?
+        section_description: What the teacher earns for each teaching option above. Visible to administrators only.
+        disabled_title: Compensation isn’t set up yet
+        disabled_text: Choose how this teacher’s teaching options are paid — per lesson or a monthly salary. Until then, lessons pay the teacher the full lesson price.
+        setup_btn: Set up compensation
+        setup_later: Set up later
+        pay_type_title: Pay type
+        pay_lesson_title: Per-lesson pay
+        pay_lesson_desc: An optional default rule, plus rules for teaching options that pay differently.
+        pay_salary_title: Monthly salary
+        pay_salary_desc: A fixed amount each month, separate from lesson earnings.
+        default_rule_title: Default rule
+        default_rule_desc: Applies to every teaching option without its own rule.
+        default_badge: Default
+        currency: Currency
+        currency_uah: UAH
+        toggle_on: "On"
+        toggle_off: "Off"
+        default_rule_toggle: Default rule
+        calculation_type: Calculation type
+        fixed_amount: Fixed amount
+        percentage: Percentage
+        per_lesson_suffix: teacher earns per lesson
+        percent_suffix: "% of the student lesson price"
+        options_title: Teaching options
+        options_desc: Listed automatically from “What does this teacher teach?”. Give an option its own rule to override the default.
+        options_empty_html: No teaching options yet. Add them under <strong>What the teacher teaches</strong> — specific rules can only be set for options the teacher offers.
+        salary_desc: Accrues at the end of each month and is tracked separately from lesson earnings.
+        per_month_suffix: per month
+        effective_title: When do these settings apply?
+        effective_desc: Lessons dated on or after this day use these rules.
+        effective_note: Earnings already recorded are final and never recalculated.
+        summary: Summary
+        preview_title: Preview a lesson
+        standard_off_footer: Off — teaching options without a specific rule need a pay rule.
+        standard_default_footer: Used by every teaching option once they’re added.
+        standard_all_own_rules: Not used right now — every teaching option has its own rule.
+        standard_used_by: "Used by: %{labels}"
+        status_missing: Compensation not configured
+        earns_default: "Teacher earns %{amount} (from the default)"
+        amount_needed: Amount needed
+        own_rule_btn: Own rule
+        pay_status_specific: Own rule
+        pay_status_default: Uses default
+        pay_status_missing: Compensation not configured
+        group_amount_hint: Amounts are for the whole lesson, not per student.
+        remove_own_rule: Use the default for this option instead
+        badge_missing: Missing
+        badge_default: Default
+        per_month_short: per month
+        salary_needed: Monthly salary — amount needed
+        default_rule: Default rule
+        default_amount_needed: Default rule — amount needed
+        no_rules: No rules yet
+        options_incomplete: "%{count} of %{total} teaching options not configured yet"
+        options_complete: "All %{count} teaching options are paid"
+        summary_salary_suffix: " · Lessons add no per-lesson pay"
+        from: From
+        preview_salary: Lesson preview applies to per-lesson pay only.
+        preview_no_options: Add teaching options to preview what the teacher earns for a lesson.
+        preview_missing: Enter the default rule amount to preview this option.
+        preview_example_price: Example lesson price
+        preview_uses_prefix: "Uses:"
+        preview_flag_missing: Compensation not configured for this option. Give it its own rule or turn on the default.
+        preview_flag_incomplete: Enter the amount for the %{which} rule to preview this option.
+        preview_rule_specific: specific
+        preview_rule_default: default
+        preview_percent_explanation: "%{label} · %{percent}% of %{price} lesson price · Earns %{earn}"
+        preview_rate: Rate
+        teacher_earns: teacher earns
+        preview_uses_default: Uses the default rule.
+      availability_slots:
+        weekly_title: Weekly availability
+        weekly_sub: Add one or more time slots per day, each for a lesson type and format. Time between slots is unavailable.
+        slots_stats: "%{days} days · %{count} slots · %{total} a week"
+        slots_empty_warn: No availability set. Lessons can be booked at any time until you add slots.
+        day_unavailable: Unavailable
+        day_slots_stats: "%{count} slots · %{total}"
+        no_availability: No availability
+        add_slot: Add time slot
+        copy_to: Copy to other days
+        copy_from: "Copy %{day}'s slots to"
+        copy_weekdays: Weekdays
+        copy_hint: Replaces any slots already on the selected days.
+        copy_apply: Copy
+        copy_cancel: Cancel
+        remove_slot: Remove time slot
+        slots_summary_error: Fix the highlighted time slots.
+        slot_lesson_any: Any lesson type
+        slot_lesson_removed: Removed lesson type
+        slot_lesson_individual: Individual
+        slot_lesson_group: Group
+        slot_lesson_trial: Trial
+        slot_lesson_consultation: Consultation
+        slot_format_any: Online or in person
+        slot_format_online: Online
+        slot_format_in_person: In person
+        slot_use_any: Any lesson
+        slot_error_time: Enter a start and end time.
+        slot_error_order: End time must be later than start time.
+        slot_error_overlap: "Overlaps with %{other}."
+        legend_online: Online
+        legend_in_person: In person
+        legend_either: Either
+        day_Monday: Monday
+        day_Tuesday: Tuesday
+        day_Wednesday: Wednesday
+        day_Thursday: Thursday
+        day_Friday: Friday
+        day_Saturday: Saturday
+        day_Sunday: Sunday
       subjects: Subjects & Courses
       subjects_hint: Add the subjects or courses this teacher teaches.
-      add_subject: Add subject or course
+      add_subject_or_course: Add subject or course
       subject_placeholder: Subject or course name...
       subject_duplicate: This subject is already added.
       remove_subject: Remove subject
@@ -1385,6 +1575,8 @@ en:
         small: Small
         medium: Medium
         large: Large
+      product_default: Default
+      reset_default: Default
       random: Random
     settings:
       title: Settings
@@ -1393,6 +1585,7 @@ en:
       lessons_card_text: Lesson types and default pricing
       lessons_title: Lessons
       lessons_subtitle: Configure how lessons are booked and priced.
+      lessons_owner_only: Only the workspace owner can manage workspace lessons and pricing.
     profile:
       title: My profile
       subtitle: "%{name}’s personal details and lesson types."
@@ -1409,6 +1602,7 @@ en:
       title: Lesson types
       card_text: Individual, group and other formats — duration and default price
       school_text: Choose a teacher, then add the subjects they teach and the lesson types for each subject.
+      catalog_text: Add workspace subjects and lesson types for each. Teachers are linked to these options on the teacher profile.
       solo_text: Add the subjects you teach, then the types for each.
       add: Add lesson type
       add_title: Add lesson type
@@ -1435,8 +1629,21 @@ en:
       custom_name: Custom type name
       custom_name_placeholder: Speaking Club
       custom_name_blank: Enter a name for this custom lesson type.
-      name: Lesson type name
-      name_placeholder: Individual
+      name: Name
+      name_placeholder: e.g. Speaking Club
+      quick_picks: Quick picks
+      participation: Participation
+      participation_one: One student
+      participation_one_hint: Booked for a single student.
+      participation_many: Multiple students
+      participation_many_hint: Several students can be booked into one lesson.
+      participation_changed: Applies to new bookings. Lessons already booked keep their current setup.
+      preset_individual: Individual
+      preset_group: Group
+      preset_speaking_club: Speaking Club
+      preset_intensive: Intensive
+      preset_trial: Trial
+      description_optional_placeholder: Optional — what it covers, or who it’s for
       format: Format
       individual: Individual
       group: Group
@@ -1451,7 +1658,7 @@ en:
       per_student_hint: Charged per student, not a flat price for the group.
       description: Description
       description_placeholder: What this lesson type covers, or who it’s for…
-      active_label: Active — available for new lessons
+      active_label: Active — teachers can offer it and new lessons can use it
       active: Active
       inactive: Inactive
       min: min
@@ -1519,10 +1726,12 @@ en:
       col_teacher: Teacher
       col_balance: Balance
       col_debt: Debt
+      col_owed: Owed
       col_covered: Lessons covered
       col_next: Next lesson
       col_status: Status
       col_actions: Actions
+      awaiting_confirmation: Awaiting confirmation
       col_completed: Completed lessons
       col_hours: Teaching hours
       col_earnings: Earnings
@@ -1534,7 +1743,76 @@ en:
       col_description: Description
       col_amount: Amount
       add_payment: Add payment
+      add_funds: Add funds
+      add_funds_title: Add funds
+      add_funds_desc: Record money received from this student.
+      payment_status_aria: Payment status
+      payment_status_pending: Save as pending
+      payment_status_confirmed: Confirm now
+      payment_pending_review_hint: This payment stays pending until someone confirms it. The balance will not change yet.
+      refund: Refund
+      refund_title: Refund payment
+      refund_desc: "%{party} · Original payment %{amount}"
+      refund_remaining: Remaining refundable
+      refund_submit: Record refund
+      refund_recorded: Refund recorded.
+      refund_note_placeholder: Optional reason for this refund…
+      refund_not_allowed: Only confirmed payments can be refunded.
+      refund_too_much: Amount exceeds the remaining refundable balance.
+      original_payment: Original payment
+      confirm_top_up_title: Confirm top-up
+      confirm_top_up_desc: Check the amount and the resulting balance before saving.
+      adjust_title: Adjust balance
+      adjust_desc: For corrections only. Every adjustment is kept in the history.
+      confirm_adjust_title: Confirm adjustment
+      adjust_credit: Add credit
+      adjust_debit: Deduct
+      adjust_direction_aria: Adjustment direction
+      amount_with_currency: Amount (%{currency})
+      adjust_adds: Adds %{amount}
+      adjust_deducts: Deducts %{amount}
+      adjust_reason_visible: Shown to the student in their history
+      adjust_reason: Reason (visible to student)
+      adjust_reason_required: Enter a reason for this adjustment.
       adjust: Adjust
+      review: Review
+      back: Back
+      confirm_add: Add funds
+      balance_preview: Balance preview
+      current_balance: Current balance
+      new_balance: New balance
+      confirm_add_amount: Add %{amount}
+      confirm_save_adjustment: Save adjustment
+      adjust_review_desc: Check the change and the resulting balance before saving.
+      adjust_reason_student: Reason (shown to student)
+      balance_negative_alert: "%{label}. %{hint}."
+      balance_owed_hint: "%{amount} owed"
+      top_up_label: Top-up
+      adjustment_label: Adjustment
+      note_internal: Internal note
+      note_internal_hint: Visible to administrators only
+      amount_placeholder: "100"
+      amount_uah_hint: Amount in hryvnia (UAH)
+      reference_placeholder: Transfer reference or receipt number
+      note_internal_placeholder: Add an internal payment note…
+      adjust_amount_placeholder: "25"
+      adjust_reason_placeholder: e.g. Goodwill credit for a rescheduled lesson
+      adjust_note_placeholder: Optional context for other staff…
+      payout_note_placeholder: Optional payout note…
+      invalid_amount: Enter a valid payment amount.
+      invalid_date: Choose a payment date.
+      invalid_payout: Enter a valid payout amount.
+      payment_added_detail: "%{amount} added to %{name}'s balance."
+      adjusted_detail: "Balance adjusted. New balance: %{balance}."
+      payout_desc: "%{name} · Remaining %{amount}"
+      lessons_covered_of: "%{covered} of %{total}"
+      link_transactions: Transactions
+      view_earnings: View earnings
+      empty_filter_hint: Adjust the filters above.
+      status_reversed: Reversed
+      tx_status_pending: Pending
+      tx_status_rejected: Rejected
+      tx_status_reversed: Reversed
       record_payout: Record payout
       confirm: Confirm
       reject: Reject
@@ -1552,24 +1830,31 @@ en:
       col_currency: Currency
       amount: Amount
       date: Date
+      payment_date: Payment date
+      payment_method: Payment method
       method: Method
+      record_payout_submit: Record payout
       reference: Reference
       note: Note
       methods:
-        bank_transfer: Bank transfer
         cash: Cash
+        bank_transfer: Bank transfer
         card: Card
+        online: Online payment
+        other: Other
       rejected: Rejected
       status_healthy: Healthy
       status_low_balance: Low balance
       status_debt: Debt
       status_payment_pending: Payment pending
+      pending_payment_badge: Payment pending
       types:
         payment: Payment
         lesson_charge: Lesson charge
         cancellation_charge: Cancellation charge
         refund: Refund
         adjustment: Adjustment
+        charge_reversal: Charge reversal
         teacher_earning: Teacher earning
         teacher_payout: Teacher payout
     workspace:
@@ -1806,22 +2091,43 @@ en:
         view_payments: View payments
         empty_balance: Your balance will appear here.
       payments:
-        disclaimer: Payments are recorded by your school or teacher — DANLIO does not charge you directly.
+        disclaimer: Your balance is managed by your school. Completed lessons are deducted automatically.
         load_error: Your payments could not be loaded.
+        current_balance: Current balance
         available: Available balance
         debt: Outstanding debt
-        debt_banner: Your balance does not cover all completed lessons. Please contact your teacher or school to arrange payment.
-        low_next: Your balance may not cover your next lesson.
-        pending_title: Payment awaiting confirmation
-        pending_item: not yet added to your balance
+        debt_banner: You owe %{amount} for completed lessons. Please contact your teacher or school to top up your balance.
+        low_next_html: Your balance may not cover your next lesson (%{amount}).
+        pending_title: Awaiting confirmation
+        pending_item: will be added to your balance once your school confirms it
         lesson_price: Lesson price
-        price_unset: Not set yet
+        lesson_price_inline: Lesson price
+        price_unset: not set yet
+        last_top_up: "Last top-up %{date} (%{amount})"
         last_payment: "Last payment %{date} (%{amount})"
         email_teacher: "Email %{name}"
         call: Call
-        history: Transaction history
+        history: History
+        filter_history: Filter history
+        filter_all: All
+        filter_top_ups: Top-ups
+        filter_lessons: Lessons
+        filter_adjustments: Adjustments
+        filter_refunds: Refunds & reversals
+        filter_empty: Nothing in this category yet.
         empty_title: No transactions yet
-        empty_text: Payments and lesson charges will appear here.
+        empty_text: Top-ups and lesson charges will appear here once your school records them.
+        balance_after: Balance
+        view_lesson: View lesson
+        reversed: Reversed
+        type_opening_balance: Opening balance
+        type_top_up: Top-up
+        type_lesson: Lesson
+        type_late_cancel: Late cancellation
+        type_refund: Refund
+        type_reversal: Lesson charge reversed
+        type_adjustment: Balance adjustment
+        refund_via: Returned via %{method}
         col_date: Date
         col_description: Description
         col_amount: Amount

@@ -305,6 +305,11 @@
   }
 }
 
+.lessons-page__table--no-price .lessons-page__head,
+.lessons-page__table--no-price .lessons-page__desktop {
+  grid-template-columns: 130px minmax(150px, 1fr) minmax(120px, 0.9fr) minmax(110px, 0.8fr) 100px minmax(168px, 1fr) 100px;
+}
+
 .lessons-page__head {
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);

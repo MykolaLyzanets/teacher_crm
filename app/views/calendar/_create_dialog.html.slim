@@ -154,11 +154,12 @@
             abbr.calendar-page__req title="required" *
           textarea rows="3" placeholder=t('app.calendar.override_reason_placeholder') data-calendar-target="overrideReason" data-action="input->calendar#syncDrawerFields"
 
-      .calendar-page__stack data-calendar-target="priceField"
-        p.calendar-page__label = t('app.calendar.lesson_price')
-        p.calendar-page__price-value.is-empty data-calendar-target="priceValue" —
-        input type="hidden" data-calendar-target="draftPrice"
-        input type="hidden" value="UAH" data-calendar-target="draftCurrency"
+      - if can_view_finance?
+        .calendar-page__stack data-calendar-target="priceField"
+          p.calendar-page__label = t('app.calendar.lesson_price')
+          p.calendar-page__price-value.is-empty data-calendar-target="priceValue" —
+          input type="hidden" data-calendar-target="draftPrice"
+          input type="hidden" value="UAH" data-calendar-target="draftCurrency"
 
       .calendar-page__stack
         p.calendar-page__label = t('app.calendar.lesson_format')

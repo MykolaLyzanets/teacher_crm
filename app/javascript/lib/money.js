@@ -1,14 +1,15 @@
-export function formatMoney(cents, currency = "UAH") {
+const FINANCE_CURRENCY = "UAH"
+
+export function formatMoney(cents, currency = FINANCE_CURRENCY) {
   const amount = Math.round(Math.abs(Number(cents) || 0) / 100)
-  return currency === "EUR" ? `€${amount}` : `${currency} ${amount}`
+  return currency === FINANCE_CURRENCY ? `₴${amount}` : `${currency} ${amount}`
 }
 
 export function lessonMoney(lesson) {
   const cents = lesson?.priceCents ?? lesson?.price_cents
-  const currency = lesson?.currency || "UAH"
   return {
     cents: cents == null || cents === "" ? null : Number(cents),
-    currency
+    currency: FINANCE_CURRENCY
   }
 }
 

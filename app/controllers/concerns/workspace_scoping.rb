@@ -14,7 +14,7 @@ module WorkspaceScoping
   end
 
   def teacher_profiles_scope
-    scoped = TeacherProfile.includes(:user, :student_profiles)
+    scoped = TeacherProfile.all
     return scoped if current_user.admin?
     return TeacherProfile.none if current_workspace.blank?
 
@@ -22,7 +22,7 @@ module WorkspaceScoping
   end
 
   def student_profiles_scope
-    scoped = StudentProfile.includes(:user, :teacher_profile).kept
+    scoped = StudentProfile.includes(:user).kept
     return scoped if current_user.admin?
     return StudentProfile.none if current_workspace.blank?
 
@@ -37,6 +37,23 @@ module WorkspaceScoping
     end
 
     StudentProfile.none
+  end
+
+  def teacher_catalog_payloads(relation = nil)
+    scope = (relation || teacher_profiles_scope).includes(:user)
+    records = scope.order(:first_name, :last_name).to_a
+    teacher_catalog_rows(records)
+  end
+
+  def student_catalog_payloads(relation = nil, lesson_pricing: can_view_finance?)
+    scope = relation || student_profiles_scope
+    scope.includes(:teacher_profile).order(:first_name, :last_name).map { |student| student.as_catalog(lesson_pricing:) }
+  end
+
+  def teacher_catalog_rows(records)
+    ids = records.map(&:id)
+    counts = StudentProfile.kept.where(teacher_id: ids).group(:teacher_id).count
+    records.map { |teacher| teacher.as_catalog(assigned_count: counts[teacher.id].to_i) }
   end
 
   def lessons_scope

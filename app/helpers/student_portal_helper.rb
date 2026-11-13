@@ -39,6 +39,26 @@ module StudentPortalHelper
     current_user.full_name.to_s.split(/\s+/).first.presence || t('app.student_portal.title')
   end
 
+  PORTAL_LEDGER_FILTERS = %w[top_ups lessons adjustments refunds].freeze
+
+  def portal_ledger_filter_keys(transactions)
+    counts = PORTAL_LEDGER_FILTERS.index_with do |key|
+      transactions.count { |item| item[:category].to_s == key }
+    end
+    counts.select { |_key, count| count.positive? }.keys
+  end
+
+  def portal_balance_value_class(state)
+    {
+      'negative' => 'sp-pay__balance-value--debt',
+      'low' => 'sp-pay__balance-value--low'
+    }[state.to_s] || ''
+  end
+
+  def portal_balance_status_badge(status)
+    pay_health_status_badge(status[:health] || status['health'])
+  end
+
   def portal_icon(name, size: 20, **options)
     icon_tag(name, size: size, **options)
   end

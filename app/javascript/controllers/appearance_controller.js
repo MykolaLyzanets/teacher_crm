@@ -47,6 +47,15 @@ export default class extends Controller {
     this.close(kind)
   }
 
+  resetDefault(event) {
+    event.stopPropagation()
+    this.closeAll()
+    const preset = this.api.appearancePreset || "preset"
+    const next = {}
+    KINDS.forEach((kind) => { next[kind] = preset })
+    this.api.saveAppearance(next)
+  }
+
   random(event) {
     event.stopPropagation()
     this.closeAll()
@@ -77,16 +86,17 @@ export default class extends Controller {
   sync() {
     if (!this.api) return
     const current = this.api.readAppearance()
+    const raw = this.api.readRawAppearance ? this.api.readRawAppearance() : {}
     const { palettes, themes, charts, backgrounds, stylesMap, radii } = this.api.appearanceMeta()
     const mode = backgrounds[current.background].mode
-    this.styleValueTargets.forEach((el) => { el.textContent = this.optionLabel("style", current.style) })
-    this.colorValueTargets.forEach((el) => { el.textContent = this.optionLabel("color", current.color) })
-    this.backgroundValueTargets.forEach((el) => { el.textContent = this.optionLabel("background", current.background) })
-    this.themeValueTargets.forEach((el) => { el.textContent = this.optionLabel("theme", current.theme) })
-    this.chartValueTargets.forEach((el) => { el.textContent = this.optionLabel("chart", current.chart) })
-    this.headingValueTargets.forEach((el) => { el.textContent = this.optionLabel("heading", current.heading) })
-    this.fontValueTargets.forEach((el) => { el.textContent = this.optionLabel("font", current.font) })
-    this.radiusValueTargets.forEach((el) => { el.textContent = this.optionLabel("radius", current.radius) })
+    this.styleValueTargets.forEach((el) => { el.textContent = this.valueLabel("style", current.style, raw) })
+    this.colorValueTargets.forEach((el) => { el.textContent = this.valueLabel("color", current.color, raw) })
+    this.backgroundValueTargets.forEach((el) => { el.textContent = this.valueLabel("background", current.background, raw) })
+    this.themeValueTargets.forEach((el) => { el.textContent = this.valueLabel("theme", current.theme, raw) })
+    this.chartValueTargets.forEach((el) => { el.textContent = this.valueLabel("chart", current.chart, raw) })
+    this.headingValueTargets.forEach((el) => { el.textContent = this.valueLabel("heading", current.heading, raw) })
+    this.fontValueTargets.forEach((el) => { el.textContent = this.valueLabel("font", current.font, raw) })
+    this.radiusValueTargets.forEach((el) => { el.textContent = this.valueLabel("radius", current.radius, raw) })
     this.colorSwatchTargets.forEach((el) => {
       el.style.background = palettes[current.color][mode].swatch
     })
@@ -121,7 +131,7 @@ export default class extends Controller {
     this.radiusOptionGlyphTargets.forEach((el) => {
       el.style.borderRadius = radii[el.dataset.radius].value || styleRadius
     })
-    KINDS.forEach((kind) => this.markSelected(kind, current[kind]))
+    KINDS.forEach((kind) => this.markSelected(kind, current[kind], raw))
   }
 
   toggle(kind) {
@@ -151,10 +161,31 @@ export default class extends Controller {
     return this[`${kind}TriggerTarget`]
   }
 
-  markSelected(kind, value) {
+  markSelected(kind, value, raw) {
+    const preset = this.api.isAppearancePreset ? this.api.isAppearancePreset(kind, raw) : false
+    const presetValue = this.api.appearancePreset || "preset"
     this.element.querySelectorAll(`[data-appearance-kind="${kind}"]`).forEach((item) => {
-      item.classList.toggle("is-selected", item.dataset.value === value)
+      const selected = preset
+        ? item.dataset.value === presetValue
+        : item.dataset.value === value
+      item.classList.toggle("is-selected", selected)
     })
+  }
+
+  valueLabel(kind, value, raw) {
+    if (this.api.isAppearancePreset && this.api.isAppearancePreset(kind, raw)) {
+      return this.presetLabel()
+    }
+    return this.optionLabel(kind, value)
+  }
+
+  presetLabel() {
+    return this.i18nPresetLabel()
+  }
+
+  i18nPresetLabel() {
+    const el = this.element.querySelector("[data-appearance-preset-label]")
+    return el ? el.textContent.trim() : "Default"
   }
 
   optionLabel(kind, value) {

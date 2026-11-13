@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { validateSlots } from "../lib/teacher_availability"
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"]
@@ -377,14 +378,10 @@ export default class extends Controller {
   validateSubmit(event) {
     this.touched = new Set(["firstName", "lastName", "status", "email", "customDuration", "notes"])
     this.syncCustomDuration()
-    const hoursError = this.hasHoursRowTarget ? this.hoursErrorMessage() : null
-    if (this.hasHoursErrorTarget) {
-      this.hoursErrorTarget.textContent = hoursError || ""
-      this.hoursErrorTarget.hidden = !hoursError
-    }
+    const slotsError = this.availabilitySlotsInvalid()
     const errors = this.validate()
     this.renderErrors(errors)
-    if (Object.keys(errors).length > 0 || hoursError) {
+    if (Object.keys(errors).length > 0 || slotsError) {
       event.preventDefault()
       if (this.hasFormAlertTarget) this.formAlertTarget.hidden = false
       return
@@ -434,15 +431,22 @@ export default class extends Controller {
     })
   }
 
-  hoursErrorMessage() {
-    for (const row of this.hoursRowTargets) {
-      if (row.hidden) continue
-      const start = row.querySelector('[data-role="start"]')?.value
-      const end = row.querySelector('[data-role="end"]')?.value
-      if (!start || !end) return this.t("teachers", "working_hours_error")
-      if (end <= start) return this.t("teachers", "hours_order_error")
+  availabilitySlotsInvalid() {
+    const root = document.querySelector("[data-controller~='teacher-availability']")
+    if (!root) return false
+    const controller = this.application.getControllerForElementAndIdentifier(root, "teacher-availability")
+    if (controller) {
+      const errors = controller.validate()
+      return Object.keys(errors).length > 0
     }
-    return null
+    const payload = root.querySelector("[name='availability_slots']")
+    if (!payload) return false
+    try {
+      const errors = validateSlots(JSON.parse(payload.value || "[]"))
+      return Object.keys(errors).length > 0
+    } catch {
+      return true
+    }
   }
 
   filterAssigned() {

@@ -20,8 +20,14 @@ module Demo
     def lessons_for_student(student_profile)
       return [] if student_profile.blank?
 
-      lessons = student_profile.lessons.includes(:teacher_profile, :subject, :lesson_type, :students)
-      lessons.order(:starts_at).map(&:as_catalog)
+      records = student_profile.lessons.order(:starts_at).to_a
+      return [] if records.empty?
+
+      ActiveRecord::Associations::Preloader.new(
+        records:,
+        associations: [:teacher_profile, :subject, :lesson_type, :students]
+      ).call
+      records.map(&:as_catalog)
     end
 
     def progress_for(student_id)

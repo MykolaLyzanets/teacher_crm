@@ -1,6 +1,6 @@
 - content_for :title, "#{t('app.student_portal.pages.payments.title')} | danlio"
 
-.sp-pay
+.sp-pay data-controller="student-portal-payments"
   .sp-pay__intro
     h1 = t('app.student_portal.pages.payments.title')
     p = t('app.student_portal.payments.disclaimer')
@@ -9,25 +9,31 @@
     .sp-pay__missing = t('app.student_portal.payments.load_error')
   - else
     - finance = @finance
-    - has_debt = finance[:debtCents].to_i.positive?
-    .sp-pay__summary
-      .sp-pay__stat
-        span.sp-pay__icon
-          = portal_icon 'wallet', size: 22
-        span
-          span.sp-pay__label = t('app.student_portal.payments.available')
-          span.sp-pay__value = money_label(finance[:availableBalanceCents], finance[:currency])
-      .sp-pay__stat class=("sp-pay__stat--warn" if has_debt)
-        span.sp-pay__icon class=("is-warn" if has_debt)
-          = portal_icon 'alert', size: 22
-        span
-          span.sp-pay__label = t('app.student_portal.payments.debt')
-          span.sp-pay__value = money_label(finance[:debtCents], finance[:currency])
-
-    - if has_debt
-      .sp-pay__banner = t('app.student_portal.payments.debt_banner')
-    - elsif finance[:nextLessonCovered] == false
-      .sp-pay__banner = t('app.student_portal.payments.low_next')
+    - status = finance[:status]
+    - transactions = finance[:transactions] || []
+    - filter_keys = portal_ledger_filter_keys(transactions)
+    section.sp-pay__balance
+      .sp-pay__balance-top
+        .sp-pay__balance-main
+          span.sp-pay__balance-icon
+            = portal_icon 'wallet', size: 22
+          div
+            p.sp-pay__balance-label = t('app.student_portal.payments.current_balance')
+            p.sp-pay__balance-value class=portal_balance_value_class(status[:state])
+              = balance_money_label(finance[:balanceCents], finance[:currency])
+        = portal_balance_status_badge(status)
+      - if status[:state].to_s == 'negative'
+        p.sp-pay__balance-alert.sp-pay__balance-alert--debt
+          = t('app.student_portal.payments.debt_banner', amount: money_label(finance[:debtCents], finance[:currency]))
+      - elsif status[:state].to_s == 'low'
+        p.sp-pay__balance-alert.sp-pay__balance-alert--low
+          = t('app.student_portal.payments.low_next_html', amount: money_label(finance[:lessonPriceCents], finance[:currency]))
+      .sp-pay__balance-foot
+        p.sp-pay__balance-meta
+          = t('app.student_portal.payments.lesson_price_inline')
+          strong = finance[:lessonPriceCents].present? ? money_label(finance[:lessonPriceCents], finance[:currency]) : t('app.student_portal.payments.price_unset')
+          - if finance[:lastConfirmedPayment]
+            =< "· #{t('app.student_portal.payments.last_top_up', date: format_lesson_day_long(finance[:lastConfirmedPayment][:date]), amount: money_label(finance[:lastConfirmedPayment][:amountCents], finance[:currency]))}"
 
     - if finance[:pendingPayments].present?
       section.sp-pay__pending
@@ -37,50 +43,43 @@
         ul
           - finance[:pendingPayments].each do |item|
             li
-              = "#{format_lesson_day_short(item[:date])} · #{money_label(item[:amountCents], item[:currency])} — #{t('app.student_portal.payments.pending_item')}"
+              = "#{format_lesson_day_long(item[:date])} · #{money_label(item[:amountCents], item[:currency])} — #{t('app.student_portal.payments.pending_item')}"
 
-    section.sp-pay__card
-      .sp-pay__price
-        div
-          h2 = t('app.student_portal.payments.lesson_price')
-          p
-            - if finance[:lessonPriceCents]
-              = money_label(finance[:lessonPriceCents], finance[:currency])
-            - else
-              = t('app.student_portal.payments.price_unset')
-            - if finance[:lastConfirmedPayment]
-              =< "· #{t('app.student_portal.payments.last_payment', date: format_lesson_day_short(finance[:lastConfirmedPayment][:date]), amount: money_label(finance[:lastConfirmedPayment][:amountCents], finance[:currency]))}"
-        - teacher = finance[:teacher]
-        - if teacher && (teacher[:email].present? || teacher[:phone].present?)
-          .sp-pay__contacts
-            - if teacher[:email].present?
-              = mail_to teacher[:email], class: 'sp-pay__ghost' do
-                = portal_icon 'mail', size: 18
-                span = t('app.student_portal.payments.email_teacher', name: Demo::Catalog.teacher_name(teacher))
-            - if teacher[:phone].present?
-              = link_to "tel:#{teacher[:phone]}", class: 'sp-pay__ghost' do
-                = portal_icon 'phone', size: 18
-                span = t('app.student_portal.payments.call')
-
-    section.sp-pay__table-card
-      .sp-pay__table-head
+    section.sp-pay__history
+      .sp-pay__history-head
         h2 = t('app.student_portal.payments.history')
-      - if finance[:transactions].blank?
+        - if transactions.present?
+          .sp-pay__filters role="tablist" aria-label=t('app.student_portal.payments.filter_history')
+            button.sp-pay__chip.is-active type="button" role="tab" aria-selected="true" data-filter="all" data-filter-btn="true" data-action="student-portal-payments#pickFilter"
+              = t('app.student_portal.payments.filter_all')
+            - filter_keys.each do |key|
+              button.sp-pay__chip type="button" role="tab" aria-selected="false" data-filter=key data-filter-btn="true" data-action="student-portal-payments#pickFilter"
+                = t("app.student_portal.payments.filter_#{key}")
+      - if transactions.blank?
         .sp-pay__empty
+          = portal_icon 'receipt', size: 24
           p.sp-pay__empty-title = t('app.student_portal.payments.empty_title')
           p = t('app.student_portal.payments.empty_text')
       - else
-        .sp-pay__table-wrap
-          table.sp-pay__table
-            thead
-              tr
-                th = t('app.student_portal.payments.col_date')
-                th = t('app.student_portal.payments.col_description')
-                th = t('app.student_portal.payments.col_amount')
-            tbody
-              - finance[:transactions].each do |item|
-                tr
-                  td = format_lesson_day_short(item[:date])
-                  td = item[:description]
-                  td class=(item[:amountCents].to_i.negative? ? 'is-neg' : 'is-pos')
-                    = signed_money_label(item[:amountCents], item[:currency])
+        ul.sp-pay__ledger
+          - transactions.each do |item|
+            li.sp-pay__ledger-row data-student-portal-payments-target="row" data-category=item[:category]
+              .sp-pay__ledger-main
+                p.sp-pay__ledger-date = format_lesson_day_long(item[:date])
+                p.sp-pay__ledger-label
+                  = item[:label]
+                  - if item[:reversed]
+                    span.sp-pay__reversed = t('app.student_portal.payments.reversed')
+                - if item[:detail].present?
+                  p.sp-pay__ledger-detail = item[:detail]
+                - if item[:relatedLessonId].present?
+                  = link_to student_calendar_path, class: 'sp-pay__lesson-link' do
+                    = portal_icon 'calendar', size: 14
+                    span = t('app.student_portal.payments.view_lesson')
+              .sp-pay__ledger-amount
+                p class=(item[:amountCents].to_i.negative? ? 'is-neg' : 'is-pos')
+                  = signed_money_label(item[:amountCents], item[:currency])
+                - if item[:balanceAfterCents]
+                  p.sp-pay__ledger-balance = "#{t('app.student_portal.payments.balance_after')} #{balance_money_label(item[:balanceAfterCents], item[:currency])}"
+        p.sp-pay__filter-empty hidden="hidden" data-student-portal-payments-target="filterEmpty"
+          = t('app.student_portal.payments.filter_empty')

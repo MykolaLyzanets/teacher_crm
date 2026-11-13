@@ -22,8 +22,8 @@ class CalendarController < AppController
 
   def load_catalog
     @lessons = catalog_lessons
-    @teachers = teacher_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
-    @students = student_profiles_scope.order(:first_name, :last_name).map(&:as_catalog)
+    @teachers = teacher_catalog_payloads
+    @students = student_catalog_payloads
     @bookable_students = @students.select { |student| StudentProfile.bookable_status?(student[:status]) }
 
     @teacher_names = @teachers.map { |teacher| teacher_display_name(teacher) }.uniq.sort

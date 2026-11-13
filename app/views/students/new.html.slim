@@ -157,6 +157,9 @@
             input type="tel" name="parent_phone" placeholder=t('app.students.phone_placeholder') value=student[:parentPhone] data-students-target="parentPhone" data-action="blur->students#markTouched"
             p.students-page__field-error hidden="hidden" data-error-for="parentPhone"
 
+    - if can_view_finance?
+      = render 'students/lesson_pricing_section', student: student
+
     - if student_profile_school_sections?
       section.students-page__card
         h2 = t('app.students.learning_details')

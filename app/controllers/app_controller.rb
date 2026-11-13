@@ -10,6 +10,7 @@ class AppController < ApplicationController
 
   helper_method :app_page_stylesheet, :can_manage_teachers?, :can_assign_teacher?,
                 :can_view_finance?, :can_manage_payments?, :can_override_schedule?,
+                :can_manage_workspace_catalog?, :can_view_workspace_catalog?,
                 :staff_notifications, :unread_staff_count, :lesson_modal_request?,
                 :materials_scope
 
@@ -79,5 +80,33 @@ class AppController < ApplicationController
     return if current_user.admin? || current_workspace.present?
 
     render json: { error: I18n.t('app.workspace.required') }, status: :forbidden
+  end
+
+  def can_manage_workspace_catalog?
+    current_user&.owner?
+  end
+
+  def can_view_workspace_catalog?
+    return true if current_user.admin? || current_user.owner?
+
+    current_user.teacher? && current_workspace.present?
+  end
+
+  def require_workspace_catalog_view!
+    return if can_view_workspace_catalog?
+
+    render json: { error: 'Forbidden' }, status: :forbidden
+  end
+
+  def require_workspace_catalog_manage!
+    return if can_manage_workspace_catalog?
+
+    render json: { error: 'Forbidden' }, status: :forbidden
+  end
+
+  def workspace_subjects_scope
+    return Subject.none if current_workspace.blank?
+
+    Subject.where(workspace_id: current_workspace.id)
   end
 end

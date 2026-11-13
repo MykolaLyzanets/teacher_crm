@@ -1,0 +1,33 @@
+- show_step = local_assigns.fetch(:show_step, false)
+- manage_path = local_assigns[:manage_path] || settings_lesson_types_path
+- manager_opts = local_assigns.fetch(:manager, {})
+- assignment_only = local_assigns.fetch(:assignment_only, false)
+
+section.teachers-page__card.lt-teaching-section
+  .teachers-step-card__head
+    h2.teachers-step-card__title = t('app.teachers.teaching_section_title')
+    p.teachers-page__section-sub = t('app.teachers.teaching_section_description')
+  .lt-teaching
+    - if assignment_only
+      p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
+      = render 'teachers/teaching_assignments'
+      .lt-teaching-actions
+        button.lt-teaching-actions__add type="button" data-action="lesson-types#openOfferingDialog" data-lesson-types-target="offeringAddBtn"
+          = icon_tag 'plus', size: 16
+          span = t('app.teachers.add_subject')
+        - if manage_path.present? && can_manage_workspace_catalog?
+          = link_to manage_path, class: 'lt-teaching-actions__manage' do
+            = icon_tag 'settings', size: 16
+            span = t('app.teachers.manage_subjects_lesson_types')
+      = render 'teachers/subject_offering_dialog'
+    - else
+      = render 'lesson_types/manager', { variant: :teaching, show_add_lesson: false }.merge(manager_opts)
+      .lt-teaching-actions
+        button.lt-teaching-actions__add type="button" data-action="lesson-types#focusAddSubject"
+          = icon_tag 'plus', size: 16
+          span = t('app.teachers.add_subject')
+        - if manage_path.present? && can_manage_workspace_catalog?
+          = link_to manage_path, class: 'lt-teaching-actions__manage' do
+            = icon_tag 'settings', size: 16
+            span = t('app.teachers.manage_subjects_lesson_types')
+      = render 'lesson_types/add_lesson', hidden: true

@@ -1,0 +1,112 @@
+- sections = Array(teacher_finance&.dig(:sections))
+
+- sections.each do |section|
+  - summary = section[:summary]
+  - currency = section[:currency]
+  - earnings = Array(section[:earnings])
+  - payouts = Array(section[:payouts])
+
+  section.teachers-page__card
+    .teachers-page__section-head
+      div
+        h2 = t('app.teachers.earnings')
+        p.teachers-page__section-sub = t('app.teachers.earnings_hint')
+        - if sections.size > 1
+          p.teachers-page__meta = t('app.payments.col_currency') + ": #{currency}"
+      - if can_manage_payments?
+        = link_to payments_path, class: 'teachers-page__ghost-btn' do
+          = t('app.payments.record_payout')
+
+    dl.teachers-page__dl.teachers-page__dl--stats
+      div
+        dt = t('app.teachers.total_earnings')
+        dd = money_label(summary[:totalEarningsCents], currency)
+      div
+        dt = t('app.teachers.paid_out')
+        dd = money_label(summary[:paidCents], currency)
+      div
+        dt = t('app.teachers.remaining')
+        dd = money_label(summary[:remainingCents], currency)
+      div
+        dt = t('app.teachers.completed_lessons')
+        dd = summary[:completedLessons]
+      div
+        dt = t('app.teachers.charged_cancellations')
+        dd = summary[:chargedCancellations]
+      div
+        dt = t('app.dashboard.teaching_hours')
+        dd = summary[:teachingHours]
+
+    .teachers-page__section-head
+      h3 = t('app.teachers.earnings_history')
+    - if earnings.blank?
+      p.teachers-page__meta = t('app.teachers.no_earnings')
+    - else
+      .teachers-page__finance-wrap
+        table.teachers-page__finance-table
+          thead
+            tr
+              th = t('app.students.col_date')
+              th = t('app.students.col_student')
+              th = t('app.payments.col_description')
+              th = t('app.teachers.lesson_price')
+              th = t('app.teachers.compensation_col')
+              th = t('app.teachers.earning_amount')
+              th = t('app.payments.col_status')
+          tbody
+            - earnings.each do |row|
+              tr
+                td = format_lesson_day_long(row[:date])
+                td = row[:student]
+                td
+                  - if row[:kind].to_s == 'cancellation_charged'
+                    = t('app.payments.types.cancellation_charge')
+                  - else
+                    = row[:lessonTitle].presence || t('app.payments.types.lesson_charge')
+                td = money_label(row[:lessonPriceCents], row[:currency])
+                td
+                  - if row[:compensationPercent].present?
+                    = t('app.teachers.compensation_percentage', percent: row[:compensationPercent])
+                  - else
+                    | —
+                td = money_label(row[:earningCents], row[:currency])
+                td
+                  - if row[:reversed]
+                    = t('app.payments.tx_status_reversed')
+                  - else
+                    | —
+
+    .teachers-page__section-head
+      h3 = t('app.teachers.payout_history')
+    - if payouts.blank?
+      p.teachers-page__meta = t('app.teachers.no_payouts')
+    - else
+      .teachers-page__finance-wrap
+        table.teachers-page__finance-table
+          thead
+            tr
+              th = t('app.payments.payment_date')
+              th = t('app.payments.amount')
+              th = t('app.payments.method')
+              th = t('app.payments.reference')
+              th = t('app.payments.note')
+              th = t('app.teachers.payout_allocations')
+          tbody
+            - payouts.each do |row|
+              tr
+                td = format_lesson_day_long(row[:date])
+                td = money_label(row[:amountCents], row[:currency])
+                td = payment_method_label(row[:method])
+                td = row[:reference].presence || '—'
+                td = row[:note].presence || '—'
+                td
+                  - if row[:allocations].blank?
+                    | —
+                  - else
+                    ul.teachers-page__meta
+                      - row[:allocations].each do |allocation|
+                        li
+                          = t('app.teachers.payout_allocation_item',
+                            date: format_lesson_day_long(allocation[:earningDate]),
+                            student: allocation[:student],
+                            amount: money_label(allocation[:amountCents], row[:currency]))

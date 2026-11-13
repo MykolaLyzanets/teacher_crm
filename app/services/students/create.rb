@@ -72,6 +72,7 @@ module Students
         assign_teacher if @assigned_teacher
         persist_photo
         student_profile.save!
+        sync_lesson_pricing!
       end
       invite_user!
     end
@@ -108,6 +109,12 @@ module Students
       return preferred if preferred.present?
 
       [params[:first_name], params[:last_name]].map { |part| part.to_s.strip }.compact_blank.join(' ')
+    end
+
+    def sync_lesson_pricing!
+      return if !params.key?(:lesson_pricing)
+
+      Students::LessonPricing.sync!(student_profile:, raw: params[:lesson_pricing])
     end
 
     def profile_attrs

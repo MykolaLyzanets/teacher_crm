@@ -195,6 +195,21 @@ ua:
       preferred_time_hint: напр. після 16:00 у будні
       lesson_preferences: Уподобання щодо уроків
       lesson_preferences_sub: Допоможіть планувати уроки зручно для учня.
+      lesson_prices_form:
+        title: Вартість уроків
+        sub: Окрема ціна для кожного типу уроку з каталогу. Зберігається в профілі учня.
+        admin_only: Лише для адміністраторів
+        add_label: Урок і тип
+        price_label: Ціна за урок
+        add_btn: Додати
+        empty: Ще немає цін. Оберіть тип уроку й вкажіть вартість.
+        select_type: Оберіть тип уроку
+        pick_type: Оберіть тип уроку.
+        already_added: Цей тип уроку вже в списку.
+        price_invalid: Введіть ціну (0 або більше).
+        catalog_default: Типова з каталогу
+        remove: Прибрати
+        price_aria: Ціна уроку
       emergency: Екстрений контакт
       emergency_sub: Необовʼязкові дані на випадок термінової ситуації.
       contact_name: Імʼя контакту
@@ -389,15 +404,52 @@ ua:
       note_student: Видно учню
       note_teacher: Видно викладачу
       restricted: Обмежено
-      payments_intro: Поточний баланс рахується з оплат, списань за уроки, повернень і коригувань.
+      balance_payments_title: Баланс і оплати
+      payments_intro: Розраховано з історії нижче. Завершені уроки списуються автоматично.
+      total_topped_up: Усього поповнень
+      set_opening_balance: Встановити початковий баланс
+      adjust_balance: Скоригувати баланс
+      balance_low_hint: "Не вистачає на наступний урок (%{amount})"
+      balance_covers_lessons:
+        one: Вистачає на 1 урок
+        few: Вистачає на %{count} уроки
+        many: Вистачає на %{count} уроків
+        other: Вистачає на %{count} уроків
+      balance_not_applied: Не застосовано
+      pending_awaiting_confirmation:
+        one: 1 очікує підтвердження
+        few: "%{count} очікують підтвердження"
+        many: "%{count} очікують підтвердження"
+        other: "%{count} очікують підтвердження"
+      pending_payments_banner_html: "<strong>%{count}</strong> очікують підтвердження — не враховано в балансі, доки не підтвердите нижче."
+      pending_payment_banner_html: "<strong>1 оплату</strong> очікують підтвердження — не враховано в балансі, доки не підтвердите нижче."
+      ledger_show_all: Показати всі транзакції
+      no_transactions_hint_admin: Спочатку встановіть початковий баланс або поповніть рахунок. Завершені уроки списуватимуться тут автоматично.
+      ledger_by: Записав %{name}
+      ledger_system: Система
+      ledger_internal: "Внутрішнє:"
+      ledger_filter_all: Усі
+      ledger_filter_top_ups: Поповнення
+      ledger_filter_lessons: Уроки
+      ledger_filter_adjustments: Коригування
+      ledger_filter_refunds: Повернення та сторнування
+      ledger_lesson_auto_note: Автоматично зафіксовано для уроку, завершеного до автоматичного списання.
+      ledger_view_lesson: Переглянути урок
+      col_details: Деталі
+      col_balance: Баланс
+      payments_intro_legacy: Поточний баланс рахується з оплат, списань за уроки, повернень і коригувань.
       available_credit: Доступний кредит
       confirmed_payments: Підтверджені оплати
       amount_due: Сума до сплати
       nothing_due: Немає боргу
       default_per_lesson: "Базова %{price} / урок"
       completed_lessons_only: Лише завершені уроки
+      uses_lesson_prices: За ціною кожного уроку
       transaction_history: Історія транзакцій
-      transaction_history_hint: Тут фіксується кожна зміна балансу. Завершені уроки створюють списання; заплановані майбутні уроки — ні.
+      transaction_history_hint: Записи не редагуються — виправлення з’являються новими рядками.
+      negative_balance_badge: Відʼємний баланс
+      balance_owed: "Борг %{amount}"
+      ledger_filter_count: "%{label} (%{count})"
       no_transactions: Транзакцій ще немає
       no_transactions_hint: Оплати, списання, повернення та коригування зʼявляться тут.
       col_amount: Сума
@@ -465,7 +517,7 @@ ua:
       absence_recorded: Відсутність збережено.
       absence_history: Історія відсутностей
       no_absences: Відсутностей ще немає.
-      compensation: Компенсація
+      compensation_col: Компенсація
       compensation_percentage: "%{percent}% від вартості уроку"
       earnings: Нарахування
       earnings_hint: З завершених уроків та платних скасувань.
@@ -474,6 +526,14 @@ ua:
       remaining: Залишок
       completed_lessons: Завершені уроки
       charged_cancellations: Платні скасування
+      earnings_history: Нарахування за уроками
+      payout_history: Історія виплат
+      payout_allocations: У складі виплати
+      payout_allocation_item: "%{date} · %{student} · %{amount}"
+      no_earnings: Нарахувань ще немає.
+      no_payouts: Виплат ще немає.
+      lesson_price: Вартість уроку
+      earning_amount: Нарахування викладачу
       absence_types:
         sick_leave: Лікарняний
         vacation: Відпустка
@@ -525,9 +585,142 @@ ua:
       location: Локація
       teaching: Викладання
       teaching_sub: Що викладає цей викладач?
+      teaching_section_title: 1. Що викладає цей викладач?
+      teaching_section_description: Предмет, тип уроку та формат — кожна комбінація це один варіант викладання.
+      teaching_empty_title: Предметів ще немає
+      teaching_empty_text: Додайте предмети, які викладає цей викладач, і точні типи уроків та формати, які він пропонує.
+      add_subject: Додати предмет
+      manage_subjects_lesson_types: Керувати предметами та типами уроків
+      offering_add_title: Додати предмет
+      offering_add_description: Відмітьте тип уроку та формат (онлайн чи очно) для кожного варіанту викладання.
+      offering_col_lesson_type: Тип уроку
+      offering_subject: Предмет
+      offering_no_subjects_title: Усі предмети з каталогу вже додані
+      offering_no_subjects_text: Додайте новий предмет у налаштуваннях або відредагуйте вже доданий (олівець), щоб обрати ще типи уроків — наприклад індивідуальний і груповий для English.
+      offering_no_types_title: У цього предмета ще немає типів уроків
+      offering_no_types_text: Типи уроків налаштовуються один раз для школи в налаштуваннях, потім обираються тут.
+      offering_pick_subject: Оберіть предмет.
+      offering_pick_type: Оберіть принаймні один варіант (тип уроку та формат).
+      offering_save: Зберегти
+      offering_saved: Варіанти викладання оновлено.
+      offering_removed: Предмет прибрано.
+      offering_edit: Редагувати
+      offering_remove: Прибрати
+      compensation:
+        section_title: 2. Скільки заробляє цей викладач?
+        section_description: Сума, яку викладач отримує за кожен варіант викладання вище. Бачать лише адміністратори.
+        disabled_title: Оплату ще не налаштовано
+        disabled_text: Оберіть, як оплачуються варіанти викладання — за урок або щомісячну ставку. Доки цього немає, уроки виплачуються за повною ціною уроку.
+        setup_btn: Налаштувати оплату
+        setup_later: Налаштувати пізніше
+        pay_type_title: Тип оплати
+        pay_lesson_title: Оплата за урок
+        pay_lesson_desc: Необовʼязкове правило за замовчуванням і окремі правила для варіантів з іншою оплатою.
+        pay_salary_title: Щомісячна ставка
+        pay_salary_desc: Фіксована сума щомісяця, окремо від нарахувань за уроки.
+        default_rule_title: Правило за замовчуванням
+        default_rule_desc: Застосовується до кожного варіанта без власного правила.
+        default_badge: За замовчуванням
+        currency: Валюта
+        currency_uah: грн
+        toggle_on: Увімкнено
+        toggle_off: Вимкнено
+        default_rule_toggle: Правило за замовчуванням
+        calculation_type: Спосіб розрахунку
+        fixed_amount: Фіксована сума
+        percentage: Відсоток
+        per_lesson_suffix: викладач отримує за урок
+        percent_suffix: "% від ціни уроку для учня"
+        options_title: Варіанти викладання
+        options_desc: Список підтягується з «Що викладає цей викладач?». Для перевизначення додайте окреме правило.
+        options_empty_html: Варіантів викладання ще немає. Додайте їх у блоці <strong>Що викладає цей викладач</strong> — окремі правила можна задати лише для варіантів, які викладач пропонує.
+        salary_desc: Нараховується наприкінці місяця й відокремлено від оплати за уроки.
+        per_month_suffix: на місяць
+        effective_title: З якого дня діють ці налаштування?
+        effective_desc: Уроки з цією датою й пізніше використовують ці правила.
+        effective_note: Уже зафіксовані нарахування не перераховуються.
+        summary: Підсумок
+        preview_title: Попередній перегляд уроку
+        standard_off_footer: Вимкнено — варіантам без окремого правила потрібне правило оплати.
+        standard_default_footer: Застосовуватиметься до кожного варіанта, щойно їх додадуть.
+        standard_all_own_rules: Зараз не використовується — у кожного варіанта своє правило.
+        standard_used_by: "Використовується для: %{labels}"
+        status_missing: Оплату не налаштовано
+        earns_default: "Викладач отримує %{amount} (за замовчуванням)"
+        amount_needed: Потрібна сума
+        own_rule_btn: Власне правило
+        pay_status_specific: Власне правило
+        pay_status_default: За замовчуванням
+        pay_status_missing: Оплату не налаштовано
+        group_amount_hint: Суми за весь урок, не за одного учня.
+        remove_own_rule: Знову використовувати правило за замовчуванням для цього варіанта
+        badge_missing: Не налаштовано
+        badge_default: За замовчуванням
+        per_month_short: на місяць
+        salary_needed: Щомісячна ставка — потрібна сума
+        default_rule: Правило за замовчуванням
+        default_amount_needed: Правило за замовчуванням — потрібна сума
+        no_rules: Правил ще немає
+        options_incomplete: "%{count} з %{total} варіантів ще без оплати"
+        options_complete: "Усі %{count} варіанти викладання оплачуються"
+        summary_salary_suffix: " · Уроки не додають оплату за урок"
+        from: З
+        preview_salary: Попередній перегляд стосується лише оплати за урок.
+        preview_no_options: Додайте варіанти викладання, щоб побачити, скільки викладач отримає за урок.
+        preview_missing: Введіть суму правила за замовчуванням для попереднього перегляду.
+        preview_example_price: Приклад ціни уроку
+        preview_uses_prefix: "Використовується:"
+        preview_flag_missing: Оплату для цього варіанта не налаштовано. Додайте власне правило або увімкніть правило за замовчуванням.
+        preview_flag_incomplete: Введіть суму для %{which} правила, щоб побачити попередній перегляд.
+        preview_rule_specific: окремого
+        preview_rule_default: правила за замовчуванням
+        preview_percent_explanation: "%{label} · %{percent}% від %{price} ціни уроку · Отримує %{earn}"
+        preview_rate: Ставка
+        teacher_earns: викладач отримує
+        preview_uses_default: Використовується правило за замовчуванням.
+      availability_slots:
+        weekly_title: Тижнева доступність
+        weekly_sub: Додавайте один або кілька часових слотів на день — для типу уроку та формату. Час між слотами недоступний.
+        slots_stats: "%{days} дн. · %{count} слотів · %{total} на тиждень"
+        slots_empty_warn: Доступність не задана. Уроки можна бронювати в будь-який час, доки не додасте слоти.
+        day_unavailable: Недоступно
+        day_slots_stats: "%{count} слотів · %{total}"
+        no_availability: Немає доступності
+        add_slot: Додати слот
+        copy_to: Копіювати на інші дні
+        copy_from: "Копіювати слоти %{day} на"
+        copy_weekdays: Будні
+        copy_hint: Замінює всі слоти на обраних днях.
+        copy_apply: Копіювати
+        copy_cancel: Скасувати
+        remove_slot: Прибрати слот
+        slots_summary_error: Виправте підсвічені слоти.
+        slot_lesson_any: Будь-який тип уроку
+        slot_lesson_removed: Видалений тип уроку
+        slot_lesson_individual: Індивідуальний
+        slot_lesson_group: Груповий
+        slot_lesson_trial: Пробний
+        slot_lesson_consultation: Консультація
+        slot_format_any: Онлайн або офлайн
+        slot_format_online: Онлайн
+        slot_format_in_person: Офлайн
+        slot_use_any: Будь-який урок
+        slot_error_time: Вкажіть початок і кінець.
+        slot_error_order: Кінець має бути пізніше за початок.
+        slot_error_overlap: "Перетинається з %{other}."
+        legend_online: Онлайн
+        legend_in_person: Офлайн
+        legend_either: Будь-який
+        day_Monday: Понеділок
+        day_Tuesday: Вівторок
+        day_Wednesday: Середа
+        day_Thursday: Четвер
+        day_Friday: П'ятниця
+        day_Saturday: Субота
+        day_Sunday: Неділя
       subjects: Предмети та курси
       subjects_hint: Додайте предмети або курси, які викладає цей викладач.
-      add_subject: Додати предмет або курс
+      add_subject_or_course: Додати предмет або курс
       subject_placeholder: Назва предмета або курсу…
       subject_duplicate: Цей предмет уже додано.
       remove_subject: Прибрати предмет
@@ -1393,6 +1586,8 @@ ua:
         small: Малий
         medium: Середній
         large: Великий
+      product_default: Дефолтний
+      reset_default: Дефолтний
       random: Випадково
     settings:
       title: Налаштування
@@ -1401,6 +1596,7 @@ ua:
       lessons_card_text: Типи уроків і ціни за замовчуванням
       lessons_title: Уроки
       lessons_subtitle: Як бронюються та тарифікуються уроки.
+      lessons_owner_only: Керувати уроками та цінами простору може лише власник секції.
     profile:
       title: Мій профіль
       subtitle: "Особисті дані та типи уроків — %{name}."
@@ -1417,6 +1613,7 @@ ua:
       title: Типи уроків
       card_text: Індивідуальні, групові та інші формати — тривалість і ціна
       school_text: Оберіть викладача, потім додайте предмети, які він викладає, і типи уроків для кожного предмета.
+      catalog_text: Додайте предмети простору та типи уроків для кожного. Викладачам їх призначають на сторінці профілю викладача.
       solo_text: Додайте предмети, які ви викладаєте, а потім типи для кожного.
       add: Додати тип уроку
       add_title: Додати тип уроку
@@ -1443,8 +1640,21 @@ ua:
       custom_name: Назва типу
       custom_name_placeholder: Speaking Club
       custom_name_blank: Введіть назву цього типу уроку.
-      name: Назва типу
-      name_placeholder: Individual
+      name: Назва
+      name_placeholder: напр. Розмовний клуб
+      quick_picks: Швидкий вибір
+      participation: Участь
+      participation_one: Один учень
+      participation_one_hint: Бронювання для одного учня.
+      participation_many: Кілька учнів
+      participation_many_hint: Кілька учнів можуть бути в одному уроці.
+      participation_changed: Стоє для нових бронювань. Уже заплановані уроки лишаються без змін.
+      preset_individual: Індивідуальний
+      preset_group: Груповий
+      preset_speaking_club: Розмовний клуб
+      preset_intensive: Інтенсив
+      preset_trial: Пробний
+      description_optional_placeholder: Необовʼязково — що охоплює або для кого
       format: Формат
       individual: Індивідуальний
       group: Груповий
@@ -1459,7 +1669,7 @@ ua:
       per_student_hint: Списується за кожного учня, а не фіксовано за групу.
       description: Опис
       description_placeholder: Що охоплює цей тип або для кого він…
-      active_label: Активний — доступний для нових уроків
+      active_label: Активний — викладачі можуть пропонувати його, нові уроки можуть його використовувати
       active: Активний
       inactive: Неактивний
       min: хв
@@ -1527,10 +1737,12 @@ ua:
       col_teacher: Викладач
       col_balance: Баланс
       col_debt: Борг
+      col_owed: Борг
       col_covered: Покрито уроків
       col_next: Наступний урок
       col_status: Статус
       col_actions: Дії
+      awaiting_confirmation: Очікує підтвердження
       col_completed: Завершені уроки
       col_hours: Години викладання
       col_earnings: Нараховано
@@ -1542,7 +1754,76 @@ ua:
       col_description: Опис
       col_amount: Сума
       add_payment: Додати оплату
+      add_funds: Поповнити баланс
+      add_funds_title: Поповнити баланс
+      add_funds_desc: Зафіксуйте кошти, отримані від учня.
+      payment_status_aria: Статус платежу
+      payment_status_pending: Зберегти як очікує
+      payment_status_confirmed: Підтвердити зараз
+      payment_pending_review_hint: Платіж лишається в очікуванні, доки його не підтвердять. Баланс ще не зміниться.
+      refund: Повернення
+      refund_title: Повернення платежу
+      refund_desc: "%{party} · Оригінальний платіж %{amount}"
+      refund_remaining: Доступно для повернення
+      refund_submit: Зафіксувати повернення
+      refund_recorded: Повернення зафіксовано.
+      refund_note_placeholder: Необовʼязкова причина повернення…
+      refund_not_allowed: Повернення можливе лише для підтверджених платежів.
+      refund_too_much: Сума перевищує доступний залишок для повернення.
+      original_payment: Оригінальний платіж
+      confirm_top_up_title: Підтвердити поповнення
+      confirm_top_up_desc: Перевірте суму та баланс після збереження.
+      adjust_title: Коригувати баланс
+      adjust_desc: Лише для виправлень. Усі коригування зберігаються в історії.
+      confirm_adjust_title: Підтвердити коригування
+      adjust_credit: Додати кредит
+      adjust_debit: Списати
+      adjust_direction_aria: Напрям коригування
+      amount_with_currency: Сума (%{currency})
+      adjust_adds: Додає %{amount}
+      adjust_deducts: Списує %{amount}
+      adjust_reason_visible: Бачить учень у своїй історії
+      adjust_reason: Причина (видима учню)
+      adjust_reason_required: Вкажіть причину коригування.
       adjust: Коригування
+      review: Переглянути
+      back: Назад
+      confirm_add: Додати кошти
+      balance_preview: Попередній перегляд балансу
+      current_balance: Поточний баланс
+      new_balance: Новий баланс
+      confirm_add_amount: Додати %{amount}
+      confirm_save_adjustment: Зберегти коригування
+      adjust_review_desc: Перевірте зміну та баланс після збереження.
+      adjust_reason_student: Причина (видима учню)
+      balance_negative_alert: "%{label}. %{hint}."
+      balance_owed_hint: "борг %{amount}"
+      top_up_label: Поповнення
+      adjustment_label: Коригування
+      note_internal: Внутрішня нотатка
+      note_internal_hint: Бачать лише адміністратори
+      amount_placeholder: "100"
+      amount_uah_hint: Сума у гривнях (UAH)
+      reference_placeholder: Референс переказу або номер квитанції
+      note_internal_placeholder: Додайте внутрішню нотатку про оплату…
+      adjust_amount_placeholder: "25"
+      adjust_reason_placeholder: напр. Жест доброї волі через перенесений урок
+      adjust_note_placeholder: Необовʼязковий контекст для інших адміністраторів…
+      payout_note_placeholder: Необовʼязкова нотатка про виплату…
+      invalid_amount: Введіть коректну суму.
+      invalid_date: Оберіть дату.
+      invalid_payout: Введіть коректну суму виплати.
+      payment_added_detail: "%{amount} додано на баланс %{name}."
+      adjusted_detail: "Баланс скориговано. Новий баланс: %{balance}."
+      payout_desc: "%{name} · Залишок %{amount}"
+      lessons_covered_of: "%{covered} з %{total}"
+      link_transactions: Операції
+      view_earnings: Нарахування
+      empty_filter_hint: Змініть фільтри вище.
+      status_reversed: Скасовано
+      tx_status_pending: Очікує
+      tx_status_rejected: Відхилено
+      tx_status_reversed: Скасовано
       record_payout: Зафіксувати виплату
       confirm: Підтвердити
       reject: Відхилити
@@ -1560,24 +1841,31 @@ ua:
       col_currency: Валюта
       amount: Сума
       date: Дата
+      payment_date: Дата оплати
+      payment_method: Спосіб оплати
       method: Спосіб
+      record_payout_submit: Зафіксувати виплату
       reference: Референс
       note: Нотатка
       methods:
-        bank_transfer: Банківський переказ
         cash: Готівка
+        bank_transfer: Банківський переказ
         card: Картка
+        online: Онлайн-оплата
+        other: Інше
       rejected: Відхилено
       status_healthy: У нормі
       status_low_balance: Низький баланс
       status_debt: Борг
       status_payment_pending: Очікує підтвердження
+      pending_payment_badge: Очікує оплату
       types:
         payment: Оплата
         lesson_charge: Списання за урок
         cancellation_charge: Списання за скасування
         refund: Повернення
         adjustment: Коригування
+        charge_reversal: Скасування списання
         teacher_earning: Нарахування викладачу
         teacher_payout: Виплата викладачу
     workspace:
@@ -1818,22 +2106,43 @@ ua:
         view_payments: До оплат
         empty_balance: Баланс зʼявиться тут.
       payments:
-        disclaimer: Оплати фіксує школа або викладач — DANLIO не списує кошти напряму.
+        disclaimer: Баланс веде ваша школа. Завершені уроки списуються автоматично.
         load_error: Не вдалося завантажити оплати.
+        current_balance: Поточний баланс
         available: Доступний баланс
         debt: Заборгованість
-        debt_banner: Балансу не вистачає на всі завершені уроки. Зверніться до викладача або школи.
-        low_next: Балансу може не вистачити на наступний урок.
-        pending_title: Оплата очікує підтвердження
-        pending_item: ще не додано до балансу
+        debt_banner: У вас борг %{amount} за завершені уроки. Зверніться до викладача або школи, щоб поповнити баланс.
+        low_next_html: Балансу може не вистачити на наступний урок (%{amount}).
+        pending_title: Очікує підтвердження
+        pending_item: буде зараховано після підтвердження школою
         lesson_price: Вартість уроку
-        price_unset: Ще не вказано
+        lesson_price_inline: Вартість уроку
+        price_unset: ще не вказано
+        last_top_up: "Останнє поповнення %{date} (%{amount})"
         last_payment: "Остання оплата %{date} (%{amount})"
         email_teacher: "Написати %{name}"
         call: Зателефонувати
-        history: Історія операцій
+        history: Історія
+        filter_history: Фільтр історії
+        filter_all: Усі
+        filter_top_ups: Поповнення
+        filter_lessons: Уроки
+        filter_adjustments: Коригування
+        filter_refunds: Повернення та сторнування
+        filter_empty: У цій категорії ще нічого немає.
         empty_title: Операцій ще немає
-        empty_text: Оплати та списання за уроки зʼявляться тут.
+        empty_text: Поповнення та списання зʼявляться тут, коли школа їх зафіксує.
+        balance_after: Баланс
+        view_lesson: Переглянути урок
+        reversed: Сторновано
+        type_opening_balance: Початковий баланс
+        type_top_up: Поповнення
+        type_lesson: Урок
+        type_late_cancel: Пізнє скасування
+        type_refund: Повернення
+        type_reversal: Списання за урок скасовано
+        type_adjustment: Коригування балансу
+        refund_via: Повернено через %{method}
         col_date: Дата
         col_description: Опис
         col_amount: Сума

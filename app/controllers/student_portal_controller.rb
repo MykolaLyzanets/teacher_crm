@@ -7,9 +7,10 @@ class StudentPortalController < ApplicationController
 
   layout 'student_portal'
   helper LessonsHelper
+  helper FinanceHelper
 
   def home
-    @finance = Demo::Finance.portal_finance(@catalog_student_id) if @catalog_student_id
+    load_portal_finance
     profile = current_user.student_profile
     @nearest_homework = HomeworkStudent.nearest_todo_item(profile) if profile.present?
     @recent_materials = Array(@materials_items).first(3)
@@ -22,7 +23,7 @@ class StudentPortalController < ApplicationController
   def materials; end
 
   def payments
-    @finance = Demo::Finance.portal_finance(@catalog_student_id) if @catalog_student_id
+    load_portal_finance
   end
 
   def profile; end
@@ -53,7 +54,7 @@ class StudentPortalController < ApplicationController
                        Demo::Catalog.active_students.first
     @catalog_student_id = @catalog_student&.dig(:id)
     @portal_lessons = Demo::Portal.lessons_for_student(profile)
-    @next_lesson = Demo::Finance.next_lesson_for_student(profile)
+    @next_lesson = Lessons::NextForStudent.call(profile)
     load_portal_demo_extras
   end
 
@@ -73,6 +74,13 @@ class StudentPortalController < ApplicationController
     profile = current_user.student_profile
     @materials_items = profile.present? ? Material.portal_items_for(profile) : []
     @materials_badge = Demo::Portal.new_materials_count(@materials_items)
+  end
+
+  def load_portal_finance
+    profile = current_user.student_profile
+    return if profile.blank?
+
+    @finance = StudentPortal::Finance.new(student_profile: profile).call
   end
 
   def load_portal_homework

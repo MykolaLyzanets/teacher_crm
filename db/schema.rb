@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
+ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -40,6 +40,20 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "currencies", force: :cascade do |t|
+    t.string "code", null: false
+    t.string "name", null: false
+    t.string "symbol", null: false
+    t.integer "subunit_to_unit", default: 100, null: false
+    t.boolean "active", default: true, null: false
+    t.boolean "default", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_currencies_on_code", unique: true
+    t.index ["default"], name: "index_currencies_single_default", unique: true, where: "(\"default\" = true)"
+    t.check_constraint "subunit_to_unit > 0", name: "currencies_subunit_positive"
   end
 
   create_table "homework_responses", force: :cascade do |t|
@@ -257,6 +271,22 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
     t.index ["workspace_id"], name: "index_notifications_on_workspace_id"
   end
 
+  create_table "student_lesson_type_prices", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.bigint "student_id", null: false
+    t.bigint "lesson_type_id", null: false
+    t.integer "price_cents", null: false
+    t.string "currency", default: "UAH", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lesson_type_id"], name: "index_student_lesson_type_prices_on_lesson_type_id"
+    t.index ["student_id", "lesson_type_id"], name: "index_student_lesson_type_prices_uniqueness", unique: true
+    t.index ["student_id"], name: "index_student_lesson_type_prices_on_student_id"
+    t.index ["workspace_id"], name: "index_student_lesson_type_prices_on_workspace_id"
+    t.check_constraint "currency::text = 'UAH'::text", name: "student_lesson_type_prices_currency_uah"
+    t.check_constraint "price_cents >= 0", name: "student_lesson_type_prices_price_non_negative"
+  end
+
   create_table "student_notes", force: :cascade do |t|
     t.bigint "student_id", null: false
     t.bigint "author_id", null: false
@@ -357,31 +387,50 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
 
   create_table "student_transactions", force: :cascade do |t|
     t.bigint "workspace_id", null: false
-    t.bigint "student_id", null: false
+    t.bigint "student_profile_id", null: false
     t.bigint "lesson_id"
-    t.integer "entry_type", null: false
-    t.integer "amount_cents", null: false
-    t.string "currency", default: "UAH", null: false
-    t.string "description"
-    t.string "method"
+    t.bigint "currency_id", null: false
+    t.integer "transaction_type", null: false
+    t.bigint "amount_cents", null: false
+    t.integer "status", null: false
+    t.integer "method"
     t.string "reference"
-    t.bigint "recorded_by_id"
+    t.text "internal_note"
+    t.jsonb "meta", default: {}, null: false
+    t.bigint "related_transaction_id"
+    t.bigint "created_by_id", null: false
+    t.bigint "confirmed_by_id"
+    t.datetime "confirmed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["lesson_id", "student_id"], name: "idx_unique_lesson_charge", unique: true, where: "((entry_type = 1) AND (lesson_id IS NOT NULL))"
+    t.index ["confirmed_by_id"], name: "index_student_transactions_on_confirmed_by_id"
+    t.index ["created_by_id"], name: "index_student_transactions_on_created_by_id"
+    t.index ["currency_id"], name: "index_student_transactions_on_currency_id"
+    t.index ["lesson_id", "student_profile_id", "transaction_type"], name: "index_student_transactions_unique_confirmed_lesson_charge", unique: true, where: "((lesson_id IS NOT NULL) AND (transaction_type = ANY (ARRAY[1, 2])) AND (status = 1))"
     t.index ["lesson_id"], name: "index_student_transactions_on_lesson_id"
-    t.index ["student_id"], name: "index_student_transactions_on_student_id"
+    t.index ["related_transaction_id"], name: "index_student_transactions_on_related_transaction_id"
+    t.index ["status"], name: "index_student_transactions_on_status"
+    t.index ["student_profile_id"], name: "index_student_transactions_on_student_profile_id"
+    t.index ["transaction_type"], name: "index_student_transactions_on_transaction_type"
+    t.index ["workspace_id", "student_profile_id"], name: "index_student_transactions_on_workspace_and_student"
     t.index ["workspace_id"], name: "index_student_transactions_on_workspace_id"
+    t.check_constraint "amount_cents <> 0", name: "student_transactions_amount_non_zero"
+    t.check_constraint "method IS NULL OR method >= 0 AND method <= 4", name: "student_transactions_method_valid"
+    t.check_constraint "status >= 0 AND status <= 2", name: "student_transactions_status_valid"
+    t.check_constraint "transaction_type >= 0 AND transaction_type <= 7", name: "student_transactions_type_valid"
   end
 
   create_table "subjects", force: :cascade do |t|
-    t.bigint "teacher_id", null: false
+    t.bigint "teacher_id"
     t.string "name", null: false
     t.boolean "is_active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index "teacher_id, lower((name)::text)", name: "index_subjects_on_teacher_id_lower_name", unique: true
+    t.bigint "workspace_id", null: false
+    t.index "teacher_id, lower((name)::text)", name: "index_subjects_on_teacher_id_lower_name", unique: true, where: "(teacher_id IS NOT NULL)"
+    t.index "workspace_id, lower((name)::text)", name: "index_subjects_on_workspace_id_lower_name_catalog", unique: true, where: "(teacher_id IS NULL)"
     t.index ["teacher_id"], name: "index_subjects_on_teacher_id"
+    t.index ["workspace_id"], name: "index_subjects_on_workspace_id"
   end
 
   create_table "teacher_absences", force: :cascade do |t|
@@ -397,33 +446,65 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
     t.check_constraint "ends_on >= starts_on", name: "teacher_absences_date_range"
   end
 
-  create_table "teacher_payments", force: :cascade do |t|
+  create_table "teacher_earnings", force: :cascade do |t|
     t.bigint "workspace_id", null: false
-    t.bigint "teacher_id", null: false
-    t.bigint "lesson_id", null: false
-    t.integer "amount_cents", null: false
-    t.integer "compensation_percent", null: false
-    t.string "currency", default: "UAH", null: false
+    t.bigint "teacher_profile_id", null: false
+    t.bigint "student_profile_id", null: false
+    t.bigint "lesson_id"
+    t.bigint "currency_id", null: false
+    t.integer "kind", null: false
+    t.bigint "lesson_price_cents", null: false
+    t.bigint "earning_cents", null: false
+    t.decimal "compensation_percent", precision: 5, scale: 2
+    t.datetime "reversed_at"
+    t.jsonb "meta", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["lesson_id"], name: "index_teacher_payments_on_lesson_id", unique: true
-    t.index ["teacher_id"], name: "index_teacher_payments_on_teacher_id"
-    t.index ["workspace_id"], name: "index_teacher_payments_on_workspace_id"
+    t.index ["currency_id"], name: "index_teacher_earnings_on_currency_id"
+    t.index ["kind"], name: "index_teacher_earnings_on_kind"
+    t.index ["lesson_id", "student_profile_id", "kind"], name: "index_teacher_earnings_unique_active_lesson", unique: true, where: "((lesson_id IS NOT NULL) AND (reversed_at IS NULL))"
+    t.index ["lesson_id"], name: "index_teacher_earnings_on_lesson_id"
+    t.index ["student_profile_id"], name: "index_teacher_earnings_on_student_profile_id"
+    t.index ["teacher_profile_id"], name: "index_teacher_earnings_on_teacher_profile_id"
+    t.index ["workspace_id", "teacher_profile_id"], name: "index_teacher_earnings_on_workspace_and_teacher"
+    t.index ["workspace_id"], name: "index_teacher_earnings_on_workspace_id"
+    t.check_constraint "compensation_percent IS NULL OR compensation_percent >= 0::numeric AND compensation_percent <= 100::numeric", name: "teacher_earnings_compensation_range"
+    t.check_constraint "earning_cents >= 0", name: "teacher_earnings_earning_non_negative"
+    t.check_constraint "kind = ANY (ARRAY[0, 1])", name: "teacher_earnings_kind_valid"
+    t.check_constraint "lesson_price_cents > 0", name: "teacher_earnings_lesson_price_positive"
+  end
+
+  create_table "teacher_payout_allocations", force: :cascade do |t|
+    t.bigint "teacher_payout_id", null: false
+    t.bigint "teacher_earning_id", null: false
+    t.bigint "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["teacher_earning_id"], name: "index_teacher_payout_allocations_on_teacher_earning_id"
+    t.index ["teacher_payout_id", "teacher_earning_id"], name: "index_teacher_payout_allocations_on_payout_and_earning", unique: true
+    t.index ["teacher_payout_id"], name: "index_teacher_payout_allocations_on_teacher_payout_id"
+    t.check_constraint "amount_cents > 0", name: "teacher_payout_allocations_amount_positive"
   end
 
   create_table "teacher_payouts", force: :cascade do |t|
     t.bigint "workspace_id", null: false
-    t.bigint "teacher_id", null: false
-    t.integer "amount_cents", null: false
-    t.integer "status", default: 1, null: false
-    t.datetime "paid_at"
-    t.text "notes"
-    t.string "method"
-    t.bigint "recorded_by_id"
+    t.bigint "teacher_profile_id", null: false
+    t.bigint "currency_id", null: false
+    t.bigint "amount_cents", null: false
+    t.integer "method", null: false
+    t.datetime "paid_at", null: false
+    t.string "reference"
+    t.text "note"
+    t.bigint "created_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["teacher_id"], name: "index_teacher_payouts_on_teacher_id"
+    t.index ["created_by_id"], name: "index_teacher_payouts_on_created_by_id"
+    t.index ["currency_id"], name: "index_teacher_payouts_on_currency_id"
+    t.index ["teacher_profile_id"], name: "index_teacher_payouts_on_teacher_profile_id"
+    t.index ["workspace_id", "teacher_profile_id"], name: "index_teacher_payouts_on_workspace_and_teacher"
     t.index ["workspace_id"], name: "index_teacher_payouts_on_workspace_id"
+    t.check_constraint "amount_cents > 0", name: "teacher_payouts_amount_positive"
+    t.check_constraint "method >= 0 AND method <= 4", name: "teacher_payouts_method_valid"
   end
 
   create_table "teacher_profiles", force: :cascade do |t|
@@ -455,6 +536,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "compensation_percent", default: 60, null: false
+    t.jsonb "availability_slots", default: [], null: false
     t.index ["user_id"], name: "index_teacher_profiles_on_user_id", unique: true
     t.index ["workspace_id"], name: "index_teacher_profiles_on_workspace_id"
   end
@@ -520,6 +602,9 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
   add_foreign_key "materials", "workspaces"
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "notifications", "workspaces", on_delete: :cascade
+  add_foreign_key "student_lesson_type_prices", "lesson_types", on_delete: :restrict
+  add_foreign_key "student_lesson_type_prices", "student_profiles", column: "student_id", on_delete: :cascade
+  add_foreign_key "student_lesson_type_prices", "workspaces", on_delete: :cascade
   add_foreign_key "student_notes", "student_profiles", column: "student_id"
   add_foreign_key "student_notes", "users", column: "author_id"
   add_foreign_key "student_prices", "student_profiles", column: "student_id"
@@ -531,16 +616,27 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_09_195900) do
   add_foreign_key "student_progress_milestones", "student_progresses"
   add_foreign_key "student_progress_skills", "student_progresses"
   add_foreign_key "student_progresses", "student_profiles", column: "student_id"
-  add_foreign_key "student_transactions", "student_profiles", column: "student_id"
-  add_foreign_key "student_transactions", "users", column: "recorded_by_id"
-  add_foreign_key "student_transactions", "workspaces"
+  add_foreign_key "student_transactions", "currencies", on_delete: :restrict
+  add_foreign_key "student_transactions", "lessons", on_delete: :restrict
+  add_foreign_key "student_transactions", "student_profiles", on_delete: :restrict
+  add_foreign_key "student_transactions", "student_transactions", column: "related_transaction_id", on_delete: :restrict
+  add_foreign_key "student_transactions", "users", column: "confirmed_by_id", on_delete: :restrict
+  add_foreign_key "student_transactions", "users", column: "created_by_id", on_delete: :restrict
+  add_foreign_key "student_transactions", "workspaces", on_delete: :restrict
   add_foreign_key "subjects", "teacher_profiles", column: "teacher_id"
+  add_foreign_key "subjects", "workspaces"
   add_foreign_key "teacher_absences", "teacher_profiles", column: "teacher_id"
-  add_foreign_key "teacher_payments", "teacher_profiles", column: "teacher_id"
-  add_foreign_key "teacher_payments", "workspaces"
-  add_foreign_key "teacher_payouts", "teacher_profiles", column: "teacher_id"
-  add_foreign_key "teacher_payouts", "users", column: "recorded_by_id"
-  add_foreign_key "teacher_payouts", "workspaces"
+  add_foreign_key "teacher_earnings", "currencies", on_delete: :restrict
+  add_foreign_key "teacher_earnings", "lessons", on_delete: :restrict
+  add_foreign_key "teacher_earnings", "student_profiles", on_delete: :restrict
+  add_foreign_key "teacher_earnings", "teacher_profiles", on_delete: :restrict
+  add_foreign_key "teacher_earnings", "workspaces", on_delete: :restrict
+  add_foreign_key "teacher_payout_allocations", "teacher_earnings", on_delete: :restrict
+  add_foreign_key "teacher_payout_allocations", "teacher_payouts", on_delete: :restrict
+  add_foreign_key "teacher_payouts", "currencies", on_delete: :restrict
+  add_foreign_key "teacher_payouts", "teacher_profiles", on_delete: :restrict
+  add_foreign_key "teacher_payouts", "users", column: "created_by_id", on_delete: :restrict
+  add_foreign_key "teacher_payouts", "workspaces", on_delete: :restrict
   add_foreign_key "teacher_profiles", "users"
   add_foreign_key "teacher_profiles", "workspaces"
   add_foreign_key "users", "workspaces"

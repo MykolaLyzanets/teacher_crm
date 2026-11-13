@@ -66,7 +66,8 @@
                     button.dash__text-btn type="button" data-action="dashboard#toast" data-message=t('app.dashboard.payment_confirmed') = t('app.dashboard.confirm')
                     button.dash__text-btn type="button" data-action="dashboard#toast" data-message=t('app.dashboard.payment_rejected') = t('app.dashboard.reject')
                 - elsif item[:kind].in?(%w[student_debt low_balance])
-                  = link_to item[:action], students_path, class: 'dash__text-btn'
+                  - student_link = item[:studentId].present? ? student_path(id: item[:studentId], tab: 'payments') : students_path
+                  = link_to item[:action], student_link, class: 'dash__text-btn'
                 - elsif item[:kind] == 'payout_due'
                   = link_to item[:action], payments_path, class: 'dash__text-btn'
                 - else

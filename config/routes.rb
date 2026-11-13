@@ -64,6 +64,12 @@ Rails.application.routes.draw do
       resources :materials, only: :create, controller: 'lesson_materials'
     end
     get 'payments', to: 'payments#index'
+    post 'payments/student_payment', to: 'payments#create_student_payment', as: :payments_student_payment
+    post 'payments/confirm_payment', to: 'payments#confirm_payment', as: :payments_confirm_payment
+    post 'payments/reject_payment', to: 'payments#reject_payment', as: :payments_reject_payment
+    post 'payments/adjustment', to: 'payments#create_adjustment', as: :payments_adjustment
+    post 'payments/teacher_payout', to: 'payments#create_teacher_payout', as: :payments_teacher_payout
+    post 'payments/refund', to: 'payments#create_refund', as: :payments_refund
     get 'profile', to: 'profiles#show'
     patch 'profile', to: 'profiles#update'
     put 'profile', to: 'profiles#update'
@@ -76,6 +82,9 @@ Rails.application.routes.draw do
     get 'settings/lessons/lesson-types/dialog', to: 'settings#lesson_type_dialog', as: :settings_lesson_type_dialog
     get 'settings/lessons/lesson-types/delete-dialog', to: 'settings#lesson_type_delete_dialog', as: :settings_lesson_type_delete_dialog
     get 'settings/lessons/lesson-types/subject-delete-dialog', to: 'settings#lesson_subject_delete_dialog', as: :settings_lesson_subject_delete_dialog
+
+    get 'catalog/subjects', to: 'catalog_subjects#index', as: :catalog_subjects
+    post 'catalog/subjects', to: 'catalog_subjects#create'
 
     scope :student, as: :student do
       get '/', to: 'student_portal#home', as: :root

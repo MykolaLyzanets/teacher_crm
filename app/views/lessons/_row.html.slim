@@ -2,6 +2,7 @@
 - upcoming = lesson_upcoming?(lesson)
 - subject = lesson_subject_label(lesson)
 - when_label = "#{format_lesson_day_short(lesson[:date])} · #{format_lesson_time_range(lesson[:startTime], lesson[:endTime])}"
+- show_lesson_price = can_view_finance?
 
 li.lessons-page__row[
   data-lessons-target="row"
@@ -26,7 +27,8 @@ li.lessons-page__row[
         = safe_join([lesson_students_links(lesson), lesson_teacher_link(lesson)], ' · ')
     .lessons-page__card-foot
       = lesson_status_badge(lesson, review:)
-      p.lessons-page__price = lesson_price_label(lesson)
+      - if show_lesson_price
+        p.lessons-page__price = lesson_price_label(lesson)
     = render 'outcome_cell', lesson: lesson, review: review
 
   .lessons-page__desktop
@@ -37,7 +39,8 @@ li.lessons-page__row[
       = lesson_students_links(lesson)
     p.lessons-page__cell = lesson_teacher_link(lesson)
     p.lessons-page__cell = subject
-    p.lessons-page__price = lesson_price_label(lesson)
+    - if show_lesson_price
+      p.lessons-page__price = lesson_price_label(lesson)
     div
       = lesson_status_badge(lesson, review:)
     = render 'outcome_cell', lesson: lesson, review: review

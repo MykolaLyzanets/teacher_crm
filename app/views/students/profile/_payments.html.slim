@@ -1,99 +1,167 @@
-- currency = finance&.dig(:currency).presence || pricing&.dig(:currency).presence || 'EUR'
-- outstanding = finance&.dig(:outstandingCents).to_i
+- currency = finance&.dig(:currency).presence || pricing&.dig(:currency).presence || 'UAH'
 - pending_count = finance&.dig(:pendingPaymentsCount).to_i
-- ledger = student_ledger_rows(Array(finance&.dig(:transactions)))
-
+- ledger = Array(finance&.dig(:ledger))
+- filter_counts = student_ledger_filter_counts(ledger)
+- reference_price = pricing&.dig(:defaultPriceCents).to_i
+- lesson_charges_total = finance&.dig(:lessonChargesTotalCents).to_i
+- has_opening = finance&.dig(:hasOpeningBalance)
+- student_name = student[:displayName].presence || student_display_name(student)
+- balance_status = student_profile_balance_status(balance_cents, currency, reference_price)
+- lesson_hint = reference_price.positive? ? t('app.students.default_per_lesson', price: money_label(reference_price, pricing&.dig(:currency).presence || currency)) : t('app.students.uses_lesson_prices')
 .students-page__profile-col
-  span.students-page__admin-chip
-    = icon_tag 'lock', size: 14
-    = t('app.students.payments_admin_only')
-
   .students-page__payments-head
     div
-      h2 = t('app.students.tab_payments')
+      span.students-page__admin-chip
+        = icon_tag 'lock', size: 14
+        = t('app.students.payments_admin_only')
+      h2 = t('app.students.balance_payments_title')
       p = t('app.students.payments_intro')
     - if can_manage_payments?
       .students-page__hero-actions
-        button.students-page__ghost-btn type="button" data-action="students#toastMessage" data-message=t('app.payments.adjusted')
+        - if !has_opening
+          button.students-page__ghost-btn type="button" data-action="payments#openAdjustment" data-student-id=student[:id] data-student-name=student_name data-currency=currency data-balance-cents=balance_cents
+            = icon_tag 'flag', size: 18
+            span = t('app.students.set_opening_balance')
+        button.students-page__ghost-btn type="button" data-action="payments#openAdjustment" data-student-id=student[:id] data-student-name=student_name data-currency=currency data-balance-cents=balance_cents
           = icon_tag 'adjustments', size: 18
-          span = t('app.students.add_adjustment')
-        button.students-page__create-btn type="button" data-action="students#toastMessage" data-message=t('app.payments.payment_added')
+          span = t('app.students.adjust_balance')
+        button.students-page__create-btn type="button" data-action="payments#openPayment" data-student-id=student[:id] data-student-name=student_name data-currency=currency data-balance-cents=balance_cents data-reference-price-cents=(reference_price if reference_price.positive?)
           = icon_tag 'plus', size: 18
-          span = t('app.students.add_payment')
+          span = t('app.payments.add_funds')
 
-  .students-page__profile-stats
-    .students-page__profile-stat
-      span.students-page__profile-stat-icon
-        = icon_tag 'wallet', size: 22
+  section.students-page__pay-summary
+    .students-page__pay-balance-card class=(balance_cents.to_i.negative? ? 'is-warn' : nil)
+      .students-page__pay-balance-top
+        span.students-page__pay-tile-label
+          = icon_tag 'wallet', size: 18
+          = t('app.students.current_balance')
+        = student_balance_status_badge(balance_status[:health])
+      p.students-page__pay-balance-value class=pay_balance_value_class(balance_cents, balance_status[:health]) = balance_money_label(balance_cents, currency)
+      p.students-page__pay-tile-hint = balance_status[:hint]
+    .students-page__pay-tile
+      span.students-page__pay-tile-label
+        = icon_tag 'cash', size: 18
+        = t('app.students.total_topped_up')
+      p.students-page__pay-tile-value = money_label(finance&.dig(:totalPaidCents).to_i, currency)
+      p.students-page__pay-tile-hint = student_topped_up_hint(pending_count)
+    .students-page__pay-tile
+      span.students-page__pay-tile-label
+        = icon_tag 'receipt', size: 18
+        = t('app.students.lesson_charges')
+      p.students-page__pay-tile-value = money_label(lesson_charges_total, currency)
+      p.students-page__pay-tile-hint = lesson_hint
+
+  - if balance_status[:state] != :healthy
+    .students-page__balance-note class="students-page__balance-note--#{balance_status[:state]}"
+      = icon_tag 'alert-triangle', size: 16
       span
-        span.students-page__profile-stat-label = t('app.students.current_balance')
-        span.students-page__profile-stat-value = money_label(finance&.dig(:availableBalanceCents).to_i, currency)
-        span.students-page__profile-stat-support = t('app.students.available_credit')
-    .students-page__profile-stat
-      span.students-page__profile-stat-icon
-        = icon_tag 'cash', size: 22
-      span
-        span.students-page__profile-stat-label = t('app.students.total_paid')
-        span.students-page__profile-stat-value = money_label(finance&.dig(:totalPaidCents).to_i, currency)
-        span.students-page__profile-stat-support = t('app.students.confirmed_payments')
-    .students-page__profile-stat class=(outstanding.positive? ? 'students-page__profile-stat--warn' : nil)
-      span.students-page__profile-stat-icon
-        = icon_tag 'receipt', size: 22
-      span
-        span.students-page__profile-stat-label = t('app.students.outstanding')
-        span.students-page__profile-stat-value = money_label(outstanding, currency)
-        span.students-page__profile-stat-support = outstanding.positive? ? t('app.students.amount_due') : t('app.students.nothing_due')
-    .students-page__profile-stat
-      span.students-page__profile-stat-icon
-        = icon_tag 'receipt', size: 22
-      span
-        span.students-page__profile-stat-label = t('app.students.lesson_charges')
-        span.students-page__profile-stat-value = finance&.dig(:lessonChargeCount).to_i
-        span.students-page__profile-stat-support
-          - if pricing
-            = t('app.students.default_per_lesson', price: money_label(pricing[:defaultPriceCents], pricing[:currency]))
-          - else
-            = t('app.students.completed_lessons_only')
+        strong = "#{balance_status[:state] == :negative ? t('app.students.negative_balance_badge') : t('app.payments.status_low_balance')}."
+        =< balance_status[:hint]
 
   - if pending_count.positive? && can_manage_payments?
     p.students-page__notice.students-page__notice--amber
       - if pending_count == 1
-        = t('app.students.pending_payment_notice')
+        == t('app.students.pending_payment_banner_html')
       - else
-        = t('app.students.pending_payments_notice', count: pending_count)
+        == t('app.students.pending_payments_banner_html', count: pending_count)
 
-  - if balance_cents.to_i.negative?
-    p.students-page__notice.students-page__notice--warn
-      = t('app.students.balance_negative_notice', amount: money_label(balance_cents.abs, currency))
+  section.students-page__pay-history data-controller="student-profile-payments"
+    .students-page__pay-history-head
+      .students-page__pay-history-intro
+        h3 = t('app.students.transaction_history')
+        p = t('app.students.transaction_history_hint')
+      - if ledger.present?
+        .students-page__ledger-filters role="tablist" aria-label=t('app.student_portal.payments.filter_history')
+          button.students-page__ledger-chip.is-active type="button" role="tab" aria-selected="true" data-filter="all" data-filter-btn="true" data-action="student-profile-payments#pickFilter"
+            = student_ledger_filter_label('all')
+            span.students-page__ledger-chip-count = filter_counts[:all]
+          - Finance::StudentLedgerCategories::FILTER_KEYS.each do |key|
+            button.students-page__ledger-chip type="button" role="tab" aria-selected="false" data-filter=key data-filter-btn="true" data-action="student-profile-payments#pickFilter"
+              = student_ledger_filter_label(key)
+              span.students-page__ledger-chip-count = filter_counts[key]
 
-  section.students-page__table-card
-    .students-page__table-toolbar
-      div
-        h2 = t('app.students.transaction_history')
-        p.students-page__meta = t('app.students.transaction_history_hint')
     - if ledger.blank?
-      .students-page__table-empty
-        p = t('app.students.no_transactions')
-        span = t('app.students.no_transactions_hint')
+      .students-page__pay-empty
+        .students-page__pay-empty-icon
+          = icon_tag 'wallet', size: 24
+        p.students-page__pay-empty-title = t('app.students.no_transactions')
+        p.students-page__pay-empty-text
+          - if can_manage_payments?
+            = t('app.students.no_transactions_hint_admin')
+          - else
+            = t('app.students.no_transactions_hint')
     - else
-      .students-page__table-wrap
-        table.students-page__data-table
-          thead
-            tr
-              th = t('app.students.col_date')
-              th = t('app.students.col_type')
-              th = t('app.payments.col_description')
-              th = t('app.students.col_amount')
-              th = t('app.students.col_balance_after')
-              th = t('app.students.col_method')
-              th = t('app.students.col_recorded_by')
-          tbody
-            - ledger.each do |item|
+      .students-page__ledger-panel data-student-profile-payments-target="tablePanel"
+        .students-page__ledger-wrap
+          table.students-page__ledger-table
+            colgroup
+              col.students-page__ledger-col-date
+              col.students-page__ledger-col-details
+              col.students-page__ledger-col-num
+              col.students-page__ledger-col-num
+              - if can_manage_payments?
+                col.students-page__ledger-col-num
+            thead
               tr
-                td = student_profile_date_label(item[:date])
-                td = t("app.payments.types.#{item[:type]}", default: item[:type].to_s.humanize)
-                td = item[:description]
-                td = signed_money_label(item[:amountCents], item[:currency].presence || currency)
-                td = money_label(item[:balanceAfterCents], item[:currency].presence || currency)
-                td = t("app.payments.methods.#{item[:method]}", default: item[:method].to_s.humanize.presence || '—')
-                td = item[:recordedBy].presence || item[:createdBy].presence || '—'
+                th = t('app.students.col_date')
+                th = t('app.students.col_details')
+                th.students-page__ledger-num = t('app.students.col_amount')
+                th.students-page__ledger-num = t('app.students.col_balance')
+                - if can_manage_payments?
+                  th.students-page__ledger-num = t('app.payments.col_actions')
+            tbody
+              - ledger.each do |item|
+                - unconfirmed = student_ledger_unconfirmed?(item)
+                - row_muted = unconfirmed || item[:reversed]
+                tr.students-page__ledger-row class=(row_muted ? 'is-muted' : nil) data-student-profile-payments-target="row" data-category=item[:category]
+                  td.students-page__ledger-date = student_ledger_date_label(item[:date])
+                  td
+                    .students-page__ledger-details
+                      .students-page__ledger-badges
+                        span class="pay-status-badge pay-status-badge--fill pay-status-badge--#{student_ledger_type_badge_tone(item[:category])}" = item[:typeLabel]
+                        - if item[:confirmationStatus].to_s == 'pending'
+                          span.pay-status-badge.pay-status-badge--pending = t('app.payments.awaiting_confirmation')
+                        - if item[:confirmationStatus].to_s == 'rejected'
+                          span.pay-status-badge.pay-status-badge--rose = t('app.payments.tx_status_rejected')
+                        - if item[:reversed]
+                          span.pay-status-badge.pay-status-badge--neutral = t('app.student_portal.payments.reversed')
+                      p.students-page__ledger-headline class=(item[:reversed] ? 'is-struck' : nil) = item[:headline].presence || item[:description]
+                      - if item[:subline].present?
+                        p.students-page__ledger-sub = item[:subline]
+                      - if item[:internalNote].present? || item[:lessonId].present?
+                        .students-page__ledger-foot
+                          - if item[:internalNote].present?
+                            p.students-page__ledger-internal
+                              = icon_tag 'lock', size: 12
+                              span
+                                strong = t('app.students.ledger_internal')
+                                =< item[:internalNote]
+                          - if item[:lessonId].present?
+                            = link_to calendar_path(lessonId: item[:lessonId]), class: 'students-page__ledger-lesson-link' do
+                              = icon_tag 'calendar-event', size: 14
+                              span = t('app.students.ledger_view_lesson')
+                  td.students-page__ledger-num
+                    - unless unconfirmed
+                      span class=(item[:amountCents].to_i.negative? ? 'students-page__ledger-amount is-neg' : 'students-page__ledger-amount is-pos')
+                        = signed_money_label(item[:amountCents], item[:currency].presence || currency)
+                  td.students-page__ledger-num
+                    - if unconfirmed
+                      span.students-page__ledger-muted = t('app.students.balance_not_applied')
+                    - elsif item[:balanceAfterCents]
+                      span class=(item[:balanceAfterCents].to_i.negative? ? 'is-neg' : nil)
+                        = money_label(item[:balanceAfterCents], item[:currency].presence || currency)
+                    - else
+                      span.students-page__ledger-muted —
+                  - if can_manage_payments?
+                    td.students-page__ledger-num
+                      - if item[:confirmationStatus].to_s == 'pending' && item[:paymentId].present?
+                        .students-page__ledger-actions
+                          button.students-page__text-link type="button" data-action="payments#confirmPending" data-payment-id=item[:paymentId] = t('app.payments.confirm')
+                          button.students-page__text-link.students-page__text-link--danger type="button" data-action="payments#rejectPending" data-payment-id=item[:paymentId] = t('app.payments.reject')
+                      - elsif item[:refundableCents].to_i.positive? && item[:refundPaymentId].present?
+                        button.students-page__text-link.students-page__text-link--lg type="button" data-action="payments#openRefund" data-payment-id=item[:refundPaymentId] data-refundable-cents=item[:refundableCents] data-payment-cents=item[:originalPaymentCents] data-currency=(item[:currency].presence || currency) data-party=student_name = t('app.payments.refund')
+                      - else
+                        span.students-page__ledger-muted —
+      .students-page__ledger-filter-empty hidden="hidden" data-student-profile-payments-target="filterEmpty"
+        p = t('app.student_portal.payments.filter_empty')
+        button.students-page__text-link.students-page__text-link--lg type="button" data-filter="all" data-filter-btn="true" data-action="student-profile-payments#pickFilter" = t('app.students.ledger_show_all')

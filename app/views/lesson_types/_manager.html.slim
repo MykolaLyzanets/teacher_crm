@@ -2,26 +2,31 @@
 - title = local_assigns[:title]
 - description = local_assigns[:description]
 - show_toast = local_assigns.fetch(:show_toast, true)
+- variant = local_assigns.fetch(:variant, :default)
+- show_add_lesson = local_assigns.fetch(:show_add_lesson, true)
+- teaching = variant == :teaching
 
 - if show_toast
   p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
 
-.lt-manager__head
-  div
-    - if title.present?
-      - if heading == :h1
-        h1.settings-page__title = title
-      - else
-        h2.lt-manager__title = title
-    - if description.present?
-      p.settings-page__subtitle = description
+- if title.present? || description.present?
+  .lt-manager__head
+    div
+      - if title.present?
+        - if heading == :h1
+          h1.settings-page__title = title
+        - else
+          h2.lt-manager__title = title
+      - if description.present?
+        p.settings-page__subtitle = description
 
-.lt-empty hidden="hidden" data-lesson-types-target="empty"
+.lt-empty class=(teaching ? 'lt-empty--teaching' : nil) hidden="hidden" data-lesson-types-target="empty"
   .lt-empty__icon
     = icon_tag 'book', size: 24
-  h3 = t('app.lesson_types.empty_title')
-  p = t('app.lesson_types.empty_text')
+  h3 = teaching ? t('app.teachers.teaching_empty_title') : t('app.lesson_types.empty_title')
+  p = teaching ? t('app.teachers.teaching_empty_text') : t('app.lesson_types.empty_text')
 
 .lt-list data-lesson-types-target="list"
 
-= render 'lesson_types/add_lesson'
+- if show_add_lesson
+  = render 'lesson_types/add_lesson'

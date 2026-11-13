@@ -1,5 +1,16 @@
 # frozen_string_literal: true
 
+Currency.where(default: true).where.not(code: 'UAH').update_all(default: false)
+
+Currency.find_or_initialize_by(code: 'UAH').tap do |currency|
+  currency.name = 'Ukrainian hryvnia'
+  currency.symbol = '₴'
+  currency.subunit_to_unit = 100
+  currency.active = true
+  currency[:default] = true
+  currency.save!
+end
+
 admin_email = ENV.fetch('ADMIN_EMAIL', 'admin@gmail.com')
 admin_password = ENV.fetch('ADMIN_PASSWORD', 'admin@gmail.com')
 

@@ -1,0 +1,133 @@
+- if can_view_finance?
+  section.teachers-page__card.tc-section#compensation.tc-scroll-anchor data-controller="teacher-compensation" data-teacher-compensation-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teacher-compensation-locale-value=I18n.locale
+    .teachers-step-card__head
+      h2.teachers-step-card__title = t('app.teachers.compensation.section_title')
+      p.teachers-page__section-sub = t('app.teachers.compensation.section_description')
+
+    .tc-disabled hidden="hidden" data-teacher-compensation-target="disabledPanel"
+      .tc-disabled__inner
+        .tc-disabled__icon
+          = icon_tag 'wallet', size: 24
+        h3 = t('app.teachers.compensation.disabled_title')
+        p = t('app.teachers.compensation.disabled_text')
+        button.teachers-page__primary-btn type="button" data-action="teacher-compensation#enableSetup"
+          = icon_tag 'plus', size: 18
+          span = t('app.teachers.compensation.setup_btn')
+
+    .tc-layout data-teacher-compensation-target="formPanel"
+      .tc-editor
+        section.tc-step
+          .tc-step__head
+            .tc-step__lead
+              span.tc-step__num 1
+              .tc-step__copy
+                h3 = t('app.teachers.compensation.pay_type_title')
+            button.tc-link type="button" data-action="teacher-compensation#disableSetup" = t('app.teachers.compensation.setup_later')
+
+          .tc-pay-types role="radiogroup" aria-label=t('app.teachers.compensation.pay_type_title')
+            button.tc-pay-card.is-selected type="button" role="radio" aria-checked="true" data-teacher-compensation-target="payTypeLesson" data-model="lesson_based" data-action="teacher-compensation#pickPayType"
+              span.tc-pay-card__icon
+                = icon_tag 'cash', size: 20
+              span.tc-pay-card__copy
+                strong = t('app.teachers.compensation.pay_lesson_title')
+                span = t('app.teachers.compensation.pay_lesson_desc')
+              span.tc-pay-card__check aria-hidden="true"
+                = icon_tag 'check', size: 14
+            button.tc-pay-card type="button" role="radio" aria-checked="false" data-teacher-compensation-target="payTypeSalary" data-model="monthly_salary" data-action="teacher-compensation#pickPayType"
+              span.tc-pay-card__icon
+                = icon_tag 'calendar-event', size: 20
+              span.tc-pay-card__copy
+                strong = t('app.teachers.compensation.pay_salary_title')
+                span = t('app.teachers.compensation.pay_salary_desc')
+
+        .tc-lesson-blocks data-teacher-compensation-target="lessonBlocks"
+          section.tc-step
+            .tc-step__head
+              .tc-step__lead
+                span.tc-step__num 2
+                .tc-step__copy
+                  h3 = t('app.teachers.compensation.default_rule_title')
+                  p = t('app.teachers.compensation.default_rule_desc')
+
+            .tc-rule-card
+              .tc-rule-card__head
+                .tc-rule-card__title
+                  span.tc-rule-card__badge = t('app.teachers.compensation.default_badge')
+                  strong = t('app.teachers.compensation.default_rule_title')
+                label.tc-switch
+                  span.tc-switch__state data-teacher-compensation-target="standardToggleLabel" = t('app.teachers.compensation.toggle_on')
+                  span.tc-switch__control
+                    input.sr-only type="checkbox" role="switch" checked=true aria-label=t('app.teachers.compensation.default_rule_toggle') data-teacher-compensation-target="standardToggle" data-action="change->teacher-compensation#toggleStandard"
+                    span.tc-switch__rail aria-hidden="true"
+                    span.tc-switch__knob aria-hidden="true"
+              .tc-rule-card__body data-teacher-compensation-target="standardBody"
+                .tc-segmented.tc-segmented--sm role="group" aria-label=t('app.teachers.compensation.calculation_type')
+                  button.tc-segmented__btn.is-active type="button" data-teacher-compensation-target="ruleFixed" data-rule-model="fixed_per_lesson" data-action="teacher-compensation#pickRuleModel"
+                    = icon_tag 'cash', size: 15
+                    span = t('app.teachers.compensation.fixed_amount')
+                  button.tc-segmented__btn type="button" data-teacher-compensation-target="rulePercent" data-rule-model="percentage" data-action="teacher-compensation#pickRuleModel"
+                    span %
+                    span = t('app.teachers.compensation.percentage')
+                .tc-field-width data-teacher-compensation-target="ruleFixedField"
+                  .tc-affix
+                    span.tc-affix__prefix = t('app.teachers.compensation.currency_uah')
+                    input.tc-affix__input type="text" inputmode="decimal" placeholder="300" data-teacher-compensation-target="standardRate" data-action="input->teacher-compensation#standardRateInput"
+                    span.tc-affix__suffix = t('app.teachers.compensation.per_lesson_suffix')
+                .tc-field-width hidden="hidden" data-teacher-compensation-target="rulePercentField"
+                  .tc-affix
+                    input.tc-affix__input type="text" inputmode="decimal" placeholder="40" data-teacher-compensation-target="standardPercent" data-action="input->teacher-compensation#standardPercentInput"
+                    span.tc-affix__suffix = t('app.teachers.compensation.percent_suffix')
+              p.tc-rule-card__footer data-teacher-compensation-target="standardFooter"
+
+          section.tc-step
+            .tc-step__head
+              .tc-step__lead
+                span.tc-step__num 3
+                .tc-step__copy
+                  h3 = t('app.teachers.compensation.options_title')
+                  p = t('app.teachers.compensation.options_desc')
+
+            .tc-options-empty hidden="hidden" data-teacher-compensation-target="optionsEmpty"
+              = icon_tag 'book', size: 20
+              p
+                = t('app.teachers.compensation.options_empty_html').html_safe
+            ul.tc-options data-teacher-compensation-target="optionsList"
+
+        .tc-monthly-block hidden="hidden" data-teacher-compensation-target="monthlyBlock"
+          section.tc-step
+            .tc-step__head
+              .tc-step__lead
+                span.tc-step__num 2
+                .tc-step__copy
+                  h3 = t('app.teachers.compensation.pay_salary_title')
+                  p = t('app.teachers.compensation.salary_desc')
+            .tc-field-width.tc-field-width--salary
+              .tc-affix
+                span.tc-affix__prefix = t('app.teachers.compensation.currency_uah')
+                input.tc-affix__input type="text" inputmode="decimal" placeholder="20000" data-teacher-compensation-target="salaryAmount" data-action="input->teacher-compensation#salaryInput"
+                span.tc-affix__suffix = t('app.teachers.compensation.per_month_suffix')
+
+        section.tc-step
+          .tc-step__head
+            .tc-step__lead
+              span.tc-step__num 4
+              .tc-step__copy
+                h3 = t('app.teachers.compensation.effective_title')
+                p = t('app.teachers.compensation.effective_desc')
+          label.tc-date
+            = icon_tag 'calendar-event', size: 18
+            input type="date" data-teacher-compensation-target="effectiveFrom" data-action="input->teacher-compensation#effectiveFromInput"
+          p.tc-note
+            = icon_tag 'check-circle', size: 16
+            span = t('app.teachers.compensation.effective_note')
+
+      aside.tc-aside
+        .tc-summary
+          p.tc-summary__label = t('app.teachers.compensation.summary')
+          p.tc-summary__headline data-teacher-compensation-target="summaryHeadline"
+          p.tc-summary__footer data-teacher-compensation-target="summaryFooter"
+        .tc-preview
+          p.tc-preview__label
+            = icon_tag 'receipt', size: 16
+            span = t('app.teachers.compensation.preview_title')
+          .tc-preview__body data-teacher-compensation-target="previewBody"

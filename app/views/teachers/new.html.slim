@@ -1,6 +1,5 @@
 - editing = @editing
 - teacher = (@teacher || {}).with_indifferent_access
-- working_days = Array(teacher[:workingDays])
 - duration_preset = teacher_duration_preset(teacher)
 - form_url = editing ? teacher_path(teacher[:id]) : teachers_path
 - form_method = editing ? :patch : :post
@@ -9,7 +8,7 @@
 - content_for :title, "#{editing ? t('app.teachers.edit_title') : t('app.teachers.create_title')} | danlio"
 
 .teachers-page.teachers-page--form data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teachers-editing-value=editing data-teachers-name-value=teacher_display_name(teacher)
-  .lt-scope data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id])
+  .lt-scope data=lesson_types_stimulus_data(mode: 'teacher_assign', teacher_id: teacher[:id])
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path
       = icon_tag 'chevron-right', size: 16
@@ -124,73 +123,11 @@
             span = t('app.teachers.location')
             input type="text" name="location" placeholder=t('app.teachers.location_placeholder') value=teacher[:location]
 
-      section.teachers-page__card
-        h2 = t('app.teachers.teaching')
-        p.teachers-page__section-sub = t('app.teachers.teaching_sub')
-        .lt-teaching
-          p.settings-page__toast hidden="hidden" role="status" data-lesson-types-target="toast"
-          .lt-teaching__intro
-            p.lt-teaching__label = t('app.lesson_types.lessons_pricing')
-            p.teachers-page__hint = t('app.lesson_types.lessons_pricing_hint')
-          p.lt-field-error hidden="hidden" data-lesson-types-target="listError"
-          input type="hidden" name="lesson_catalog" value=(teacher[:lessonCatalog].presence || '[]') data-lesson-types-target="draftPayload"
-          = render 'lesson_types/manager', heading: :h2, title: nil, description: nil, show_toast: false
+      input type="hidden" name="lesson_catalog" value=(teacher[:lessonCatalog].presence || '[]') data-lesson-types-target="draftPayload"
+      = render 'teachers/teaching_section', show_step: true, assignment_only: true
+      = render 'teachers/compensation_section'
 
-      section.teachers-page__card
-        h2 = t('app.teachers.availability')
-        p.teachers-page__section-sub = t('app.teachers.availability_sub')
-        .teachers-page__chips-block
-          p.teachers-page__chips-label = t('app.teachers.working_days')
-          .teachers-page__chips
-            - TeachersHelper::WEEK_DAYS.each do |day|
-              label.teachers-page__chip-toggle
-                input type="checkbox" name="working_days[]" value=day checked=working_days.include?(day) data-teachers-target="workingDay" data-day=day data-action="change->teachers#toggleWorkingDay"
-                span = weekday_short_label(day)
-        .teachers-page__hours data-teachers-target="hoursWrap"
-          .teachers-page__hours-head
-            p.teachers-page__chips-label = t('app.teachers.available_hours')
-            button.teachers-page__link-btn type="button" data-action="teachers#copyMonday" data-teachers-target="copyMonday" = t('app.teachers.copy_monday')
-          .teachers-page__hours-list
-            - TeachersHelper::WEEK_DAYS.each do |day|
-              - selected_day = working_days.include?(day)
-              .teachers-page__hours-row data-teachers-target="hoursRow" data-day=day hidden=(selected_day ? nil : true)
-                span = weekday_short_label(day)
-                label.sr-only for="start-#{day}" = "#{day} start"
-                input id="start-#{day}" type="time" name="working_hours[#{day}][start]" value=teacher_hour_value(teacher, day, 'start') data-role="start" disabled=(selected_day ? nil : true)
-                label.sr-only for="end-#{day}" = "#{day} end"
-                input id="end-#{day}" type="time" name="working_hours[#{day}][end]" value=teacher_hour_value(teacher, day, 'end') data-role="end" disabled=(selected_day ? nil : true)
-        p.teachers-page__field-error hidden="hidden" data-teachers-target="hoursError"
-        .teachers-page__fields
-          label.teachers-page__field
-            span = t('app.teachers.default_duration')
-            input type="hidden" name="default_lesson_duration_minutes" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : duration_preset.presence) data-teachers-target="durationValue"
-            select data-teachers-target="durationPreset" data-action="change->teachers#toggleCustomDuration" name="duration_preset"
-              option value="" selected=(duration_preset.blank?) = t('app.teachers.select_duration')
-              - [30, 45, 60, 90].each do |minutes|
-                option value=minutes selected=(duration_preset == minutes.to_s) = t('app.teachers.minutes', count: minutes)
-              option value="custom" selected=(duration_preset == 'custom') = t('app.teachers.custom_duration')
-          label.teachers-page__field data-teachers-target="customDuration" hidden=(duration_preset == 'custom' ? nil : true)
-            span
-              = t('app.teachers.custom_duration_minutes')
-              span.teachers-page__req *
-            input type="number" name="custom_duration" min="1" step="1" placeholder="75" value=(duration_preset == 'custom' ? teacher[:defaultLessonDurationMinutes] : nil) data-teachers-target="customMinutes" data-action="input->teachers#syncCustomMinutes blur->teachers#markTouched"
-            p.teachers-page__field-error hidden="hidden" data-error-for="customDuration"
-          label.teachers-page__field.teachers-page__field--full
-            span = t('app.teachers.lesson_formats')
-            .teachers-page__chips
-              - [['online', t('app.common.online')], ['in_person', t('app.common.in_person')], ['hybrid', t('app.common.hybrid')]].each do |value, label|
-                label.teachers-page__chip-toggle
-                  input type="checkbox" name="lesson_formats[]" value=value checked=Array(teacher[:lessonFormats]).include?(value)
-                  span = label
-          fieldset.teachers-page__field.teachers-page__field--full
-            legend.teachers-page__chips-label = t('app.teachers.calendar_color')
-            p.teachers-page__hint = t('app.teachers.calendar_color_hint')
-            input type="hidden" name="calendar_color" value=(teacher[:calendarColor].presence || 'olive') data-teachers-target="calendarColor"
-            .teachers-page__color-btns
-              - TeachersHelper::CALENDAR_COLORS.each do |id, hex|
-                button.teachers-page__color-btn type="button" data-color=id data-action="teachers#setCalendarColor" aria-pressed=(id.to_s == (teacher[:calendarColor].presence || 'olive').to_s) aria-label=teacher_color_label(id)
-                  span style="background-color: #{hex}"
-                  = teacher_color_label(id)
+      = render 'teachers/availability_section', teacher:
 
       section.teachers-page__card
         h2 = t('app.teachers.internal_notes')
