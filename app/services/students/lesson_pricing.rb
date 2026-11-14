@@ -25,12 +25,19 @@ module Students
     end
 
     def catalog_rows(student_profile)
-      records = student_profile.student_lesson_type_prices.includes(lesson_type: :subject).to_a
+      records = student_profile.student_lesson_type_prices.to_a
       return [] if records.empty?
 
-      records.sort_by { |row| [row.lesson_type.subject.name, row.lesson_type.name] }.map do |row|
-        type = row.lesson_type
-        subject = type.subject
+      types = LessonType.where(id: records.map(&:lesson_type_id).uniq).index_by(&:id)
+      subjects = Subject.where(id: types.values.map(&:subject_id).uniq).index_by(&:id)
+
+      records.sort_by do |row|
+        type = types[row.lesson_type_id]
+        subject = subjects[type&.subject_id]
+        [subject&.name.to_s, type&.name.to_s]
+      end.map do |row|
+        type = types.fetch(row.lesson_type_id)
+        subject = subjects.fetch(type.subject_id)
         {
           lessonTypeId: type.id.to_s,
           subjectId: subject.id.to_s,

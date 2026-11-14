@@ -11,6 +11,15 @@ function todayIso() {
   return `${y}-${m}-${d}`
 }
 
+function parsePositiveSalaryAmount(raw) {
+  const trimmed = String(raw ?? "").trim().replace(",", ".")
+  if (!trimmed) return null
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return Number.NaN
+  const value = Number(trimmed)
+  if (!Number.isFinite(value) || value <= 0) return Number.NaN
+  return value
+}
+
 function parseCatalog(raw) {
   try {
     const data = JSON.parse(raw || "[]")
@@ -84,7 +93,9 @@ export default class extends Controller {
     "ruleFixedField",
     "rulePercentField",
     "monthlyBlock",
-    "lessonBlocks"
+    "lessonBlocks",
+    "payload",
+    "salaryError"
   ]
 
   static values = {
@@ -106,11 +117,15 @@ export default class extends Controller {
     this.specificRules = {}
     this.previewOptionKey = null
     this.previewPrices = {}
+    this.hydrateFromPayload()
     this.onCatalogChange = this.onCatalogChange.bind(this)
     this.handleOptionsClick = this.handleOptionsClick.bind(this)
     this.handleOptionsInput = this.handleOptionsInput.bind(this)
     this.handlePreviewInput = this.handlePreviewInput.bind(this)
+    this.onFormSubmit = this.onFormSubmit.bind(this)
     document.addEventListener("lesson-catalog:change", this.onCatalogChange)
+    this.formElement = this.element.closest("form")
+    if (this.formElement) this.formElement.addEventListener("submit", this.onFormSubmit, true)
     this.catalogInput = document.querySelector('[data-lesson-types-target="draftPayload"]')
     if (this.hasOptionsListTarget) {
       this.optionsListTarget.addEventListener("click", this.handleOptionsClick)
@@ -125,6 +140,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    if (this.formElement) this.formElement.removeEventListener("submit", this.onFormSubmit, true)
     document.removeEventListener("lesson-catalog:change", this.onCatalogChange)
     if (this.hasOptionsListTarget) {
       this.optionsListTarget.removeEventListener("click", this.handleOptionsClick)
@@ -151,6 +167,87 @@ export default class extends Controller {
   onCatalogChange() {
     this.refreshOptions()
     this.render()
+  }
+
+  onFormSubmit(event) {
+    this.syncPayload()
+    if (!this.submitBlocked()) return
+
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    this.renderSalaryError()
+    this.element.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  submitBlocked() {
+    if (!this.enabled || this.model !== "monthly_salary") return false
+    return !this.monthlySalaryValid()
+  }
+
+  monthlySalaryValid() {
+    const parsed = parsePositiveSalaryAmount(this.salary)
+    return parsed != null && !Number.isNaN(parsed)
+  }
+
+  renderSalaryError() {
+    const message = this.t("salary_invalid", "Enter a monthly salary above 0.")
+    if (this.hasSalaryErrorTarget) {
+      this.salaryErrorTarget.textContent = message
+      this.salaryErrorTarget.hidden = false
+    }
+    if (this.hasSalaryAmountTarget) {
+      this.salaryAmountTarget.classList.add("is-invalid")
+      this.salaryAmountTarget.focus()
+    }
+    this.renderSummary()
+  }
+
+  clearSalaryError() {
+    if (this.hasSalaryErrorTarget) this.salaryErrorTarget.hidden = true
+    if (this.hasSalaryAmountTarget) this.salaryAmountTarget.classList.remove("is-invalid")
+  }
+
+  hydrateFromPayload() {
+    if (!this.hasPayloadTarget) return
+    try {
+      const data = JSON.parse(this.payloadTarget.value || "{}")
+      if (!data || typeof data !== "object") return
+      if (Object.keys(data).length === 0) return
+      if (typeof data.enabled === "boolean") this.enabled = data.enabled
+      if (data.model) this.model = data.model
+      if (typeof data.standardEnabled === "boolean") this.standardEnabled = data.standardEnabled
+      if (data.ruleModel) this.ruleModel = data.ruleModel
+      if (data.standardRate != null) this.standardRate = String(data.standardRate)
+      if (data.standardPercent != null) this.standardPercent = String(data.standardPercent)
+      if (data.salary != null) this.salary = String(data.salary)
+      if (data.effectiveFrom) this.effectiveFrom = String(data.effectiveFrom)
+      if (data.specificRules && typeof data.specificRules === "object") {
+        this.specificRules = { ...data.specificRules }
+      }
+      if (data.previewPrices && typeof data.previewPrices === "object") {
+        this.previewPrices = { ...data.previewPrices }
+      }
+      if (data.previewOptionKey) this.previewOptionKey = data.previewOptionKey
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
+  syncPayload() {
+    if (!this.hasPayloadTarget) return
+    this.payloadTarget.value = JSON.stringify({
+      enabled: this.enabled,
+      model: this.model,
+      standardEnabled: this.standardEnabled,
+      ruleModel: this.ruleModel,
+      standardRate: this.standardRate,
+      standardPercent: this.standardPercent,
+      salary: this.salary,
+      effectiveFrom: this.effectiveFrom,
+      specificRules: this.specificRules,
+      previewPrices: this.previewPrices,
+      previewOptionKey: this.previewOptionKey
+    })
   }
 
   refreshOptions() {
@@ -216,6 +313,7 @@ export default class extends Controller {
 
   salaryInput(event) {
     this.salary = event.currentTarget.value
+    this.clearSalaryError()
     this.renderSummary()
   }
 
@@ -274,6 +372,7 @@ export default class extends Controller {
     this.renderStandardFooter()
     this.renderSummary()
     this.renderPreview()
+    this.syncPayload()
   }
 
   renderStandardFooter() {
@@ -513,7 +612,7 @@ export default class extends Controller {
     if (summaryCard) summaryCard.classList.toggle("tc-summary--warn", incomplete)
 
     if (this.model === "monthly_salary") {
-      const ok = String(this.salary).trim().length > 0
+      const ok = this.monthlySalaryValid()
       this.summaryHeadlineTarget.textContent = ok
         ? `${this.currencyLabel()} ${this.salary} ${this.t("per_month_short", "per month")}`
         : this.t("salary_needed", "Monthly salary — amount needed")
@@ -560,7 +659,7 @@ export default class extends Controller {
   }
 
   summaryIncomplete() {
-    if (this.model === "monthly_salary") return String(this.salary).trim().length === 0
+    if (this.model === "monthly_salary") return !this.monthlySalaryValid()
     if (this.options.length === 0) {
       return this.standardEnabled && !this.hasStandardValue()
     }

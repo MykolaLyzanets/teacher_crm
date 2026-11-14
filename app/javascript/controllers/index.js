@@ -73,6 +73,15 @@ application.register("lesson-types", LessonTypesController)
 import TeacherCompensationController from "./teacher_compensation_controller"
 application.register("teacher-compensation", TeacherCompensationController)
 
+import TeacherAbsenceController from "./teacher_absence_controller"
+application.register("teacher-absence", TeacherAbsenceController)
+
+import TeacherAffectedLessonsController from "./teacher_affected_lessons_controller"
+application.register("teacher-affected-lessons", TeacherAffectedLessonsController)
+
+import TeacherAbsenceRescheduleController from "./teacher_absence_reschedule_controller"
+application.register("teacher-absence-reschedule", TeacherAbsenceRescheduleController)
+
 import ModalController from "./modal_controller"
 application.register("modal", ModalController)
 

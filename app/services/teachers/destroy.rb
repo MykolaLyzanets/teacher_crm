@@ -2,16 +2,19 @@
 
 module Teachers
   class Destroy
-    def initialize(teacher_profile:)
+    def initialize(teacher_profile:, cancel_lessons: false)
       @teacher_profile = teacher_profile
+      @cancel_lessons = cancel_lessons
     end
 
     def call
-      teacher_profile.update!(status: :archived)
+      TeacherProfile.transaction do
+        if @cancel_lessons
+          Lessons::CancelForTeacher.new(teacher_profile: @teacher_profile).call
+        end
+        @teacher_profile.update!(status: :archived)
+      end
     end
 
-    private
-
-    attr_reader :teacher_profile
   end
 end

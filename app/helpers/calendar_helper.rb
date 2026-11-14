@@ -20,6 +20,7 @@ module CalendarHelper
       controller: 'calendar',
       calendar_i18n_value: app_i18n_json('app.calendar', 'app.statuses', 'app.common', 'app.lessons'),
       calendar_lessons_value: @lessons_json,
+      calendar_absences_value: @teacher_absences_json,
       calendar_teachers_value: @teachers.to_json,
       calendar_students_value: (embedded ? Array(@bookable_students) : @students).to_json,
       calendar_teacher_id_value: @preset_teacher_id.to_s,

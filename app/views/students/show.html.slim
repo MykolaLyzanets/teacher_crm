@@ -25,7 +25,8 @@
   - profile_controllers << 'payments' if can_manage_payments?
   - payments_paths = student_profile_finance_paths.to_json if can_manage_payments?
   - payments_i18n = app_i18n_json('app.payments', 'app.common') if can_manage_payments?
-  .students-page.students-page--profile data-controller=profile_controllers.join(' ') data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-student-id-value=student[:id] data-students-materials-url-value=materials_path data-payments-i18n-value=payments_i18n data-payments-can-manage-value=(can_manage_payments?.to_s if can_manage_payments?) data-payments-paths-value=payments_paths
+  - payments_modals_url = payments_modals_path if can_manage_payments?
+  .students-page.students-page--profile data-controller=profile_controllers.join(' ') data-students-i18n-value=app_i18n_json('app.students', 'app.common') data-students-student-id-value=student[:id] data-students-materials-url-value=materials_path data-payments-i18n-value=payments_i18n data-payments-can-manage-value=(can_manage_payments?.to_s if can_manage_payments?) data-payments-modals-url-value=payments_modals_url data-payments-paths-value=payments_paths
     nav.students-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.students.title'), students_path
       = icon_tag 'chevron-right', size: 16
@@ -50,7 +51,7 @@
       .students-page__tab-panel class=(active_tab == 'lessons' ? nil : 'is-hidden') role="tabpanel" id="student-panel-lessons" aria-labelledby="student-tab-lessons" hidden=(active_tab == 'lessons' ? nil : true) data-profile-tabs-target="panel" data-tab="lessons"
         = render 'students/profile/lessons', student: student, lessons: lessons
 
-      .students-page__tab-panel class=(active_tab == 'homework' ? nil : 'is-hidden') role="tabpanel" id="student-panel-homework" aria-labelledby="student-tab-homework" hidden=(active_tab == 'homework' ? nil : true) data-controller="homework" data-homework-locale-value=I18n.locale data-homework-i18n-value=app_i18n_json('app.homework', 'app.common') data-homework-library-value=@materials_by_id.to_json data-homework-materials-url-value=materials_path data-profile-tabs-target="panel" data-tab="homework"
+      .students-page__tab-panel class=(active_tab == 'homework' ? nil : 'is-hidden') role="tabpanel" id="student-panel-homework" aria-labelledby="student-tab-homework" hidden=(active_tab == 'homework' ? nil : true) data-controller="homework" data-homework-locale-value=I18n.locale data-homework-i18n-value=app_i18n_json('app.homework', 'app.common') data-homework-library-value=@materials_by_id.to_json data-homework-materials-url-value=materials_path data-homework-modals-url-value=homework_modals_path data-profile-tabs-target="panel" data-tab="homework"
         = render 'students/profile/homework', homework: homework
 
       .students-page__tab-panel class=(active_tab == 'progress' ? nil : 'is-hidden') role="tabpanel" id="student-panel-progress" aria-labelledby="student-tab-progress" hidden=(active_tab == 'progress' ? nil : true) data-profile-tabs-target="panel" data-tab="progress"
@@ -69,5 +70,5 @@
 
     = turbo_frame_tag 'delete_dialog'
     - if can_manage_payments?
-      = render 'payments/modals'
+      = turbo_frame_tag 'payments_modals'
     .students-page__cancel-tip hidden="hidden" role="tooltip" data-students-target="cancelTip"

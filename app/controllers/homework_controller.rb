@@ -9,6 +9,12 @@ class HomeworkController < AppController
   before_action :require_teacher_homework_staff!, only: %i[show create update review]
   before_action :ensure_api_workspace!, only: %i[show create update review]
 
+  def modals
+    records = homeworks_scope.ordered_by_due.to_a
+    @eligible_lessons = eligible_lessons_for_homework(records)
+    render :modals, layout: turbo_frame_request? ? false : 'app'
+  end
+
   def index
     records = homeworks_scope.ordered_by_due.to_a
     @homework_items = records
@@ -121,10 +127,16 @@ class HomeworkController < AppController
   end
 
   def eligible_lessons_for_homework(records)
-    assigned_ids = records.filter_map(&:lesson_id).map(&:to_s).to_set
-    catalog_lessons.select do |lesson|
-      ELIGIBLE_LESSON_STATUSES.include?(lesson[:status].to_s) && assigned_ids.exclude?(lesson[:id].to_s)
-    end.sort_by { |lesson| lesson[:date].to_s }.reverse
+    assigned_ids = records.filter_map(&:lesson_id)
+    scope = lessons_scope.where(status: :completed)
+    scope = scope.where.not(id: assigned_ids) if assigned_ids.present?
+
+    lesson_catalog_records(scope.order(starts_at: :desc)).filter_map do |lesson|
+      row = lesson.as_catalog
+      row if ELIGIBLE_LESSON_STATUSES.include?(row[:status].to_s)
+    end
+      .sort_by { |row| row[:date].to_s }
+      .reverse
   end
 
   def find_homework

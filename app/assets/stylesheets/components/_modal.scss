@@ -7,8 +7,11 @@
   justify-content: center;
   padding: 12px;
   font-family: var(--font-sans);
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-  &[hidden] {
+  &[hidden]:not(.is-open) {
     display: none !important;
   }
 
@@ -54,6 +57,10 @@
   max-width: 920px;
 }
 
+.danlio-modal--xl .danlio-modal__card {
+  max-width: 1120px;
+}
+
 .danlio-modal__head {
   display: flex;
   align-items: flex-start;
@@ -65,17 +72,20 @@
 
 .danlio-modal__title {
   margin: 0;
-  font-size: var(--font-size-xl);
+  font-family: var(--font-sans);
+  font-size: 20px;
   font-weight: 600;
+  line-height: 1.3;
   letter-spacing: -0.02em;
   color: var(--foreground);
 }
 
 .danlio-modal__desc {
   margin: 4px 0 0;
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   font-weight: 400;
-  color: var(--muted-foreground);
+  line-height: 1.5;
+  color: var(--text-muted, #70756b);
 }
 
 .danlio-modal__close {
@@ -114,13 +124,15 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px 20px;
 }
 
 .danlio-modal__copy {
   margin: 0;
-  font-size: var(--font-size-md);
-  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-muted, #70756b);
 }
 
 .danlio-modal__foot,
@@ -132,6 +144,19 @@
 .danlio-modal__foot {
   border-top: 1px solid var(--border);
   padding: 16px 20px;
+}
+
+.danlio-modal__foot--stack {
+  flex-direction: column;
+
+  > * {
+    flex: none;
+    width: 100%;
+  }
+}
+
+.danlio-modal__foot--triple {
+  flex-wrap: wrap;
 }
 
 .danlio-modal__actions {
@@ -155,16 +180,29 @@
 
 .danlio-modal__btn {
   display: inline-flex;
+  min-height: 44px;
   height: 44px;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius);
+  border-radius: 12px;
   padding: 0 16px;
   font-family: inherit;
-  font-size: var(--font-size-md);
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: normal;
   text-decoration: none;
   cursor: pointer;
+
+  &--block {
+    width: 100%;
+    height: auto;
+    min-height: 44px;
+    padding: 10px 16px;
+    margin-top: 4px;
+    text-align: center;
+    white-space: normal;
+  }
 }
 
 .danlio-modal__btn--primary {
@@ -177,9 +215,11 @@
   }
 
   &:disabled {
-    background: var(--muted);
-    color: var(--muted-foreground);
+    border: 0;
+    background: #a8ae9b;
+    color: #fff;
     cursor: not-allowed;
+    opacity: 1;
   }
 }
 
@@ -204,5 +244,86 @@
 
   &:disabled {
     opacity: 0.6;
+  }
+}
+
+.danlio-modal--absence {
+  .danlio-modal__card {
+    padding: 0;
+  }
+
+  .danlio-modal__head--brand {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+
+    > div {
+      min-width: 0;
+    }
+
+    .danlio-modal__title {
+      font-size: 18px;
+    }
+  }
+
+  .danlio-modal__head-icon {
+    margin-top: 2px;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: var(--primary);
+  }
+}
+
+.absence-summary__overlap {
+  margin: 0 0 12px;
+}
+
+.absence-summary {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #faf9f5;
+  padding: 12px 14px;
+  font-size: 13px;
+  letter-spacing: normal;
+}
+
+.absence-summary__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.absence-summary__list {
+  margin: 8px 0 0;
+}
+
+.absence-summary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  & + & {
+    margin-top: 4px;
+  }
+
+  dt {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  dd {
+    margin: 0;
+    max-width: 65%;
+    font-weight: 500;
+    text-align: right;
   }
 }

@@ -30,7 +30,8 @@ export default class extends Controller {
   static values = {
     i18n: Object,
     canManage: Boolean,
-    paths: Object
+    paths: Object,
+    modalsUrl: String
   }
 
   connect() {
@@ -43,6 +44,33 @@ export default class extends Controller {
     this.refundContext = null
     this.paymentSaveStatus = "pending"
     this.submitting = false
+    this.modalsLoading = null
+  }
+
+  async ensureModalsLoaded() {
+    if (this.hasPaymentModalTarget) return true
+    if (!this.hasModalsUrlValue) return false
+    const frame = document.getElementById("payments_modals")
+    if (!frame) return false
+    if (this.modalsLoading) return this.modalsLoading
+    this.modalsLoading = new Promise((resolve) => {
+      const done = () => {
+        this.modalsLoading = null
+        resolve(this.hasPaymentModalTarget)
+      }
+      if (frame.dataset.loaded === "1") {
+        window.requestAnimationFrame(done)
+        return
+      }
+      const onLoad = (event) => {
+        if (event.target !== frame) return
+        frame.dataset.loaded = "1"
+        done()
+      }
+      frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+      frame.src = this.modalsUrlValue
+    })
+    return this.modalsLoading
   }
 
   csrfToken() {
@@ -210,7 +238,8 @@ export default class extends Controller {
     target.setAttribute("hidden", "hidden")
   }
 
-  openPayment(event) {
+  async openPayment(event) {
+    if (!(await this.ensureModalsLoaded())) return
     const button = event.currentTarget
     this.paymentContext = {
       studentId: button.dataset.studentId,
@@ -404,7 +433,8 @@ export default class extends Controller {
     window.setTimeout(() => window.location.reload(), 600)
   }
 
-  openAdjustment(event) {
+  async openAdjustment(event) {
+    if (!(await this.ensureModalsLoaded())) return
     const button = event.currentTarget
     this.adjustmentContext = {
       studentId: button.dataset.studentId,
@@ -610,7 +640,8 @@ export default class extends Controller {
     window.setTimeout(() => window.location.reload(), 600)
   }
 
-  openPayout(event) {
+  async openPayout(event) {
+    if (!(await this.ensureModalsLoaded())) return
     const button = event.currentTarget
     const remaining = Number(button.dataset.remaining || 0)
     const currency = button.dataset.currency || "EUR"
@@ -676,7 +707,8 @@ export default class extends Controller {
     this.resolvePending(event, this.pathsValue?.rejectPayment, "payment_rejected", "Payment rejected.")
   }
 
-  openRefund(event) {
+  async openRefund(event) {
+    if (!(await this.ensureModalsLoaded())) return
     const button = event.currentTarget
     const refundable = Number(button.dataset.refundableCents || 0)
     const paymentCents = Number(button.dataset.paymentCents || 0)

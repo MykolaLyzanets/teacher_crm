@@ -18,10 +18,6 @@ class LessonsController < AppController
     render_lesson_dialog(:show, 'lesson_details')
   end
 
-  def complete_dialog
-    render_lesson_dialog(:complete_dialog)
-  end
-
   def cancel_dialog
     @cancel_reason = params[:reason].presence_in(LessonsHelper::CANCEL_REASON_KEYS) || 'student_advance'
     @charge_decision = helpers.lesson_cancel_charge_default(@cancel_reason)
@@ -33,7 +29,11 @@ class LessonsController < AppController
   end
 
   def outcome_dialog
-    render_lesson_dialog(:outcome_dialog)
+    render_lesson_dialog(:outcome_dialog, require_outcome: true)
+  end
+
+  def complete_dialog
+    render_lesson_dialog(:complete_dialog, require_outcome: true)
   end
 
   def create
@@ -82,16 +82,18 @@ class LessonsController < AppController
         format.html { redirect_back fallback_location: lessons_path, notice: outcome_notice(service) }
       end
     else
+      messages = service.error_messages
+      Rails.logger.warn("[LessonsController#outcome] lesson=#{lesson.id} errors=#{messages.inspect}")
       respond_to do |format|
-        format.json { render json: { errors: service.error_messages }, status: :unprocessable_entity }
-        format.html { redirect_back fallback_location: lessons_path, alert: service.error_messages.to_sentence }
+        format.json { render json: { errors: messages }, status: :unprocessable_entity }
+        format.html { redirect_back fallback_location: lessons_path, alert: messages.to_sentence }
       end
     end
   end
 
   private
 
-  def render_lesson_dialog(view, frame = 'lesson_dialog')
+  def render_lesson_dialog(view, frame = 'lesson_dialog', require_outcome: false)
     @dialog_frame = frame
     if params[:dismiss].present?
       @lesson = nil
@@ -108,6 +110,10 @@ class LessonsController < AppController
 
     @lesson_record = record
     @lesson = helpers.lesson_row_payload(record.as_catalog)
+    if require_outcome && !helpers.lesson_needs_outcome?(@lesson)
+      return redirect_to lesson_path(record.id), alert: I18n.t('app.lessons.outcome_not_ready')
+    end
+
     render view, layout: dialog_layout
   end
 

@@ -1,0 +1,3 @@
+= turbo_frame_tag 'absence_dialog' do
+  - if @teacher_record.present?
+    = render 'absence_dialog', teacher: @teacher, existing_periods: @existing_absence_periods, editing_absence: @editing_absence

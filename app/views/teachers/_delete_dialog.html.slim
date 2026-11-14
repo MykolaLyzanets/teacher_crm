@@ -1,9 +1,38 @@
-.teachers-page__dialog role="presentation"
-  a.teachers-page__dialog-backdrop href=delete_dialog_teachers_path() aria-label=t('app.common.close') data-turbo="true" data-turbo-frame="delete_dialog"
-  .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="delete-teacher-title"
-    h2#delete-teacher-title = t('app.teachers.delete_title')
-    p = t('app.teachers.delete_text')
-    = form_with url: teacher_path(@teacher_record), method: :delete, html: { data: { turbo: false } } do
-      .teachers-page__dialog-actions
-        a.teachers-page__secondary-btn href=delete_dialog_teachers_path() data-turbo="true" data-turbo-frame="delete_dialog" = t('app.common.cancel')
-        button.teachers-page__danger-btn type="submit" = t('app.teachers.delete_confirm')
+- name = teacher_display_name(@teacher)
+- upcoming_count = @upcoming_count.to_i
+- close_path = delete_dialog_teachers_path()
+
+- modal_size = upcoming_count.positive? ? 'md' : 'sm'
+.danlio-modal class="danlio-modal--#{modal_size} danlio-modal--stack" data-controller="modal"
+  a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="delete_dialog"
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="delete-teacher-title"
+    .danlio-modal__head
+      - if upcoming_count.positive?
+        div
+          h2#delete-teacher-title.danlio-modal__title = t('app.teachers.delete_title')
+          p.danlio-modal__desc = t('app.teachers.archive_lessons_intro', count: upcoming_count, name: name)
+        a.danlio-modal__close href=close_path aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="delete_dialog" data-modal-focus="true"
+          = icon_tag 'x', size: 20
+      - else
+        h2#delete-teacher-title.danlio-modal__title = t('app.teachers.delete_title')
+        a.danlio-modal__close href=close_path aria-label=t('app.common.close') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="delete_dialog" data-modal-focus="true"
+          = icon_tag 'x', size: 20
+    - if upcoming_count.positive?
+      = form_with url: teacher_path(@teacher_record), method: :delete, html: { class: 'danlio-modal__form', data: { turbo: false } } do
+        .danlio-modal__body
+          .absence-summary
+            - @upcoming_lessons.first(6).each do |lesson|
+              p.teachers-page__archive-lesson-line = teacher_upcoming_lesson_label(lesson)
+            - if upcoming_count > 6
+              p.teachers-page__archive-lessons-more = t('app.teachers.archive_lessons_more', count: upcoming_count - 6)
+          button.danlio-modal__btn.danlio-modal__btn--danger.danlio-modal__btn--block type="submit" name="cancel_lessons" value="1" = t('app.teachers.archive_cancel_lessons')
+        .danlio-modal__foot
+          a.danlio-modal__btn.danlio-modal__btn--secondary href=close_path data-turbo="true" data-turbo-frame="delete_dialog" = t('app.common.cancel')
+          button.danlio-modal__btn.danlio-modal__btn--primary type="submit" name="manage_lessons" value="1" = t('app.teachers.archive_keep_lessons')
+    - else
+      .danlio-modal__body
+        p.danlio-modal__copy = t('app.teachers.delete_text')
+        = form_with url: teacher_path(@teacher_record), method: :delete, html: { data: { turbo: false } } do
+          .danlio-modal__actions
+            a.danlio-modal__btn.danlio-modal__btn--secondary href=close_path data-turbo="true" data-turbo-frame="delete_dialog" = t('app.common.cancel')
+            button.danlio-modal__btn.danlio-modal__btn--danger type="submit" = t('app.teachers.delete_confirm')

@@ -10,15 +10,16 @@
 - else
   - teacher = @teacher
   - name = teacher_display_name(teacher)
+  - display_status = teacher[:displayStatus].presence || teacher[:status].to_s
   - content_for :title, "#{name} | danlio"
 
-  .teachers-page.teachers-page--profile data={ **{ controller: 'teachers lesson-types', teachers_i18n_value: app_i18n_json('app.teachers', 'app.common', 'app.statuses'), teachers_name_value: name }, **lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id], controller: 'teachers lesson-types') }
+  .teachers-page.teachers-page--profile data-controller="teachers" data-teachers-i18n-value=app_i18n_json('app.teachers', 'app.common', 'app.statuses') data-teachers-name-value=name data-teachers-teacher-id-value=teacher[:id] data-teachers-absence-dialog-url-value=teacher_absence_dialog_path(teacher) data-teachers-affected-lessons-url-value=teacher_affected_lessons_url_template(teacher) data-teachers-manage-absence-value=params[:manage_absence] data-teachers-archive-lessons-dialog-url-value=teacher_archive_lessons_dialog_path(teacher) data-teachers-manage-archive-value=params[:manage_archive]
     nav.teachers-page__breadcrumb aria-label="Breadcrumb"
       = link_to t('app.teachers.title'), teachers_path
       = icon_tag 'chevron-right', size: 16
       span = name
 
-    section.teachers-page__hero
+    section.teachers-page__hero.teachers-page__card
       .teachers-page__hero-main
         span.teachers-page__avatar.teachers-page__avatar--lg
           - if teacher[:photo].present?
@@ -29,7 +30,10 @@
         div
           .teachers-page__hero-title
             h1 = name
-            = status_badge teacher_status_label(teacher[:status]), tone: teacher_status_tone(teacher[:status])
+            - if display_status != 'absent'
+              = status_badge teacher_status_label(display_status), tone: teacher_status_tone(display_status)
+          - if display_status == 'absent' && teacher[:currentAbsence].present?
+            = render 'teachers/absence_status', reason: teacher[:absenceReason], range: teacher_absence_range_from_catalog(teacher[:currentAbsence]), variant: :banner
           p.teachers-page__hero-sub
             = [teacher[:jobTitle], teacher_role_label(teacher[:workspaceRole])].compact_blank.join(' · ')
           .teachers-page__hero-contacts
@@ -44,50 +48,27 @@
       .teachers-page__hero-actions
         - if can_manage_teachers?
           = link_to edit_teacher_path(teacher[:id]), class: 'teachers-page__hero-btn' do
-            = icon_tag 'pencil', size: 18
+            = icon_tag 'pencil', size: 17
             span = t('app.teachers.edit_teacher')
         = link_to new_calendar_path(teacher_id: teacher[:id]), class: 'teachers-page__hero-btn', data: calendar_create_turbo_data do
-          = icon_tag 'calendar-event', size: 18
+          = icon_tag 'calendar-event', size: 17
           span = t('app.teachers.schedule_lesson')
         - if can_manage_teachers?
           button.teachers-page__hero-btn type="button" data-action="teachers#openAbsence"
-            = icon_tag 'calendar-off', size: 18
+            = icon_tag 'calendar-off', size: 17
             span = t('app.teachers.add_absence')
 
-    .teachers-page__grid
-      section.teachers-page__card
-        h2 = t('app.teachers.availability_title')
-        dl.teachers-page__dl
-          div
-            dt = t('app.teachers.working_days')
-            dd = Array(teacher[:workingDays]).map { |d| weekday_short_label(d) }.presence&.join(', ') || '—'
-          div
-            dt = t('app.teachers.default_lesson')
-            dd
-              = "#{t('app.teachers.minutes', count: teacher[:defaultLessonDurationMinutes] || TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES)} · "
-              = Array(teacher[:lessonFormats]).map { |f| lesson_format_label(f) }.join(', ')
-          div
-            dt = t('app.teachers.timezone')
-            dd = teacher[:timezone].presence || '—'
-          div
-            dt = t('app.teachers.workspace_access_label')
-            dd
-              - if teacher[:status].to_s == 'invited'
-                = t('app.teachers.invited_status', status: teacher[:invitationStatus].presence || t('app.statuses.pending'))
-              - else
-                = t('app.teachers.has_workspace_access')
+    = render 'teachers/profile_availability', teacher: teacher, week_absences: @teacher_absences_for_week
 
-    section#lesson-types.teachers-page__card--lesson-types
+    section#lesson-types.teachers-page__card.teachers-page__card--lesson-types data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id])
       = render 'teachers/teaching_section', show_step: true, manager: { show_toast: true }
+      = turbo_frame_tag 'offering_dialog'
+
+    - if can_view_finance?
+      = render 'teachers/profile_compensation', teacher_record: @teacher_record
 
     - if can_view_finance? && @teacher_finance
       = render 'teachers/finance_section', teacher_finance: @teacher_finance
-
-    - if can_manage_teachers?
-      section.teachers-page__card data-teachers-target="absenceSection"
-        h2 = t('app.teachers.absence_history')
-        ul.teachers-page__assigned data-teachers-target="absenceList"
-        p.teachers-page__meta data-teachers-target="absenceEmpty" = t('app.teachers.no_absences')
 
     - if teacher[:notes].present?
       section.teachers-page__card
@@ -95,6 +76,25 @@
           = icon_tag 'lock', size: 20
           span = t('app.teachers.internal_notes')
         p.teachers-page__notes = teacher[:notes]
+
+    - if @archive_lessons_count.to_i.positive?
+      section.teachers-page__card.teachers-page__card--archive-lessons
+        .teachers-page__section-head
+          div
+            h2 = t('app.teachers.archive_lessons_title')
+            p.teachers-page__section-sub = t('app.teachers.archive_lessons_profile_sub', count: @archive_lessons_count)
+          button.teachers-page__hero-btn type="button" data-action="teachers#openArchiveLessons"
+            = icon_tag 'calendar-event', size: 17
+            span = t('app.teachers.archive_manage_lessons')
+    - if can_manage_teachers?
+      section.teachers-page__card data-teachers-target="absenceSection"
+        h2 = t('app.teachers.absence_history')
+        - if @teacher_absences.any?
+          ul.teachers-page__assigned.teachers-page__absence-list
+            - @teacher_absences.each do |absence|
+              = render 'teachers/absence_row', absence: absence, teacher: teacher, manage_lessons: @absence_manageable_ids.include?(absence.id)
+        - else
+          p.teachers-page__meta = t('app.teachers.no_absences')
 
     section.teachers-page__card
       .teachers-page__section-head
@@ -118,8 +118,6 @@
           = icon_tag 'students', size: 24
         h3 = t('app.teachers.no_students')
         p = t('app.teachers.no_students_text')
-        = link_to teacher_assign_dialog_path(teacher), class: 'teachers-page__primary-btn', data: teacher_dialog_turbo_data('assign_dialog') do
-          span = t('app.teachers.assign_students')
 
       ul.teachers-page__assigned data-teachers-target="assignedList" hidden=(@assigned_students.empty? ? true : nil)
         - @assigned_students.each do |student|
@@ -137,32 +135,9 @@
                 = icon_tag 'user-x', size: 14
                 span = t('app.teachers.remove')
 
-    .teachers-page__dialog[hidden] data-teachers-target="absenceDialog"
-      .teachers-page__dialog-backdrop data-action="click->teachers#closeAbsence"
-      .teachers-page__dialog-card role="dialog" aria-modal="true" aria-labelledby="add-absence-title"
-        h2#add-absence-title = t('app.teachers.add_absence')
-        p = t('app.teachers.absence_text')
-        label.teachers-page__meta
-          span = t('app.teachers.absence_type')
-          select data-teachers-target="absenceType"
-            option value="sick_leave" = t('app.teachers.absence_types.sick_leave')
-            option value="vacation" = t('app.teachers.absence_types.vacation')
-            option value="personal" = t('app.teachers.absence_types.personal')
-            option value="emergency" = t('app.teachers.absence_types.emergency')
-            option value="other" = t('app.teachers.absence_types.other')
-        label.teachers-page__meta
-          span = t('app.teachers.absence_start')
-          input type="date" data-teachers-target="absenceStart"
-        label.teachers-page__meta
-          span = t('app.teachers.absence_end')
-          input type="date" data-teachers-target="absenceEnd"
-        label.teachers-page__meta
-          span = t('app.teachers.absence_note')
-          textarea data-teachers-target="absenceNote" rows="3"
-        .teachers-page__dialog-actions
-          button.teachers-page__secondary-btn type="button" data-action="teachers#closeAbsence" = t('app.common.cancel')
-          button.teachers-page__primary-btn type="button" data-action="teachers#confirmAbsence" = t('app.common.confirm')
-
+    = turbo_frame_tag 'absence_dialog', data: { teachers_target: 'absenceFrame' }
+    = turbo_frame_tag 'archive_lessons_dialog', data: { teachers_target: 'archiveLessonsFrame' }
+    = turbo_frame_tag 'affected_lessons_dialog', data: { teachers_target: 'affectedLessonsFrame' }
     = turbo_frame_tag 'assign_dialog'
     = turbo_frame_tag 'unassign_dialog'
     = turbo_frame_tag 'delete_dialog'

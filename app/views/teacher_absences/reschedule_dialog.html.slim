@@ -1,0 +1,17 @@
+= turbo_frame_tag 'affected_lesson_reschedule' do
+  - teacher = @teacher.as_catalog
+  - absence = @absence
+  - form = lesson_reschedule_form_defaults(@lesson)
+  - dialog_url = affected_lessons_teacher_absence_path(teacher_id: @teacher.id, id: absence.id)
+  - submit_url = lesson_reschedule_teacher_absence_path(teacher_id: @teacher.id, id: absence.id, lesson_id: @lesson.id)
+  - check_url = lesson_reschedule_check_teacher_absence_path(teacher_id: @teacher.id, id: absence.id, lesson_id: @lesson.id)
+  = render 'teachers/reschedule_affected_lesson_dialog',
+    lesson: @lesson,
+    teachers: @teachers,
+    teacher: teacher,
+    form: form,
+    description: lesson_reschedule_description(@lesson),
+    dialog_url: dialog_url,
+    submit_url: submit_url,
+    check_url: check_url,
+    original_teacher_id: @absence.teacher_id

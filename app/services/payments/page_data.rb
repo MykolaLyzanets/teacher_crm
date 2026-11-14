@@ -106,10 +106,14 @@ module Payments
         batch.includes(:student_profile).each { |item| rows << student_transaction_row(item) }
       end
       teacher_earnings_scope.in_batches(of: 500) do |batch|
-        batch.includes(:teacher_profile).each { |item| rows << teacher_earning_row(item) }
+        records = batch.to_a
+        attach_teacher_profiles!(records)
+        records.each { |item| rows << teacher_earning_row(item) }
       end
       teacher_payouts_scope.in_batches(of: 500) do |batch|
-        batch.includes(:teacher_profile).each { |item| rows << teacher_payout_row(item) }
+        records = batch.to_a
+        attach_teacher_profiles!(records)
+        records.each { |item| rows << teacher_payout_row(item) }
       end
       rows.sort_by { |item| [item[:createdAt].to_s, item[:id].to_s] }.reverse
     end
@@ -223,6 +227,20 @@ module Payments
 
     def finance_currency_code
       Finance::FinanceHelper::FINANCE_CURRENCY_CODE
+    end
+
+    def attach_teacher_profiles!(records)
+      teacher_ids = records.filter_map(&:teacher_profile_id).uniq
+      return if teacher_ids.empty?
+
+      teachers = TeacherProfile.where(id: teacher_ids).index_by(&:id)
+      records.each do |record|
+        teacher_id = record.teacher_profile_id
+        next if teacher_id.blank?
+
+        record.association(:teacher_profile).target = teachers[teacher_id]
+        record.association(:teacher_profile).loaded!
+      end
     end
 
     def pending_payments_count(student)

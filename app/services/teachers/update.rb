@@ -45,6 +45,7 @@ module Teachers
       user.email = email if email.present?
       user.full_name = resolved_full_name
       teacher_profile.assign_attributes(profile_attrs)
+      Teachers::CompensationSetup.apply!(teacher_profile, params[:compensation_setup])
     end
 
     def validate
@@ -52,6 +53,7 @@ module Teachers
       teacher_profile.errors.add(:first_name, :blank) if teacher_profile.first_name.blank?
       teacher_profile.errors.add(:last_name, :blank) if teacher_profile.last_name.blank?
       validate_photo!
+      validate_compensation!
     end
 
     def persist
@@ -78,7 +80,8 @@ module Teachers
         status: params[:status].presence || teacher_profile.status,
         phone: params[:phone].to_s.strip.presence,
         preferred_contact_method: params[:preferred_contact_method].presence || 'email',
-        timezone: params[:timezone].presence,
+        timezone: params[:timezone].presence || teacher_profile.timezone.presence ||
+          TeacherProfile::DEFAULT_TIMEZONE,
         location: params[:location].to_s.strip.presence,
         subjects: params.key?(:subjects) ? Array(params[:subjects]).compact_blank : teacher_profile.subjects,
         experience_years: params.key?(:experience_years) ? integer_or_nil(params[:experience_years]) : teacher_profile.experience_years,
@@ -122,6 +125,12 @@ module Teachers
       Integer(value)
     rescue ArgumentError, TypeError
       nil
+    end
+
+    def validate_compensation!
+      Teachers::CompensationSetup.validation_errors(params[:compensation_setup]).each do |message|
+        errors.add(:base, message)
+      end
     end
   end
 end

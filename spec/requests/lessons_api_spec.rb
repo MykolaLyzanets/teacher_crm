@@ -422,8 +422,28 @@ RSpec.describe 'Lesson scheduling API' do
     expect(response.body).to include(I18n.t('app.lessons.admin_only'))
     expect(response.body).to include(I18n.t('app.lessons.activity'))
     expect(response.body).to include(I18n.t('app.lessons.no_notes'))
-    expect(response.body).to include(I18n.t('app.lessons.share_material'))
+    expect(response.body).to include(I18n.t('app.lessons.materials'))
     expect(response.body).to include(I18n.t('app.lessons.duplicate_lesson_action'))
+    expect(response.body).not_to include(I18n.t('app.lessons.confirm_lesson_outcome'))
+  end
+
+  it 'shows confirm outcome after the lesson end time in the teacher timezone' do
+    workspace, teacher, subject_record, lesson_type, student = graph
+    lesson = create(
+      :lesson,
+      teacher:,
+      subject: subject_record,
+      lesson_type:,
+      students: [student],
+      with_student: false,
+      starts_at: 2.hours.ago,
+      ends_at: 1.hour.ago
+    )
+    sign_in workspace.owner
+
+    get lesson_path(id: lesson.id), headers: { 'Turbo-Frame' => 'lesson_details' }
+
+    expect(response).to have_http_status(:ok)
     expect(response.body).to include(I18n.t('app.lessons.confirm_lesson_outcome'))
   end
 
@@ -435,7 +455,9 @@ RSpec.describe 'Lesson scheduling API' do
       subject: subject_record,
       lesson_type:,
       students: [student],
-      with_student: false
+      with_student: false,
+      starts_at: 2.hours.ago,
+      ends_at: 1.hour.ago
     )
     sign_in workspace.owner
 
@@ -499,7 +521,9 @@ RSpec.describe 'Lesson scheduling API' do
       subject: subject_record,
       lesson_type:,
       students: [student],
-      with_student: false
+      with_student: false,
+      starts_at: 2.hours.ago,
+      ends_at: 1.hour.ago
     )
     sign_in workspace.owner
 

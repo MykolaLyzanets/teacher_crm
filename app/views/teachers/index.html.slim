@@ -21,11 +21,8 @@
         .teachers-page__filters
           select aria-label=t('app.teachers.filter_status') data-teachers-target="status" data-action="change->teachers#filter"
             option value="" = t('app.teachers.all_statuses')
-            option value="active" = t('app.statuses.active')
-            option value="invited" = t('app.statuses.invited')
-            option value="on_leave" = t('app.statuses.on_leave')
-            option value="inactive" = t('app.statuses.inactive')
-            option value="archived" = t('app.statuses.archived')
+            - TeachersHelper::TEACHER_FILTER_STATUSES.each do |value|
+              option value=value = t("app.statuses.#{value}")
           select aria-label=t('app.teachers.filter_assignment') data-teachers-target="assignment" data-action="change->teachers#filter"
             option value="all" = t('app.teachers.all_assignments')
             option value="assigned" = t('app.teachers.with_students')
@@ -53,3 +50,4 @@
           = render 'teacher_row', teacher: teacher, students: @students
 
   = turbo_frame_tag 'delete_dialog'
+  = turbo_frame_tag 'archive_lessons_dialog'

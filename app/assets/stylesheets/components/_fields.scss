@@ -1,0 +1,182 @@
+$danlio-form-field-selectors: (
+  ".danlio-field",
+  ".teachers-page__field",
+  ".calendar-page__field",
+  ".students-page__field",
+  ".settings-page__field",
+  ".pay__field",
+  ".homework-page__field",
+  ".lessons-page__field"
+);
+
+.app-body {
+  #{join($danlio-form-field-selectors, ", ")} {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: normal;
+    color: var(--foreground);
+
+    > span:first-child {
+      display: block;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+    select,
+    textarea,
+    .danlio-field__control {
+      display: block;
+      width: 100%;
+      height: 44px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--foreground);
+      outline: none;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+
+      &::placeholder {
+        color: #9a9e96;
+      }
+
+      &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px color-mix(in oklch, var(--primary) 10%, transparent);
+      }
+    }
+
+    textarea,
+    .danlio-field__control--textarea {
+      min-height: 112px;
+      height: auto;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+  }
+
+  .teachers-page__field,
+  .calendar-page__field,
+  .students-page__field,
+  .settings-page__field,
+  .pay__field,
+  .homework-page__field,
+  .lessons-page__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+    select,
+    textarea {
+      margin-top: 0;
+    }
+  }
+
+  .calendar-page__icon-input {
+    position: relative;
+
+    > svg.icon,
+    > svg {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      z-index: 1;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--muted-foreground);
+      opacity: 0.7;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+      padding: 0 12px 0 40px;
+    }
+  }
+
+  .calendar-page__field .calendar-page__icon-input input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+    padding: 0 12px 0 40px;
+  }
+
+  .teachers-page__input-icon,
+  .students-page__input-icon {
+    position: relative;
+    width: 100%;
+
+    > svg.icon,
+    > svg {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      z-index: 1;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+      padding: 0 12px 0 40px;
+    }
+  }
+
+  .teachers-page__field .teachers-page__input-icon input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+  .students-page__field .students-page__input-icon input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+    padding: 0 12px 0 40px;
+  }
+
+  .calendar-page__picker-search,
+  .students-page__picker-search {
+    position: relative;
+    width: 100%;
+
+    > svg.icon,
+    > svg {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      z-index: 1;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+      padding: 0 12px 0 40px;
+    }
+  }
+
+  .calendar-page__field .calendar-page__picker-search input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+  .students-page__picker-search input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
+    padding: 0 12px 0 40px;
+  }
+
+  .danlio-field__req {
+    margin-left: 2px;
+    color: #a3453f;
+  }
+
+  .danlio-field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+.danlio-modal {
+  .danlio-field {
+    display: block;
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    select,
+    textarea,
+    .danlio-field__control {
+      margin-top: 6px;
+    }
+  }
+}

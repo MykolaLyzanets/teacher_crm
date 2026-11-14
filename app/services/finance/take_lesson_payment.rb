@@ -46,10 +46,13 @@ module Finance
       load_existing_records
       true
     rescue ActiveRecord::RecordInvalid => e
+      errors.merge!(e.record.errors)
+      false
+    rescue Finance::WorkspaceMismatchError, Finance::UnsupportedCurrencyError => e
       errors.add(:base, e.message)
       false
-    rescue Finance::WorkspaceMismatchError => e
-      errors.add(:base, e.message)
+    rescue ActiveRecord::RecordNotFound
+      errors.add(:base, I18n.t('app.lessons.finance_currency_not_configured'))
       false
     end
 
@@ -62,8 +65,9 @@ module Finance
     attr_reader :created_by, :price_cents
 
     def validate_lesson
-      errors.add(:lesson, 'must be completed') if !lesson.completed?
-      errors.add(:lesson, 'has no teacher') if lesson.teacher_profile.blank?
+      errors.add(:base, I18n.t('app.lessons.finance_lesson_not_completed')) if !lesson.completed?
+      errors.add(:base, I18n.t('app.lessons.finance_lesson_no_teacher')) if lesson.teacher_profile.blank?
+      errors.add(:base, I18n.t('app.lessons.finance_actor_missing')) if created_by.blank?
     end
 
     def lesson_price

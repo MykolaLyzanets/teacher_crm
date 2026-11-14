@@ -14,7 +14,8 @@
 - editable = lesson_editable?(lesson)
 - payment = can_view_finance? ? lesson_payment_summary(lesson) : nil
 
-.danlio-modal.danlio-modal--lg data-controller="modal lesson-drawer"
+- no_file_label = t('app.lessons.material_no_file')
+.danlio-modal.danlio-modal--lg data-controller="modal lesson-drawer" data-lesson-drawer-no-file-value=no_file_label
   a.danlio-modal__backdrop href=close_path tabindex="-1" aria-label=t('app.lessons.close_details') data-modal-dismiss="true" data-turbo="true" data-turbo-frame="lesson_details"
   .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="lesson-details-title"
     .danlio-modal__head
@@ -31,7 +32,6 @@
           button.danlio-modal__close type="button" aria-label=t('app.lessons.more_title') aria-expanded="false" data-action="lesson-drawer#toggleMenu"
             = lesson_icon 'dots', size: 20
           .lessons-page__menu.lessons-page__menu--hidden data-lesson-drawer-target="menu"
-            a.lessons-page__menu-item href="#lesson-materials" = t('app.lessons.share_material')
             = link_to t('app.lessons.duplicate_lesson_action'), lesson_duplicate_dialog_path(lesson), class: 'lessons-page__menu-item', data: calendar_create_turbo_data
             - if lesson[:upcoming]
               = link_to t('app.lessons.cancel_lesson'), cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item', data: lesson_dialog_turbo
@@ -43,9 +43,10 @@
 
     .danlio-modal__body.lessons-page__show-body
       .lessons-page__show-content
-        - if %w[confirmed pending].include?(lesson[:status].to_s) || review == 'completed' || review == 'cancelled'
+        - confirm_outcome = lesson_needs_outcome?(lesson)
+        - if confirm_outcome || review == 'completed' || review == 'cancelled'
           .lessons-page__show-status
-            - if %w[confirmed pending].include?(lesson[:status].to_s)
+            - if confirm_outcome
               = link_to t('app.lessons.confirm_lesson_outcome'), outcome_dialog_lesson_path(lesson[:id]), class: 'lessons-page__primary-btn lessons-page__show-status-btn', data: lesson_dialog_turbo
             - if review == 'completed'
               .lessons-page__show-banner.lessons-page__show-banner--olive = t('app.lessons.completed_banner')
@@ -174,8 +175,6 @@
                   div
                     dt = t('app.lessons.balance_after')
                     dd = payment[:balance]
-              - if editable
-                = link_to t('app.lessons.edit_lesson_price'), lesson_edit_dialog_path(lesson), class: 'lessons-page__text-link', data: calendar_create_turbo_data
 
         section.lessons-page__show-section
           h3.lessons-page__show-kicker = t('app.lessons.activity')

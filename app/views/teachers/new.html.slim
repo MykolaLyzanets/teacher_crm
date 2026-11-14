@@ -82,10 +82,8 @@
               = t('app.teachers.teacher_status')
               span.teachers-page__req *
             select name="status" required=true data-teachers-target="formStatus" data-action="blur->teachers#markTouched"
-              option value="active" selected=(teacher[:status].to_s == 'active' || teacher[:status].blank?) = t('app.statuses.active')
-              option value="invited" selected=(teacher[:status].to_s == 'invited') = t('app.statuses.invited')
-              option value="on_leave" selected=(teacher[:status].to_s == 'on_leave') = t('app.statuses.on_leave')
-              option value="inactive" selected=(teacher[:status].to_s == 'inactive') = t('app.statuses.inactive')
+              - TeachersHelper::TEACHER_FORM_STATUSES.each do |value|
+                option value=value selected=(teacher[:status].to_s == value || (value == 'active' && teacher[:status].blank?)) = t("app.statuses.#{value}")
               - if teacher[:status].to_s == 'archived'
                 option value="archived" selected=true = t('app.statuses.archived')
             p.teachers-page__field-error hidden="hidden" data-error-for="status"
@@ -93,6 +91,7 @@
       section.teachers-page__card
         h2 = t('app.teachers.contact')
         p.teachers-page__section-sub = t('app.teachers.contact_sub')
+        - contact_timezones = (TeachersHelper::TIMEZONES + [TeacherProfile::DEFAULT_TIMEZONE, teacher[:timezone]]).compact.uniq
         .teachers-page__fields
           label.teachers-page__field
             span
@@ -116,8 +115,8 @@
           label.teachers-page__field
             span = t('app.teachers.timezone')
             select name="timezone"
-              - TeachersHelper::TIMEZONES.each do |tz|
-                option value=tz selected=(tz == (teacher[:timezone].presence || 'America/New_York')) = teacher_timezone_label(tz)
+              - contact_timezones.each do |tz|
+                option value=tz selected=(tz == (teacher[:timezone].presence || TeacherProfile::DEFAULT_TIMEZONE)) = teacher_timezone_label(tz)
             span.teachers-page__hint = t('app.teachers.timezone_hint')
           label.teachers-page__field.teachers-page__field--full
             span = t('app.teachers.location')
@@ -125,7 +124,7 @@
 
       input type="hidden" name="lesson_catalog" value=(teacher[:lessonCatalog].presence || '[]') data-lesson-types-target="draftPayload"
       = render 'teachers/teaching_section', show_step: true, assignment_only: true
-      = render 'teachers/compensation_section'
+      = render 'teachers/compensation_section', compensation_setup: teacher[:compensationSetup]
 
       = render 'teachers/availability_section', teacher:
 

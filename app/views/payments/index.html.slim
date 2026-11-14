@@ -7,7 +7,7 @@
     h1 = t('app.payments.title')
     p = t('app.payments.forbidden_text')
 - else
-  .pay data={ controller: 'payments', payments_i18n_value: app_i18n_json('app.payments', 'app.common'), payments_can_manage_value: can_manage_payments?.to_s, payments_paths_value: { studentPayment: payments_student_payment_path, confirmPayment: payments_confirm_payment_path, rejectPayment: payments_reject_payment_path, adjustment: payments_adjustment_path, teacherPayout: payments_teacher_payout_path, refund: payments_refund_path }.to_json }
+  .pay data={ controller: 'payments', payments_i18n_value: app_i18n_json('app.payments', 'app.common'), payments_can_manage_value: can_manage_payments?.to_s, payments_modals_url_value: payments_modals_path, payments_paths_value: { studentPayment: payments_student_payment_path, confirmPayment: payments_confirm_payment_path, rejectPayment: payments_reject_payment_path, adjustment: payments_adjustment_path, teacherPayout: payments_teacher_payout_path, refund: payments_refund_path }.to_json }
     p.pay__toast hidden="hidden" role="status" data-payments-target="toast"
 
     header.pay__header
@@ -241,4 +241,4 @@
             h2 = t('app.payments.no_transactions')
             p = t('app.payments.empty_filter_hint')
 
-    = render 'payments/modals'
+    = turbo_frame_tag 'payments_modals'

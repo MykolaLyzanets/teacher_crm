@@ -49,4 +49,4 @@
               td
                 button.students-page__text-link.students-page__text-link--lg type="button" data-action="homework#openView" = t('app.students.open_homework')
 
-  = render 'homework/details_modal'
+  = turbo_frame_tag 'homework_modals'

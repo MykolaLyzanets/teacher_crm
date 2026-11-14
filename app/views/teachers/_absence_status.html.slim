@@ -1,0 +1,13 @@
+- reason = local_assigns[:reason].to_s
+- range = local_assigns[:range].to_s.presence
+- variant = local_assigns.fetch(:variant, :chip).to_s.tr('_', '-')
+
+.absence-status class="teachers-page__absence-status teachers-page__absence-status--#{variant}" role="status"
+  .teachers-page__absence-status-head
+    = status_badge t('app.statuses.absent'), tone: 'amber'
+  - if reason.present?
+    p.teachers-page__absence-status-reason
+      = icon_tag 'calendar-off', size: 14, class: 'teachers-page__absence-status-icon'
+      span = reason
+  - if range.present?
+    p.teachers-page__absence-status-range = range

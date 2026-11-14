@@ -1,5 +1,7 @@
 - if can_view_finance?
+  - setup_json = local_assigns.fetch(:compensation_setup, '{}').presence || '{}'
   section.teachers-page__card.tc-section#compensation.tc-scroll-anchor data-controller="teacher-compensation" data-teacher-compensation-i18n-value=app_i18n_json('app.teachers', 'app.common') data-teacher-compensation-locale-value=I18n.locale
+    input type="hidden" name="compensation_setup" value=setup_json data-teacher-compensation-target="payload"
     .teachers-step-card__head
       h2.teachers-step-card__title = t('app.teachers.compensation.section_title')
       p.teachers-page__section-sub = t('app.teachers.compensation.section_description')
@@ -106,6 +108,7 @@
                 span.tc-affix__prefix = t('app.teachers.compensation.currency_uah')
                 input.tc-affix__input type="text" inputmode="decimal" placeholder="20000" data-teacher-compensation-target="salaryAmount" data-action="input->teacher-compensation#salaryInput"
                 span.tc-affix__suffix = t('app.teachers.compensation.per_month_suffix')
+              p.teachers-page__field-error hidden="hidden" data-teacher-compensation-target="salaryError"
 
         section.tc-step
           .tc-step__head

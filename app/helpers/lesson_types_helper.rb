@@ -24,6 +24,9 @@ module LessonTypesHelper
     }
     data[:lesson_types_workspace_catalog_url_value] = catalog_subjects_path if teacher_assign || workspace_catalog
     data[:lesson_types_can_manage_value] = can_manage_workspace_catalog? if workspace_catalog
+    if teacher_id.present?
+      data[:lesson_types_offering_dialog_url_value] = teacher_offering_dialog_path(teacher_id)
+    end
     data.merge(extra)
   end
 end

@@ -44,6 +44,32 @@ RSpec.describe 'Finance UAH enforcement' do
     expect(StudentTransaction.last.currency.code).to eq('UAH')
   end
 
+  it 'uses the UAH row for finance even when another currency is marked default' do
+    Currency.find_or_create_by!(code: 'EUR') do |currency|
+      currency.name = 'Euro'
+      currency.symbol = '€'
+      currency.subunit_to_unit = 100
+      currency.active = true
+      currency[:default] = true
+    end
+    ensure_uah!
+    Currency.find_by!(code: 'UAH').update!(default: false)
+
+    lesson = create(:lesson, teacher:, price_cents: 3000)
+    lesson.students = [student]
+    lesson.save!
+    lesson.update!(
+      status: :completed,
+      attendance: :present,
+      actual_duration_minutes: 60,
+      charge_decision: :charge,
+      charged_cents: 3000
+    )
+
+    expect(Finance::TakeLessonPayment.new(lesson:, created_by: owner).save).to be(true)
+    expect(StudentTransaction.transaction_lesson_charge.find_by!(lesson_id: lesson.id).currency.code).to eq('UAH')
+  end
+
   it 'charges lessons and cancellations in UAH even when lesson currency is EUR' do
     lesson = create(:lesson, teacher:, price_cents: 3000, currency: 'EUR')
     lesson.students = [student]

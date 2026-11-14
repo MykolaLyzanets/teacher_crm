@@ -234,7 +234,7 @@ class StudentsController < AppController
 
   def set_student_record
     @student_record = student_profiles_scope
-                        .includes(student_lesson_type_prices: { lesson_type: :subject })
+                        .includes(:user, student_lesson_type_prices: { lesson_type: :subject })
                         .find_by(id: params[:id])
   end
 

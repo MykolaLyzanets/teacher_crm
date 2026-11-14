@@ -15,6 +15,7 @@ class CalendarController < AppController
 
     load_catalog
     assign_draft_params
+    @workspace_timezone = calendar_workspace_timezone(@draft_teacher_id)
     render :new, layout: (turbo_frame_request? ? false : 'app')
   end
 
@@ -33,7 +34,46 @@ class CalendarController < AppController
     @lessons_json = @lessons.to_json
     @current_teacher_id = current_user.teacher_profile&.id
     @lock_teacher = current_user.teacher? || selectable_teachers.size <= 1
-    @workspace_timezone = current_user.teacher_profile&.timezone.presence || 'Europe/Kyiv'
+    @workspace_timezone = calendar_workspace_timezone
+    @teacher_absences_json = calendar_teacher_absences_json
+  end
+
+  def calendar_teacher_absences_json
+    teacher_ids = Array(@teachers).map { |row| row[:id] }
+    return '[]' if teacher_ids.empty?
+
+    TeacherAbsence.where(teacher_id: teacher_ids).map do |absence|
+      {
+        teacherId: absence.teacher_id,
+        startsOn: absence.starts_on.iso8601,
+        endsOn: absence.ends_on.iso8601,
+        absenceType: absence.absence_type,
+        reasonLabel: absence_reason_label_for_calendar(absence)
+      }
+    end.to_json
+  end
+
+  def absence_reason_label_for_calendar(absence)
+    if absence.absence_other? && absence.reason_detail.present?
+      return absence.reason_detail
+    end
+
+    I18n.t("app.teachers.absence_types.#{absence.absence_type}", default: absence.absence_type.to_s.humanize)
+  end
+
+  def calendar_workspace_timezone(teacher_id = nil)
+    own_zone = current_user.teacher_profile&.timezone.presence
+    return own_zone if own_zone
+
+    id = teacher_id.presence || @preset_teacher_id.presence || solo_teacher_id
+    resolved_id = id.to_s.presence
+    if resolved_id.present?
+      teacher = Array(@teachers).find { |row| row[:id].to_s == resolved_id }
+      zone = teacher&.dig(:timezone).to_s.presence
+      return zone if zone
+    end
+
+    TeacherProfile::DEFAULT_TIMEZONE
   end
 
   def assign_draft_params

@@ -37,8 +37,12 @@ module Lessons
       success = false
       ActiveRecord::Base.transaction do
         lesson.save!
+        lesson.reload
         success = save_finance!(outcome)
-        raise ActiveRecord::Rollback if !success
+        if !success
+          Rails.logger.warn("[Lessons::RecordOutcome] finance failed lesson=#{lesson.id}: #{error_messages.join(' | ')}")
+          raise ActiveRecord::Rollback
+        end
       end
       success
     rescue ActiveRecord::RecordInvalid => e
@@ -225,9 +229,14 @@ module Lessons
       true
     end
 
-    # Lesson charges are saved on behalf of the workspace owner, not the teacher.
     def finance_actor
-      lesson.teacher_profile.workspace.owner
+      actor_id = @params[:cancelled_by_id].presence || @params[:cancelledById].presence
+      if actor_id.present?
+        user = User.find_by(id: actor_id)
+        return user if user.present?
+      end
+
+      lesson.teacher_profile&.workspace&.owner
     end
   end
 end

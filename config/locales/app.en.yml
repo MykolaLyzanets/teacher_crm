@@ -60,6 +60,7 @@ en:
       paused: Paused
       archived: Archived
       invited: Invited
+      absent: Absent
       on_leave: On leave
       inactive: Inactive
       confirmed: Confirmed
@@ -500,11 +501,49 @@ en:
       delete_confirm: Archive
       deleted_toast: Teacher archived.
       archived: "%{name} moved to the archive."
+      status_updated: "Status for %{name} updated."
+      archive_lessons_use_dialog: Confirm archive and choose what to do with upcoming lessons first.
+      archive_lessons_intro:
+        one: "%{name} has %{count} upcoming lesson. Choose how to handle it before archiving."
+        other: "%{name} has %{count} upcoming lessons. Choose how to handle them before archiving."
+      archive_lessons_more: and %{count} more…
+      archive_keep_lessons: Archive and manage
+      archive_cancel_lessons: Cancel all upcoming lessons and archive
+      archive_lessons_title: Archived teacher lessons
+      archive_lessons_modal_sub: "%{name} still has %{count} confirmed upcoming lessons."
+      archive_lessons_profile_sub: "%{count} upcoming lessons remain — reassign or cancel them."
+      archive_manage_lessons: Manage lessons
+      archive_cancel_all_lessons: Cancel all upcoming lessons
+      archive_lessons_empty: No upcoming lessons left.
+      archive_lessons_cancelled: Upcoming lessons were cancelled.
+      archive_open_in_calendar: Open in calendar
       not_found_title: Teacher not found
       not_found_text: This teacher may have been removed or is not available in the current session.
       back: Back to teachers
       schedule_lesson: Schedule lesson
       add_absence: Add absence
+      edit_absence: Edit absence
+      absence_updated: Absence updated.
+      absence_deleted: Absence removed.
+      absence_delete_confirm: Delete this absence record?
+      absence_edit_aria: Edit absence
+      absence_delete_aria: Delete absence
+      absence_dialog_sub: "%{name} · Existing lessons in this period will need a substitute or a new time."
+      absence_reason: Absence reason
+      absence_reason_detail: Describe the reason
+      absence_reason_detail_placeholder: Add details…
+      absence_internal_note: Internal note (optional)
+      absence_internal_note_placeholder: Visible to staff only…
+      absence_summary: Summary
+      absence_summary_teacher: Teacher
+      absence_summary_reason: Reason
+      absence_summary_period: Period
+      absence_summary_lessons: Affected lessons
+      absence_summary_students: Affected students
+      review_affected_lessons: Review affected lessons
+      save_absence: Save absence
+      absence_created_review: "Absence saved. Lessons in this period: %{count}."
+      absence_created_with_lessons: "Absence saved. %{count} lesson(s) in this period."
       edit_teacher: Edit teacher
       absence_text: Record dates when this teacher is unavailable. Affected lessons can be reassigned after saving.
       absence_type: Absence type
@@ -512,6 +551,66 @@ en:
       absence_end: End date
       absence_note: Note
       absence_recorded: Absence recorded.
+      absent_status_detail: "Absent · %{reason} (%{range})"
+      absent_day_unavailable: "Absent — %{reason}"
+      absence_period_overlap: This teacher already has an absence in that period. Adjust the dates or manage the existing record.
+      absence_assigned_lessons_block:
+        one: Cannot save the absence while %{count} lesson is still assigned to this teacher. Assign a substitute, reschedule, or cancel it first.
+        other: Cannot save the absence while %{count} lessons are still assigned to this teacher. Assign substitutes, reschedule, or cancel them first.
+      manage_affected_lessons: Manage affected lessons
+      affected_attention_title: Some lessons still need attention.
+      affected_attention_body:
+        one: "%{count} lesson needs a substitute or a new time."
+        other: "%{count} lessons need a substitute or a new time."
+      affected_tab_all: All lessons
+      affected_tab_needs_replacement: Replacement needed
+      affected_tab_substitute_assigned: Substitute assigned
+      affected_tab_reschedule_required_only: Reschedule required
+      affected_tab_rescheduled: Rescheduled
+      affected_empty: No lessons in this filter.
+      affected_none_in_period: There are no confirmed lessons for this teacher in this period. Add lessons in the calendar or adjust the absence dates.
+      affected_clear_selection: Clear
+      assign_one_substitute: Assign one substitute…
+      affected_bulk_confirm: Confirm
+      affected_bulk_no_common: No teacher is available for all selected lessons. Assign substitutes individually or reschedule the lessons.
+      assign_substitute: Assign substitute…
+      no_substitute_available: No substitute available
+      reschedule_lesson: Reschedule
+      reschedule_dialog_title: Reschedule lesson
+      reschedule_prior: "Previously %{date} · %{range} · %{teacher}"
+      reschedule_new_date: New date
+      reschedule_start_time: Start time
+      reschedule_end_time: End time
+      reschedule_teacher: Teacher
+      reschedule_pick_teacher: Select a teacher…
+      reschedule_original_teacher_suffix: (original teacher)
+      confirm_rescheduling: Confirm rescheduling
+      reschedule_invalid_datetime: Choose a valid date and time.
+      reschedule_end_before_start: End time must be after the start time.
+      reschedule_teacher_absent: "%{name} is marked absent on this date."
+      reschedule_teacher_absent_warning: This teacher is marked absent on this date.
+      reschedule_teacher_booked: This teacher is already booked at that time.
+      reschedule_teacher_booked_warning: "This time overlaps another lesson (%{range})."
+      reschedule_student_conflict: "Schedule conflict for %{name}: %{range}."
+      reschedule_outside_availability: The chosen time is outside this teacher's availability.
+      reschedule_outside_availability_warning: This time is outside the teacher's weekly availability.
+      reschedule_teacher_available: Teacher is available.
+      restore_original_teacher: Restore
+      absence_lesson_teacher_line: "Teacher: %{name}"
+      absence_lesson_substitute_line: "Substitute: %{substitute} · was %{original}"
+      absence_substitute_unavailable: That teacher is not available for this lesson.
+      absence_substitute_workspace_mismatch: Substitute must belong to the same workspace.
+      absence_restore_none: This lesson has no substitute to restore.
+      absence_cancel_lesson_confirm: Cancel this lesson? It will stay in history as cancelled.
+      absence_cancel_lesson_note: Cancelled during absence (%{reason})
+      absence_cancel_lesson_invalid: This lesson is not part of this absence period.
+      absence_restore_invalid: This lesson cannot be restored.
+      substitution_status:
+        needs_replacement: Replacement needed
+        substitute_assigned: Substitute assigned
+        reschedule_required: Reschedule required
+        rescheduled: Rescheduled
+        restored: Original teacher restored
       absence_history: Absence history
       no_absences: No absences recorded yet.
       compensation_col: Compensation
@@ -655,6 +754,7 @@ en:
         badge_default: Default
         per_month_short: per month
         salary_needed: Monthly salary — amount needed
+        salary_invalid: Enter a monthly salary above 0.
         default_rule: Default rule
         default_amount_needed: Default rule — amount needed
         no_rules: No rules yet
@@ -701,6 +801,8 @@ en:
         slot_format_any: Online or in person
         slot_format_online: Online
         slot_format_in_person: In person
+        slot_badge_any_type: Any type
+        slot_badge_any_format: Any format
         slot_use_any: Any lesson
         slot_error_time: Enter a start and end time.
         slot_error_order: End time must be later than start time.
@@ -743,6 +845,7 @@ en:
       tags: Tags
       availability: Availability and lesson settings
       availability_title: Availability
+      availability_profile_sub: Weekly time slots. Lessons must fit a slot for their type and format.
       availability_sub: Set the teacher’s regular working hours and lesson defaults.
       working_days: Working days
       working_hours: Working hours
@@ -776,6 +879,11 @@ en:
       experience_years: "%{count} years"
       invited_status: "Invited · %{status}"
       profile_only_access: Profile only — no login access
+      edit_availability: Edit availability
+      default_lesson: Default lesson
+      unavailable_day: Unavailable
+      invited_access: Invited
+      availability_empty_state: No weekly availability set — lessons can be booked at any time.
       has_workspace_access: Can sign in to Danlio
       photo: Profile photo
       photo_hint: Optional. JPG, PNG or WEBP up to 2 MB.
@@ -914,6 +1022,8 @@ en:
       free: Free
       you: You
       teacher_available: Teacher is available.
+      teacher_absent: This teacher is marked absent on this date. Choose another teacher or date.
+      teacher_absent_detail: "Teacher is absent (%{reason}, %{range}). You cannot schedule a lesson on this date."
       outside_day: Teacher is outside working hours on this day.
       outside_hours: "Outside working hours (%{range})."
       already_booked: "Already booked: %{when}"
@@ -925,7 +1035,8 @@ en:
       repeat_conflict_hint: "%{count} lessons will be created. Review conflicts before continuing."
       repeat_weekly_summary: "Repeats every week (%{count} lessons) until %{until}."
       repeat_biweekly_summary: "Repeats every two weeks (%{count} lessons)."
-      repeat_custom_summary: "Repeats on selected days (%{count} lessons) until %{until}."
+      repeat_custom_summary: "Repeats on %{days} (%{count} lessons) until %{until}."
+      repeat_custom_days_fallback: selected days
       lesson_price: Lesson price
       currency: Currency
       price_hint: Defaults to the selected lesson type’s price. Overriding it applies only to this lesson and never changes the teacher’s lesson type.
@@ -939,7 +1050,7 @@ en:
       workspace_timezone: Workspace timezone
       repeat_custom: Custom
       repeat_until: Until
-      weekdays: Weekdays
+      weekdays_label: Weekdays
       group_lesson: Group lesson
       individual_lesson: Individual lesson
       group_count: "%{count} students"
@@ -1005,6 +1116,19 @@ en:
         october: October
         november: November
         december: December
+      months_short:
+        jan: Jan
+        feb: Feb
+        mar: Mar
+        apr: Apr
+        may: May
+        jun: Jun
+        jul: Jul
+        aug: Aug
+        sep: Sep
+        oct: Oct
+        nov: Nov
+        dec: Dec
       weekdays_short:
         mon: Mon
         tue: Tue
@@ -1193,6 +1317,10 @@ en:
       cancelled_toast: Lesson cancelled without charge.
       deleted_toast: Lesson deleted.
       completed_toast: Lesson marked as completed.
+      finance_lesson_not_completed: Billing failed — the lesson is not completed yet.
+      finance_lesson_no_teacher: Billing failed — this lesson has no teacher.
+      finance_actor_missing: Billing failed — no user was found to record this transaction.
+      finance_currency_not_configured: UAH is not configured for finance. Run db:seed.
       mark_completed: Mark as completed
       confirm_outcome: Confirm outcome
       confirm_lesson_outcome: Confirm lesson outcome
@@ -1211,6 +1339,7 @@ en:
       close_details: Close lesson details
       close: Close
       not_found: This lesson could not be found.
+      outcome_not_ready: You can confirm the lesson outcome only after it has ended.
       group_subtitle: Group lesson
       date_time: Date & time
       participants: Participants
@@ -1249,6 +1378,7 @@ en:
       material_link_url: Link URL
       add_material_link: Add link
       upload_material: Upload file
+      material_no_file: No file selected
       material_link_default: Lesson link
       choose_material: Choose a material
       duplicate_lesson_action: Duplicate
@@ -1284,6 +1414,7 @@ en:
       completed_banner: Completed
       cancelled_banner: Cancelled
       cancelled_student_archived: The student was archived
+      cancelled_teacher_archived: Teacher moved to archive
       cancelled_student_paused: The student was paused
       cancelled_manual: Cancelled manually
       min: min

@@ -19,7 +19,7 @@ section.teachers-page__card.lt-teaching-section
           = link_to manage_path, class: 'lt-teaching-actions__manage' do
             = icon_tag 'settings', size: 16
             span = t('app.teachers.manage_subjects_lesson_types')
-      = render 'teachers/subject_offering_dialog'
+      = turbo_frame_tag 'offering_dialog'
     - else
       = render 'lesson_types/manager', { variant: :teaching, show_add_lesson: false }.merge(manager_opts)
       .lt-teaching-actions

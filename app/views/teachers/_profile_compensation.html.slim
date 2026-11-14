@@ -1,0 +1,14 @@
+- record = local_assigns[:teacher_record]
+- entries = teacher_profile_compensation_entries(record)
+
+section.teachers-page__card#compensation
+  h2 = t('app.teachers.compensation.section_title')
+  p.teachers-page__section-sub = t('app.teachers.compensation.section_description')
+  - if entries.blank?
+    p.teachers-page__meta = t('app.teachers.compensation.disabled_text')
+  - else
+    dl.teachers-page__dl.teachers-page__dl--profile
+      - entries.each do |row|
+        div
+          dt = row[:label]
+          dd = row[:value]

@@ -1,0 +1,55 @@
+- form = local_assigns[:form].with_indifferent_access
+- description = local_assigns[:description]
+- dialog_url = local_assigns[:dialog_url]
+- submit_url = local_assigns[:submit_url]
+- check_url = local_assigns[:check_url]
+- original_teacher_id = local_assigns[:original_teacher_id]
+- lesson = local_assigns[:lesson]
+
+#affected-lesson-reschedule-dialog.danlio-modal.danlio-modal--md.danlio-modal--stack.is-open role="presentation" data-controller="teacher-absence-reschedule" data-teacher-absence-reschedule-submit-url-value=submit_url data-teacher-absence-reschedule-check-url-value=check_url data-teacher-absence-reschedule-dialog-url-value=dialog_url
+  button.danlio-modal__backdrop type="button" data-action="teacher-absence-reschedule#close" aria-label=t('app.common.close')
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="reschedule-lesson-title"
+    .danlio-modal__head
+      div
+        h2#reschedule-lesson-title.danlio-modal__title = t('app.teachers.reschedule_dialog_title')
+        p.danlio-modal__desc = description
+      button.danlio-modal__close type="button" data-action="teacher-absence-reschedule#close" aria-label=t('app.common.close')
+        = icon_tag 'x', size: 18
+    .danlio-modal__body
+      .teachers-page__reschedule-prior
+        = t('app.teachers.reschedule_prior', date: form[:prior_date], range: form[:prior_range], teacher: form[:prior_teacher])
+      .danlio-field
+        span
+          = t('app.teachers.reschedule_new_date')
+          span.danlio-field__req *
+        input.danlio-field__control type="date" name="date" required="required" value=form[:date] data-teacher-absence-reschedule-target="date" data-action="input->teacher-absence-reschedule#scheduleChanged"
+      .danlio-field-grid
+        .danlio-field
+          span
+            = t('app.teachers.reschedule_start_time')
+            span.danlio-field__req *
+          input.danlio-field__control type="time" name="start_time" required="required" value=form[:start_time] data-teacher-absence-reschedule-target="startTime" data-action="input->teacher-absence-reschedule#scheduleChanged"
+        .danlio-field
+          span
+            = t('app.teachers.reschedule_end_time')
+            span.danlio-field__req *
+          input.danlio-field__control type="time" name="end_time" required="required" value=form[:end_time] data-teacher-absence-reschedule-target="endTime" data-action="input->teacher-absence-reschedule#scheduleChanged"
+      .danlio-field
+        span
+          = t('app.teachers.reschedule_teacher')
+          span.danlio-field__req *
+        select.danlio-field__control name="teacher_id" required="required" data-teacher-absence-reschedule-target="teacher" data-action="change->teacher-absence-reschedule#scheduleChanged"
+          option value="" disabled="disabled"
+            = t('app.teachers.reschedule_pick_teacher')
+          - local_assigns[:teachers].each do |row|
+            option value=row.id selected=(row.id == form[:teacher_id] ? true : nil)
+              = row.display_label
+              - if row.id == original_teacher_id
+                = " "
+                = t('app.teachers.reschedule_original_teacher_suffix')
+      p.teachers-page__reschedule-hint hidden="hidden" data-teacher-absence-reschedule-target="hint"
+      p.teachers-page__field-error hidden="hidden" role="alert" data-teacher-absence-reschedule-target="error"
+    .danlio-modal__foot
+      button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="teacher-absence-reschedule#close" = t('app.common.cancel')
+      button.danlio-modal__btn.danlio-modal__btn--primary type="button" data-action="teacher-absence-reschedule#confirm" data-teacher-absence-reschedule-target="confirm"
+        = t('app.teachers.confirm_rescheduling')

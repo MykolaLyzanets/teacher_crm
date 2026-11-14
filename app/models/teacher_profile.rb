@@ -5,14 +5,13 @@ class TeacherProfile < ApplicationRecord
   CONTACT_METHODS = { email: 0, phone: 1, either: 2 }.freeze
   LESSON_DURATIONS = [30, 45, 60, 90].freeze
   LESSON_FORMATS = %w[online in_person hybrid].freeze
-  CALENDAR_COLORS = { olive: 0, slate: 1, amber: 2, plum: 3, terra: 4, teal: 5 }.freeze
   DEFAULT_TIMEZONE = 'Europe/Kyiv'
   DEFAULT_COMPENSATION_PERCENT = 60
   DEFAULT_LESSON_DURATION_MINUTES = 60
 
   enum status: STATUSES
   enum preferred_contact_method: CONTACT_METHODS, _prefix: :contact
-  enum calendar_color: CALENDAR_COLORS, _prefix: :calendar
+  enum calendar_color: TeacherCalendarColors.enum_definition, _prefix: :calendar
 
   mount_uploader :photo, ImageUploader
 
@@ -25,6 +24,7 @@ class TeacherProfile < ApplicationRecord
   has_many :lessons, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :restrict_with_error
   has_many :homeworks, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
   has_many :materials, foreign_key: :teacher_id, inverse_of: :teacher, dependent: :restrict_with_error
+  has_many :teacher_absences, foreign_key: :teacher_id, inverse_of: :teacher_profile, dependent: :destroy
   has_many :teacher_earnings, dependent: :restrict_with_error, inverse_of: :teacher_profile
   has_many :teacher_payouts, dependent: :restrict_with_error, inverse_of: :teacher_profile
 
@@ -50,8 +50,38 @@ class TeacherProfile < ApplicationRecord
 
   def compensation_rate
     return DEFAULT_COMPENSATION_PERCENT unless compensation_percent_attribute?
+    return DEFAULT_COMPENSATION_PERCENT if compensation_percent.nil?
 
     compensation_percent
+  end
+
+  def compensation_setup_json
+    return '{}' unless has_attribute?(:compensation_setup)
+
+    compensation_setup.presence&.to_json || '{}'
+  end
+
+  def lesson_catalog_json
+    modes = catalog_delivery_modes
+    rows = taught_subjects.includes(:lesson_types).order(:name).map do |subject|
+      {
+        id: subject.id,
+        name: subject.name,
+        isActive: subject.is_active,
+        lessonTypes: subject.lesson_types.sort_by(&:name).map do |type|
+          {
+            id: type.id,
+            name: type.name,
+            kind: type.kind,
+            mode: type.mode,
+            defaultDurationMinutes: type.default_duration_minutes,
+            deliveryModes: modes,
+            isActive: type.is_active
+          }
+        end
+      }
+    end
+    rows.to_json
   end
 
   def as_catalog(assigned_count: nil)
@@ -82,6 +112,7 @@ class TeacherProfile < ApplicationRecord
       defaultMeetingLink: default_meeting_link,
       maxLessonsPerDay: max_lessons_per_day,
       calendarColor: calendar_color,
+      calendarColorHex: TeacherCalendarColors.hex_for(calendar_color),
       compensationPercent: compensation_rate,
       inviteToWorkspace: true,
       invitationStatus: invited? ? 'sent' : 'active',
@@ -114,5 +145,11 @@ class TeacherProfile < ApplicationRecord
     return [] unless has_attribute?(:availability_slots)
 
     TeacherAvailability.slots_for_form(self)
+  end
+
+  def catalog_delivery_modes
+    modes = Array(lesson_formats).map(&:to_s) & %w[online in_person]
+    modes = ['online'] if modes.empty?
+    modes
   end
 end

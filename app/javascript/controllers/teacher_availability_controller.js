@@ -268,6 +268,7 @@ export default class extends Controller {
     const row = this.editorTarget.querySelector(`[data-ta-slot="${id}"]`)
     if (!row) return
     const slot = this.slots.find((item) => item.id === id)
+    if (!slot) return
     const err = this.errors[id]
     row.classList.toggle("ta-slot--error", Boolean(err))
     const errNode = row.querySelector(".ta-slot__error")
@@ -275,6 +276,49 @@ export default class extends Controller {
       errNode.textContent = err || ""
       errNode.hidden = !err
     }
+
+    const duration = minutesOf(slot.endTime) - minutesOf(slot.startTime)
+    let durationEl = row.querySelector(".ta-slot__duration")
+    if (duration > 0) {
+      if (!durationEl) {
+        durationEl = document.createElement("span")
+        durationEl.className = "ta-slot__duration"
+        row.querySelector(".ta-slot__times")?.appendChild(durationEl)
+      }
+      durationEl.textContent = formatMinutes(duration)
+      durationEl.hidden = false
+    } else if (durationEl) {
+      durationEl.remove()
+    }
+
+    const dayEl = row.closest(".ta-day")
+    if (!dayEl) return
+    const daySlots = slotsForDay(this.slots, slot.day)
+    const bounds = timelineBounds(this.slots)
+    const timeline = dayEl.querySelector(".ta-timeline")
+    if (timeline) timeline.outerHTML = this.timelineHtml(daySlots, bounds)
+
+    const meta = dayEl.querySelector(".ta-day__meta")
+    if (meta) {
+      meta.textContent = this.t("day_slots_stats", "%{count} slots · %{total}")
+        .replace("%{count}", String(daySlots.length))
+        .replace("%{total}", formatMinutes(totalSlotMinutes(daySlots)))
+    }
+
+    this.updateHeadStats()
+  }
+
+  updateHeadStats() {
+    const statsWrap = this.editorTarget.querySelector(".ta-head__stats")
+    if (!statsWrap) return
+    const statsEl = statsWrap.querySelector(".ta-head__numbers")
+    if (!statsEl || this.slots.length === 0) return
+
+    const activeDays = WEEK_DAYS.filter((day) => this.slots.some((item) => item.day === day))
+    statsEl.textContent = this.t("slots_stats", "%{days} days · %{count} slots · %{total} a week")
+      .replace("%{days}", String(activeDays.length))
+      .replace("%{count}", String(this.slots.length))
+      .replace("%{total}", formatMinutes(totalSlotMinutes(this.slots)))
   }
 
   render() {

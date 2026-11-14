@@ -101,9 +101,12 @@
               p
                 = lesson_icon 'alert-triangle', size: 16
                 span = t('app.lessons.negative_balance_warning')
-              label.lessons-page__finance-check hidden="hidden" data-lesson-outcome-target="negativeCheckWrap"
-                input type="checkbox" data-lesson-outcome-target="confirmNegative" data-action="change->lesson-outcome#syncCompleteFinance"
-                span = t('app.lessons.proceed_negative')
+              label.lessons-page__finance-switch hidden="hidden" data-lesson-outcome-target="negativeCheckWrap"
+                span.lessons-page__finance-switch-label = t('app.lessons.proceed_negative')
+                span.lessons-page__switch-control
+                  input.sr-only type="checkbox" role="switch" aria-label=t('app.lessons.proceed_negative') data-lesson-outcome-target="confirmNegative" data-action="change->lesson-outcome#syncCompleteFinance"
+                  span.lessons-page__switch-rail aria-hidden="true"
+                  span.lessons-page__switch-knob aria-hidden="true"
 
           p.lessons-page__form-error hidden="hidden" data-lesson-outcome-target="formError" role="alert"
 

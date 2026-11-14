@@ -1,0 +1,10 @@
+- slot = local_assigns[:slot].with_indifferent_access
+- label_map = local_assigns.fetch(:label_map, {})
+span.teachers-page__slot-badge
+  span.teachers-page__slot-badge-time = "#{slot[:startTime]}–#{slot[:endTime]}"
+  span.teachers-page__slot-badge-chip.teachers-page__slot-badge-chip--type
+    = icon_tag availability_slot_type_icon(slot), size: 12
+    span = availability_slot_lesson_type_label(slot, label_map)
+  span.teachers-page__slot-badge-chip.teachers-page__slot-badge-chip--format
+    = icon_tag availability_slot_format_icon(slot[:format]), size: 12
+    span = availability_slot_format_badge_label(slot[:format])

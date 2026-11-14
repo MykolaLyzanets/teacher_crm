@@ -2,15 +2,25 @@
 
 class Lesson < ApplicationRecord
   STATUSES = { confirmed: 0, cancelled: 1, completed: 2 }.freeze
+  SUBSTITUTION_STATUSES = {
+    substitute_assigned: 0,
+    rescheduled: 1,
+    restored: 2
+  }.freeze
+
+  attr_accessor :substitute_assignment
   LOCATIONS = { online: 0, in_person: 1 }.freeze
   ATTENDANCES = { pending: 0, present: 1, late: 2, absent: 3, excused: 4 }.freeze
 
   enum status: STATUSES
+  enum substitution_status: SUBSTITUTION_STATUSES, _prefix: :substitution
   enum location: LOCATIONS, _prefix: true
   enum attendance: ATTENDANCES, _prefix: true
   enum charge_decision: { no_charge: 0, charge: 1 }, _prefix: true
 
   belongs_to :teacher_profile, foreign_key: :teacher_id, inverse_of: :lessons
+  belongs_to :original_teacher, class_name: 'TeacherProfile', optional: true
+  belongs_to :teacher_absence, optional: true
   belongs_to :subject, inverse_of: :lessons
   belongs_to :lesson_type, inverse_of: :lessons
   belongs_to :cancelled_by, class_name: 'User', optional: true
@@ -37,6 +47,7 @@ class Lesson < ApplicationRecord
   validate :students_share_teacher_workspace
   validate :teacher_has_no_confirmed_overlap, unless: :allow_overlap?
   validate :student_has_no_confirmed_overlap, unless: :allow_overlap?
+  validate :teacher_not_marked_absent, if: :validate_teacher_absence?
   validates :override_reason, presence: true, if: :allow_overlap?
 
   def billed_price_cents
@@ -136,7 +147,9 @@ class Lesson < ApplicationRecord
   end
 
   def subject_belongs_to_teacher
+    return if substitute_assignment
     return if subject.blank? || teacher_profile.blank? || subject.teacher_id == teacher_id
+    return if subject.teacher_id.blank?
 
     errors.add(:subject, :teacher_mismatch)
   end
@@ -190,5 +203,21 @@ class Lesson < ApplicationRecord
     scope = scope.where(student_profiles: { id: ids })
     scope = scope.where.not(lessons: { id: }) if persisted?
     errors.add(:base, :student_overlap) if scope.exists?
+  end
+
+  def validate_teacher_absence?
+    return false if substitute_assignment
+
+    !cancelled? && !completed?
+  end
+
+  def teacher_not_marked_absent
+    return if teacher_id.blank? || starts_at.blank?
+
+    zone = teacher_profile&.time_zone || TeacherProfile::DEFAULT_TIMEZONE
+    date = starts_at.in_time_zone(zone).to_date
+    return if !TeacherAbsence.covers_date?(teacher_id, date)
+
+    errors.add(:base, :teacher_absent)
   end
 end

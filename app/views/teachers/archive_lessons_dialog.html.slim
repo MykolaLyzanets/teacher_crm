@@ -1,0 +1,5 @@
+= turbo_frame_tag 'archive_lessons_dialog' do
+  - if @teacher_record.blank?
+    / empty
+  - else
+    = render 'archive_lessons_dialog', teacher: @teacher, lessons: @upcoming_lessons

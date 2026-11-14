@@ -8,6 +8,12 @@ class PaymentsController < AppController
     create_student_payment confirm_payment reject_payment create_adjustment create_teacher_payout create_refund
   ]
 
+  def modals
+    return head :forbidden unless can_view_finance?
+
+    render :modals, layout: turbo_frame_request? ? false : 'app'
+  end
+
   def index
     return if @forbidden
 

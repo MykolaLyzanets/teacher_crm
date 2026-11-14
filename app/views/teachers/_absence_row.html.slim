@@ -1,0 +1,21 @@
+- absence = local_assigns[:absence]
+- teacher = local_assigns[:teacher]
+li.teachers-page__absence-row
+  .teachers-page__assigned-main
+    div
+      p.teachers-page__name = teacher_absence_type_label(absence)
+      p.teachers-page__meta = teacher_absence_range_label(absence)
+      - if absence.absence_other? && absence.reason_detail.present?
+        p.teachers-page__meta = absence.reason_detail
+      - if absence.note.present?
+        p.teachers-page__absence-note
+          = icon_tag 'lock', size: 14
+          span = absence.note
+  .teachers-page__assigned-actions
+    - if local_assigns.fetch(:manage_lessons, false)
+      button.teachers-page__secondary-btn type="button" data-action="teachers#openAffectedLessons" data-absence-id=absence.id
+        = t('app.teachers.manage_affected_lessons')
+    button.teachers-page__icon-btn type="button" title=t('app.common.edit') aria-label=t('app.teachers.absence_edit_aria') data-action="teachers#openAbsenceEdit" data-absence-id=absence.id
+      = icon_tag 'pencil', size: 18
+    = button_to teacher_absence_path(teacher[:id], absence), method: :delete, class: 'teachers-page__icon-btn teachers-page__icon-btn--danger', form: { class: 'teachers-page__absence-delete-form', data: { turbo_confirm: t('app.teachers.absence_delete_confirm') } }, title: t('app.common.delete'), aria: { label: t('app.teachers.absence_delete_aria') } do
+      = icon_tag 'trash', size: 18

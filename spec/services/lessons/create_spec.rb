@@ -204,6 +204,28 @@ RSpec.describe Lessons::Create do
     expect(service.lesson.currency).to eq('UAH')
   end
 
+  it 'rejects creating a lesson when the teacher is absent on that date' do
+    teacher, subject_record, lesson_type, student = create_graph
+    teacher.teacher_absences.create!(
+      absence_type: :vacation,
+      starts_on: Date.new(2026, 9, 4),
+      ends_on: Date.new(2026, 9, 6)
+    )
+
+    service = create_lesson(
+      teacher,
+      subject_id: subject_record.id,
+      lesson_type_id: lesson_type.id,
+      student_ids: [student.id],
+      date: '2026-09-05',
+      start_time: '10:00',
+      end_time: '11:00'
+    )
+
+    expect(service.save).to be(false)
+    expect(service.errors.details[:base]).to include(hash_including(error: :teacher_absent))
+  end
+
   it 'updates an existing lesson without recreating it' do
     teacher, subject_record, lesson_type, student = create_graph
     original = create(

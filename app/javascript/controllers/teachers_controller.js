@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { validateSlots } from "../lib/teacher_availability"
+import { closeModal, openModal } from "../lib/modal"
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"]
@@ -61,18 +62,23 @@ export default class extends Controller {
     "assignEmpty",
     "toast",
     "absenceDialog",
-    "absenceList",
-    "absenceEmpty",
-    "absenceType",
-    "absenceStart",
-    "absenceEnd",
-    "absenceNote"
+    "absenceFrame",
+    "affectedLessonsDialog",
+    "affectedLessonsFrame",
+    "archiveLessonsDialog",
+    "archiveLessonsFrame"
   ]
 
   static values = {
     i18n: Object,
     name: String,
-    editing: Boolean
+    editing: Boolean,
+    absenceDialogUrl: String,
+    teacherId: String,
+    manageAbsence: String,
+    affectedLessonsUrl: String,
+    archiveLessonsDialogUrl: String,
+    manageArchive: String,
   }
 
   connect() {
@@ -92,10 +98,20 @@ export default class extends Controller {
     document.addEventListener("mousedown", this.boundPointer)
     if (this.hasAssignedRowTarget) this.filterAssigned()
     if (this.hasRowTarget) this.filter()
+    this.resetPageScroll()
+    if (this.hasManageAbsenceValue && this.manageAbsenceValue) {
+      this.openAffectedLessonsById(this.manageAbsenceValue)
+      this.stripManageAbsenceParam()
+    }
+    if (this.hasManageArchiveValue && this.manageArchiveValue) {
+      this.openArchiveLessons()
+      this.stripManageArchiveParam()
+    }
   }
 
   disconnect() {
     document.removeEventListener("mousedown", this.boundPointer)
+    this.resetPageScroll()
   }
 
   t(group, key, vars = {}) {
@@ -379,9 +395,10 @@ export default class extends Controller {
     this.touched = new Set(["firstName", "lastName", "status", "email", "customDuration", "notes"])
     this.syncCustomDuration()
     const slotsError = this.availabilitySlotsInvalid()
+    const compensationError = this.compensationSubmitBlocked()
     const errors = this.validate()
     this.renderErrors(errors)
-    if (Object.keys(errors).length > 0 || slotsError) {
+    if (Object.keys(errors).length > 0 || slotsError || compensationError) {
       event.preventDefault()
       if (this.hasFormAlertTarget) this.formAlertTarget.hidden = false
       return
@@ -429,6 +446,18 @@ export default class extends Controller {
       node.hidden = !show
       node.closest(".teachers-page__field")?.classList.toggle("teachers-page__field--invalid", Boolean(show))
     })
+  }
+
+  compensationSubmitBlocked() {
+    const section = this.element.querySelector("#compensation[data-controller*='teacher-compensation']")
+    if (!section) return false
+    const ctrl = this.application.getControllerForElementAndIdentifier(section, "teacher-compensation")
+    if (!ctrl) return false
+    ctrl.syncPayload()
+    if (!ctrl.submitBlocked()) return false
+    ctrl.renderSalaryError()
+    section.scrollIntoView({ behavior: "smooth", block: "start" })
+    return true
   }
 
   availabilitySlotsInvalid() {
@@ -659,25 +688,220 @@ export default class extends Controller {
   }
 
   openAbsence() {
-    if (this.hasAbsenceDialogTarget) this.absenceDialogTarget.hidden = false
+    this.loadAbsenceDialog()
+  }
+
+  openAbsenceEdit(event) {
+    const absenceId = event?.currentTarget?.dataset?.absenceId
+    if (!absenceId) return
+    this.loadAbsenceDialog(absenceId)
+  }
+
+  loadAbsenceDialog(absenceId) {
+    const frame = this.absenceFrameElement()
+    if (!frame) return
+
+    const showDialog = () => {
+      const dialog = this.absenceDialogElement(frame)
+      if (!dialog) return
+      dialog.classList.add("is-open")
+      openModal(dialog, { onClose: () => this.closeAbsence() })
+    }
+
+    const baseUrl = this.absenceDialogUrlValue
+    if (!baseUrl) return
+
+    const url = new URL(baseUrl, window.location.origin)
+    if (absenceId) url.searchParams.set("absence_id", absenceId)
+
+    if (this.absenceDialogElement(frame) && frame.getAttribute("src") === url.toString()) {
+      showDialog()
+      return
+    }
+
+    frame.innerHTML = ""
+    frame.removeAttribute("src")
+
+    const onLoad = (event) => {
+      if (event.target !== frame) return
+      showDialog()
+    }
+    frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+    frame.src = url.toString()
   }
 
   closeAbsence() {
-    if (this.hasAbsenceDialogTarget) this.absenceDialogTarget.hidden = true
+    const frame = this.absenceFrameElement()
+    const dialog = frame ? this.absenceDialogElement(frame) : null
+    if (dialog) {
+      dialog.classList.remove("is-open")
+      closeModal(dialog)
+    }
+    if (frame) {
+      frame.innerHTML = ""
+      frame.removeAttribute("src")
+    }
+    this.resetPageScroll()
   }
 
-  confirmAbsence() {
-    const type = this.hasAbsenceTypeTarget ? this.absenceTypeTarget.selectedOptions[0]?.textContent : "Absence"
-    const start = this.hasAbsenceStartTarget ? this.absenceStartTarget.value : ""
-    const end = this.hasAbsenceEndTarget ? this.absenceEndTarget.value : start
-    if (!start) return
-    if (this.hasAbsenceEmptyTarget) this.absenceEmptyTarget.hidden = true
-    if (this.hasAbsenceListTarget) {
-      const item = document.createElement("li")
-      item.innerHTML = `<div class="teachers-page__assigned-main"><div><p class="teachers-page__name">${type}</p><p class="teachers-page__meta">${start} – ${end || start}</p></div></div>`
-      this.absenceListTarget.prepend(item)
-    }
-    this.closeAbsence()
-    this.showToast(this.t("teachers", "absence_recorded") || "Absence recorded.")
+  absenceFrameElement() {
+    if (this.hasAbsenceFrameTarget) return this.absenceFrameTarget
+    return document.getElementById("absence_dialog")
   }
+
+  absenceDialogElement(frame) {
+    if (this.hasAbsenceDialogTarget) return this.absenceDialogTarget
+    if (frame) return frame.querySelector("#teacher-absence-dialog")
+    return document.getElementById("teacher-absence-dialog")
+  }
+
+  openAffectedLessons(event) {
+    const absenceId = event?.currentTarget?.dataset?.absenceId
+    if (absenceId) this.openAffectedLessonsById(absenceId)
+  }
+
+  openAffectedLessonsById(absenceId) {
+    const frame = this.affectedLessonsFrameElement()
+    if (!frame || !this.teacherIdValue || !absenceId) return
+
+    const showDialog = () => {
+      this.closeAbsence()
+      const dialog = this.affectedLessonsDialogElement(frame)
+      if (!dialog) {
+        this.resetPageScroll()
+        return
+      }
+      dialog.classList.add("is-open")
+      dialog.removeAttribute("hidden")
+      openModal(dialog, { onClose: () => this.closeAffectedLessons() })
+    }
+
+    if (this.affectedLessonsDialogElement(frame)) {
+      showDialog()
+      return
+    }
+
+    const onLoad = (event) => {
+      if (event.target !== frame) return
+      window.requestAnimationFrame(() => showDialog())
+    }
+    const onMissing = () => {
+      this.resetPageScroll()
+      delete frame.dataset.keepOpen
+    }
+    frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+    frame.addEventListener("turbo:frame-missing", onMissing, { once: true })
+    const template = this.affectedLessonsUrlValue
+    if (!template) return
+    frame.dataset.keepOpen = "true"
+    frame.src = template.replace("__ABSENCE__", encodeURIComponent(absenceId))
+  }
+
+  closeAffectedLessons() {
+    const frame = this.affectedLessonsFrameElement()
+    const dialog = frame ? this.affectedLessonsDialogElement(frame) : null
+    if (dialog) {
+      dialog.classList.remove("is-open")
+      closeModal(dialog)
+    }
+    if (frame) {
+      frame.innerHTML = ""
+      frame.removeAttribute("src")
+      delete frame.dataset.keepOpen
+    }
+    const reschedule = document.getElementById("affected_lesson_reschedule")
+    if (reschedule) {
+      reschedule.innerHTML = ""
+      reschedule.removeAttribute("src")
+    }
+    this.resetPageScroll()
+  }
+
+  resetPageScroll() {
+    document.body.style.overflow = ""
+    delete document.body.dataset.modalDepth
+    delete document.body.dataset.modalOverflow
+  }
+
+  stripManageAbsenceParam() {
+    if (!window.history?.replaceState) return
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has("manage_absence")) return
+    url.searchParams.delete("manage_absence")
+    window.history.replaceState({}, "", url.toString())
+  }
+
+  affectedLessonsFrameElement() {
+    if (this.hasAffectedLessonsFrameTarget) return this.affectedLessonsFrameTarget
+    return document.getElementById("affected_lessons_dialog")
+  }
+
+  affectedLessonsDialogElement(frame) {
+    if (this.hasAffectedLessonsDialogTarget) return this.affectedLessonsDialogTarget
+    if (frame) return frame.querySelector("#teacher-affected-lessons-dialog")
+    return document.getElementById("teacher-affected-lessons-dialog")
+  }
+
+  openArchiveLessons() {
+    const frame = this.archiveLessonsFrameElement()
+    const url = this.archiveLessonsDialogUrlValue
+    if (!frame || !url) return
+
+    const showDialog = () => {
+      const dialog = this.archiveLessonsDialogElement(frame)
+      if (!dialog) {
+        this.resetPageScroll()
+        return
+      }
+      dialog.classList.add("is-open")
+      dialog.removeAttribute("hidden")
+      openModal(dialog, { onClose: () => this.closeArchiveLessons() })
+    }
+
+    if (this.archiveLessonsDialogElement(frame)) {
+      showDialog()
+      return
+    }
+
+    const onLoad = (event) => {
+      if (event.target !== frame) return
+      window.requestAnimationFrame(() => showDialog())
+    }
+    frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+    frame.src = url
+  }
+
+  closeArchiveLessons() {
+    const frame = this.archiveLessonsFrameElement()
+    const dialog = frame ? this.archiveLessonsDialogElement(frame) : null
+    if (dialog) {
+      dialog.classList.remove("is-open")
+      closeModal(dialog)
+    }
+    if (frame) {
+      frame.innerHTML = ""
+      frame.removeAttribute("src")
+    }
+    this.resetPageScroll()
+  }
+
+  stripManageArchiveParam() {
+    if (!window.history?.replaceState) return
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has("manage_archive")) return
+    url.searchParams.delete("manage_archive")
+    window.history.replaceState({}, "", url.toString())
+  }
+
+  archiveLessonsFrameElement() {
+    if (this.hasArchiveLessonsFrameTarget) return this.archiveLessonsFrameTarget
+    return document.getElementById("archive_lessons_dialog")
+  }
+
+  archiveLessonsDialogElement(frame) {
+    if (this.hasArchiveLessonsDialogTarget) return this.archiveLessonsDialogTarget
+    if (frame) return frame.querySelector("#teacher-archive-lessons-dialog")
+    return document.getElementById("teacher-archive-lessons-dialog")
+  }
+
 }

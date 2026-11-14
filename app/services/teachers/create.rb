@@ -52,6 +52,7 @@ module Teachers
       @teacher_profile = TeacherProfile.new(profile_attrs)
       teacher_profile.user = user
       teacher_profile.workspace = workspace
+      Teachers::CompensationSetup.apply!(teacher_profile, params[:compensation_setup])
     end
 
     def validate
@@ -59,6 +60,7 @@ module Teachers
       teacher_profile.errors.add(:first_name, :blank) if teacher_profile.first_name.blank?
       teacher_profile.errors.add(:last_name, :blank) if teacher_profile.last_name.blank?
       validate_photo!
+      validate_compensation!
     end
 
     def persist
@@ -135,7 +137,7 @@ module Teachers
         status: params[:status].presence || default_status,
         phone: params[:phone].to_s.strip.presence,
         preferred_contact_method: params[:preferred_contact_method].presence || 'email',
-        timezone: params[:timezone].presence,
+        timezone: params[:timezone].presence || TeacherProfile::DEFAULT_TIMEZONE,
         location: params[:location].to_s.strip.presence,
         subjects: Array(params[:subjects]).compact_blank,
         experience_years: integer_or_nil(params[:experience_years]),
@@ -182,6 +184,12 @@ module Teachers
       Integer(value)
     rescue ArgumentError, TypeError
       nil
+    end
+
+    def validate_compensation!
+      Teachers::CompensationSetup.validation_errors(params[:compensation_setup]).each do |message|
+        errors.add(:base, message)
+      end
     end
   end
 end

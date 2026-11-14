@@ -123,21 +123,23 @@ export default class extends Controller {
     locale: { type: String, default: "en" },
     library: { type: Object, default: {} },
     homeworksUrl: { type: String, default: "/homeworks" },
-    materialsUrl: { type: String, default: "/materials" }
+    materialsUrl: { type: String, default: "/materials" },
+    modalsUrl: String
   }
 
   connect() {
     this.activeRow = null
     this.editing = false
     this.pickedLesson = null
+    this.modalsLoading = null
     this.titleTouched = false
     this.materialsKind = "form"
     this.formAttachments = []
     this.reviewAttachments = []
-    this.openFromLessonHandler = (event) => {
+    this.openFromLessonHandler = async (event) => {
       const lesson = event.detail?.lesson
       if (!lesson) return
-      this.openHomeworkForLesson(lesson, { completeBeforeAssign: Boolean(event.detail?.completeBeforeAssign) })
+      await this.openHomeworkForLesson(lesson, { completeBeforeAssign: Boolean(event.detail?.completeBeforeAssign) })
     }
     window.addEventListener("homework:open-from-lesson", this.openFromLessonHandler)
     if (this.hasTabTarget) this.filter()
@@ -195,13 +197,13 @@ export default class extends Controller {
     this.filter()
   }
 
-  openAdd() {
+  async openAdd() {
     this.editing = false
     this.activeRow = null
     this.pickedLesson = null
     if (this.hasLessonSearchTarget) this.lessonSearchTarget.value = ""
     this.filterLessons()
-    this.openTarget("selectModal")
+    await this.openTarget("selectModal")
   }
 
   closeSelect() {
@@ -229,7 +231,7 @@ export default class extends Controller {
     if (this.hasLessonNoneTarget) this.lessonNoneTarget.hidden = visible !== 0
   }
 
-  pickLesson(event) {
+  async pickLesson(event) {
     const lesson = this.parseJson(event.currentTarget.dataset.lesson)
     if (!lesson) return
     this.closeSelect()
@@ -237,8 +239,9 @@ export default class extends Controller {
     this.activeRow = null
     this.pickedLesson = lesson
     this.useFormMaterials()
+    if (!(await this.ensureModalsLoaded())) return
     this.fillFormFromLesson(lesson)
-    this.openTarget("formModal")
+    await this.openTarget("formModal")
   }
 
   openEdit(event) {
@@ -306,15 +309,16 @@ export default class extends Controller {
     }
   }
 
-  openHomeworkForLesson(lesson, { completeBeforeAssign = false } = {}) {
+  async openHomeworkForLesson(lesson, { completeBeforeAssign = false } = {}) {
     if (!lesson) return
+    if (!(await this.ensureModalsLoaded())) return
     this.editing = false
     this.activeRow = null
     this.completeBeforeAssign = completeBeforeAssign
     this.pickedLesson = lesson
     this.useFormMaterials()
     this.fillFormFromLesson(lesson)
-    this.openTarget("formModal")
+    await this.openTarget("formModal")
   }
 
   async openFromLessonOutcome(event) {
@@ -323,7 +327,7 @@ export default class extends Controller {
     if (mode === "create") {
       const lesson = this.parseJson(button.dataset.lesson)
       if (!lesson) return
-      this.openHomeworkForLesson(lesson)
+      await this.openHomeworkForLesson(lesson)
       return
     }
 
@@ -1071,7 +1075,34 @@ export default class extends Controller {
     this.reviewErrorTarget.hidden = !message
   }
 
-  openTarget(name) {
+  async ensureModalsLoaded() {
+    if (this.hasSelectModalTarget) return true
+    if (!this.hasModalsUrlValue) return false
+    const frame = document.getElementById("homework_modals")
+    if (!frame) return false
+    if (this.modalsLoading) return this.modalsLoading
+    this.modalsLoading = new Promise((resolve) => {
+      const done = () => {
+        this.modalsLoading = null
+        resolve(this.hasFormModalTarget || this.hasSelectModalTarget)
+      }
+      if (frame.dataset.loaded === "1") {
+        window.requestAnimationFrame(done)
+        return
+      }
+      const onLoad = (event) => {
+        if (event.target !== frame) return
+        frame.dataset.loaded = "1"
+        window.requestAnimationFrame(done)
+      }
+      frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+      frame.src = this.modalsUrlValue
+    })
+    return this.modalsLoading
+  }
+
+  async openTarget(name) {
+    if (!(await this.ensureModalsLoaded())) return
     const el = this[`has${this.capitalize(name)}Target`] ? this[`${name}Target`] : null
     if (!el) return
     openModal(el, { onClose: () => closeModal(el), focus: el.querySelector("[data-modal-focus]") })

@@ -10,6 +10,7 @@
   data-homework-library-value=@materials_by_id.to_json
   data-homework-homeworks-url-value=homeworks_path
   data-homework-materials-url-value=materials_path
+  data-homework-modals-url-value=homework_modals_path
 ]
   p.homework-page__toast hidden="hidden" role="status" data-homework-target="toast"
 
@@ -102,4 +103,4 @@
           = render 'row', item: item
         = render 'row', item: homework_template_item, template: true
 
-  = render 'modals_shell'
+  = turbo_frame_tag 'homework_modals'

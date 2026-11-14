@@ -312,7 +312,7 @@
     }
   }
 
-  &__weekdays {
+  &__month > &__weekdays {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     border-bottom: 1px solid var(--border);
@@ -446,6 +446,12 @@
       background: color-mix(in oklch, var(--destructive) 16%, transparent);
       color: var(--destructive);
       text-decoration: line-through;
+    }
+
+    &--teacher {
+      border-color: color-mix(in oklch, var(--teacher-color) 42%, transparent);
+      background: color-mix(in oklch, var(--teacher-color) 20%, var(--card));
+      color: color-mix(in oklch, var(--teacher-color) 72%, var(--foreground));
     }
 
     &--compact {
@@ -1129,6 +1135,19 @@
     &.is-ok {
       color: var(--foreground);
     }
+
+    &--error {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
+      border-radius: var(--radius);
+      background: color-mix(in oklch, var(--destructive) 12%, transparent);
+      padding: 8px 12px;
+      color: var(--destructive);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
   }
 
   &__form-error {
@@ -1157,7 +1176,7 @@
     }
 
     input {
-      padding-left: 40px;
+      padding: 0 12px 0 40px;
     }
   }
 
@@ -1252,20 +1271,32 @@
     gap: 8px;
   }
 
+  &__stack[data-calendar-target="customDays"] &__label {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
   &__day-btn {
     padding: 6px 12px;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--card);
     color: var(--muted-foreground);
-    font-size: var(--font-size-sm);
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 600;
+    line-height: 1;
     cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      color 0.15s ease;
 
     &[aria-pressed="true"] {
       border-color: var(--primary);
       background: var(--accent);
-      color: var(--foreground);
+      color: var(--primary);
     }
   }
 
@@ -1331,7 +1362,7 @@
 
     .calendar-page__icon-input input,
     .calendar-page__picker-search input {
-      padding-left: 40px;
+      padding: 0 12px 0 40px;
     }
   }
 

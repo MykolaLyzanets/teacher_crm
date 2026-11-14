@@ -1,0 +1,29 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+- lessons = Array(local_assigns[:lessons])
+- name = teacher_display_name(teacher)
+
+#teacher-archive-lessons-dialog.danlio-modal.danlio-modal--md.danlio-modal--stack data-teachers-target="archiveLessonsDialog" data-controller="modal"
+  button.danlio-modal__backdrop type="button" tabindex="-1" data-action="teachers#closeArchiveLessons" aria-label=t('app.common.close')
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="archive-lessons-title"
+    .danlio-modal__head
+      div
+        h2#archive-lessons-title.danlio-modal__title = t('app.teachers.archive_lessons_title')
+        p.danlio-modal__desc = t('app.teachers.archive_lessons_modal_sub', name: name, count: lessons.size)
+      button.danlio-modal__close type="button" data-action="teachers#closeArchiveLessons" data-modal-focus="true" aria-label=t('app.common.close')
+        = icon_tag 'x', size: 20
+    - if lessons.empty?
+      .danlio-modal__body
+        p.danlio-modal__copy = t('app.teachers.archive_lessons_empty')
+      .danlio-modal__foot
+        button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="teachers#closeArchiveLessons" = t('app.common.close')
+    - else
+      = form_with url: cancel_archive_lessons_teacher_path(teacher[:id]), method: :post, html: { class: 'danlio-modal__form', data: { turbo: false } } do
+        .danlio-modal__body
+          ul.teachers-page__archive-lessons-modal
+            - lessons.each do |lesson|
+              li
+                p.teachers-page__name = teacher_upcoming_lesson_label(lesson)
+                = link_to t('app.teachers.archive_open_in_calendar'), calendar_path(lessonId: lesson.id), class: 'teachers-page__secondary-btn'
+        .danlio-modal__foot
+          button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="teachers#closeArchiveLessons" = t('app.common.cancel')
+          button.danlio-modal__btn.danlio-modal__btn--danger type="submit" = t('app.teachers.archive_cancel_all_lessons')

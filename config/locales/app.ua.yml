@@ -60,6 +60,7 @@ ua:
       paused: Призупинений
       archived: В архіві
       invited: Запрошений
+      absent: Відсутній
       on_leave: У відпустці
       inactive: Неактивний
       confirmed: Підтверджено
@@ -503,18 +504,122 @@ ua:
       delete_confirm: Архівувати
       deleted_toast: Викладача переміщено в архів.
       archived: "%{name} переміщено в архів."
+      status_updated: "Статус %{name} оновлено."
+      archive_lessons_use_dialog: Спочатку підтвердіть архівацію та оберіть, що робити з майбутніми уроками.
+      archive_lessons_intro:
+        one: У %{name} є %{count} майбутній урок. Оберіть, що зробити перед архівацією.
+        few: У %{name} є %{count} майбутніх уроки. Оберіть, що зробити перед архівацією.
+        many: У %{name} є %{count} майбутніх уроків. Оберіть, що зробити перед архівацією.
+        other: У %{name} є %{count} майбутніх уроків. Оберіть, що зробити перед архівацією.
+      archive_lessons_more: і ще %{count}…
+      archive_keep_lessons: Архівувати й керувати
+      archive_cancel_lessons: Скасувати всі майбутні уроки й архівувати
+      archive_lessons_title: Уроки архівованого викладача
+      archive_lessons_modal_sub: У %{name} залишилось %{count} підтверджених майбутніх уроків.
+      archive_lessons_profile_sub: Залишилось %{count} майбутніх уроків — їх треба переназначити або скасувати.
+      archive_manage_lessons: Керувати уроками
+      archive_cancel_all_lessons: Скасувати всі майбутні уроки
+      archive_lessons_empty: Майбутніх уроків не залишилось.
+      archive_lessons_cancelled: Майбутні уроки скасовано.
+      archive_open_in_calendar: Відкрити в календарі
       not_found_title: Викладача не знайдено
       not_found_text: Цього викладача могло бути видалено або він недоступний у поточній сесії.
       back: До списку викладачів
       schedule_lesson: Запланувати урок
       add_absence: Додати відсутність
+      edit_absence: Редагувати відсутність
+      absence_updated: Відсутність оновлено.
+      absence_deleted: Відсутність видалено.
+      absence_delete_confirm: Видалити цей запис відсутності?
+      absence_edit_aria: Редагувати відсутність
+      absence_delete_aria: Видалити відсутність
       edit_teacher: Редагувати викладача
+      absence_dialog_sub: "%{name} · Уроки в цей період потребують заміни або нового часу."
+      absence_reason: Причина відсутності
+      absence_reason_detail: Опишіть причину
+      absence_reason_detail_placeholder: Додайте деталі…
+      absence_internal_note: Внутрішня примітка (необовʼязково)
+      absence_internal_note_placeholder: Бачать лиже адміністратори…
+      absence_summary: Підсумок
+      absence_summary_teacher: Викладач
+      absence_summary_reason: Причина
+      absence_summary_period: Період
+      absence_summary_lessons: Уроків зачеплено
+      absence_summary_students: Учнів зачеплено
+      review_affected_lessons: Переглянути уроки в періоді
+      save_absence: Зберегти відсутність
+      absence_created_review: "Відсутність збережено. Уроків у періоді: %{count}."
+      absence_created_with_lessons: "Відсутність збережено. У періоді %{count} урок(ів)."
       absence_text: Зазначте дати, коли викладач недоступний. Після збереження можна перепризначити уроки.
       absence_type: Тип відсутності
       absence_start: Дата початку
       absence_end: Дата завершення
       absence_note: Примітка
       absence_recorded: Відсутність збережено.
+      absent_status_detail: "Відсутній · %{reason} (%{range})"
+      absent_day_unavailable: "Відсутній — %{reason}"
+      absence_period_overlap: У цього викладача вже є відсутність у цей період. Змініть дати або керуйте наявним записом.
+      absence_assigned_lessons_block:
+        one: Не можна зберегти відсутність, поки %{count} урок усе ще призначено на цього викладача. Призначте заміну, перенесіть або скасуйте урок.
+        few: Не можна зберегти відсутність, поки %{count} уроки усе ще призначено на цього викладача. Призначте заміну, перенесіть або скасуйте уроки.
+        many: Не можна зберегти відсутність, поки %{count} уроків усе ще призначено на цього викладача. Призначте заміну, перенесіть або скасуйте уроки.
+        other: Не можна зберегти відсутність, поки %{count} уроків усе ще призначено на цього викладача. Призначте заміну, перенесіть або скасуйте уроки.
+      manage_affected_lessons: Керувати уроками в періоді
+      affected_attention_title: Деякі уроки ще потребують уваги.
+      affected_attention_body:
+        one: "%{count} урок потребує заміни або нового часу."
+        few: "%{count} уроки потребують заміни або нового часу."
+        many: "%{count} уроків потребують заміни або нового часу."
+        other: "%{count} уроків потребують заміни або нового часу."
+      affected_tab_all: Усі уроки
+      affected_tab_needs_replacement: Потрібна заміна
+      affected_tab_substitute_assigned: Заміну призначено
+      affected_tab_reschedule_required_only: Потрібен перенос
+      affected_tab_rescheduled: Перенесено
+      affected_empty: Немає уроків у цьому фільтрі.
+      affected_none_in_period: У цьому періоді немає підтверджених уроків цього викладача. Додайте уроки в календарі або змініть дати відсутності.
+      affected_clear_selection: Скинути
+      assign_one_substitute: Призначити одну заміну…
+      affected_bulk_confirm: Підтвердити
+      affected_bulk_no_common: Немає викладача, доступного для всіх обраних уроків. Призначайте заміну окремо або переносьте уроки.
+      assign_substitute: Призначити заміну…
+      no_substitute_available: Немає доступної заміни
+      reschedule_lesson: Перенести
+      reschedule_dialog_title: Перенесення уроку
+      reschedule_prior: "Було %{date} · %{range} · %{teacher}"
+      reschedule_new_date: Нова дата
+      reschedule_start_time: Початок
+      reschedule_end_time: Кінець
+      reschedule_teacher: Викладач
+      reschedule_pick_teacher: Оберіть викладача…
+      reschedule_original_teacher_suffix: (оригінальний викладач)
+      confirm_rescheduling: Підтвердити перенесення
+      reschedule_invalid_datetime: Оберіть коректну дату й час.
+      reschedule_end_before_start: Кінець має бути пізніше початку.
+      reschedule_teacher_absent: "%{name} позначено відсутнім у цей день."
+      reschedule_teacher_absent_warning: Цього викладача позначено відсутнім у цей день.
+      reschedule_teacher_booked: Викладач уже зайнятий у цей час.
+      reschedule_teacher_booked_warning: "Час перетинається з іншим уроком (%{range})."
+      reschedule_student_conflict: "Конфлікт розкладу для %{name}: %{range}."
+      reschedule_outside_availability: Обраний час поза доступністю викладача.
+      reschedule_outside_availability_warning: Час поза тижневою доступністю викладача.
+      reschedule_teacher_available: Викладач доступний.
+      restore_original_teacher: Відновити
+      absence_lesson_teacher_line: "Викладач: %{name}"
+      absence_lesson_substitute_line: "Заміна: %{substitute} · було %{original}"
+      absence_substitute_unavailable: Цей викладач недоступний для цього уроку.
+      absence_substitute_workspace_mismatch: Заміна має бути з того ж простору.
+      absence_restore_none: Для цього уроку немає чого відновлювати.
+      absence_restore_invalid: Цей урок не можна відновити.
+      absence_cancel_lesson_confirm: Скасувати цей урок? Урок залишиться в історії як скасований.
+      absence_cancel_lesson_note: Скасовано під час відсутності (%{reason})
+      absence_cancel_lesson_invalid: Цей урок не входить у період цієї відсутності.
+      substitution_status:
+        needs_replacement: Потрібна заміна
+        substitute_assigned: Заміну призначено
+        reschedule_required: Потрібен перенос
+        rescheduled: Перенесено
+        restored: Оригінального викладача відновлено
       absence_history: Історія відсутностей
       no_absences: Відсутностей ще немає.
       compensation_col: Компенсація
@@ -658,6 +763,7 @@ ua:
         badge_default: За замовчуванням
         per_month_short: на місяць
         salary_needed: Щомісячна ставка — потрібна сума
+        salary_invalid: Вкажіть щомісячну ставку більше 0.
         default_rule: Правило за замовчуванням
         default_amount_needed: Правило за замовчуванням — потрібна сума
         no_rules: Правил ще немає
@@ -704,6 +810,8 @@ ua:
         slot_format_any: Онлайн або офлайн
         slot_format_online: Онлайн
         slot_format_in_person: Офлайн
+        slot_badge_any_type: Будь-який тип
+        slot_badge_any_format: Будь-який формат
         slot_use_any: Будь-який урок
         slot_error_time: Вкажіть початок і кінець.
         slot_error_order: Кінець має бути пізніше за початок.
@@ -746,6 +854,7 @@ ua:
       tags: Теги
       availability: Доступність і налаштування уроків
       availability_title: Доступність
+      availability_profile_sub: Тижневі слоти. Урок має вкладатися в слот за типом і форматом.
       availability_sub: Звичайний графік і параметри уроків.
       working_days: Робочі дні
       working_hours: Робочі години
@@ -779,6 +888,11 @@ ua:
       experience_years: "%{count} років"
       invited_status: "Запрошено · %{status}"
       profile_only_access: Лише профіль — без входу
+      edit_availability: Редагувати доступність
+      default_lesson: Типовий урок
+      unavailable_day: Недоступно
+      invited_access: Запрошено
+      availability_empty_state: Тижневий розклад не задано — уроки можна бронювати в будь-який час.
       has_workspace_access: Може входити в Danlio
       photo: Фото профілю
       photo_hint: Необовʼязково. JPG, PNG або WEBP до 2 МБ.
@@ -919,6 +1033,8 @@ ua:
       free: Безкоштовно
       you: Ви
       teacher_available: Викладач доступний.
+      teacher_absent: Цього викладача позначено відсутнім у цей день. Оберіть іншого викладача або дату.
+      teacher_absent_detail: "Викладач відсутній (%{reason}, %{range}). У цей день урок не можна запланувати."
       outside_day: У цей день викладач поза робочими годинами.
       outside_hours: "Поза робочими годинами (%{range})."
       already_booked: "Вже зайнято: %{when}"
@@ -930,7 +1046,8 @@ ua:
       repeat_conflict_hint: "Буде створено %{count} уроків. Перевірте конфлікти перед продовженням."
       repeat_weekly_summary: "Повторюється щотижня (%{count} уроків) до %{until}."
       repeat_biweekly_summary: "Повторюється щодва тижні (%{count} уроків)."
-      repeat_custom_summary: "Повторюється у вибрані дні (%{count} уроків) до %{until}."
+      repeat_custom_summary: "Повторюється у %{days} (%{count} уроків) до %{until}."
+      repeat_custom_days_fallback: вибрані дні
       lesson_price: Ціна уроку
       currency: Валюта
       price_hint: Підставляється з вибраного типу уроку. Зміна стосується лише цього уроку.
@@ -944,7 +1061,7 @@ ua:
       workspace_timezone: Часовий пояс простору
       repeat_custom: Власне
       repeat_until: До
-      weekdays: Дні тижня
+      weekdays_label: Дні тижня
       group_lesson: Груповий урок
       individual_lesson: Індивідуальний урок
       group_count: "%{count} учнів"
@@ -1010,6 +1127,19 @@ ua:
         october: Жовтень
         november: Листопад
         december: Грудень
+      months_short:
+        jan: Січ
+        feb: Лют
+        mar: Бер
+        apr: Кві
+        may: Тра
+        jun: Чер
+        jul: Лип
+        aug: Сер
+        sep: Вер
+        oct: Жов
+        nov: Лис
+        dec: Гру
       weekdays_short:
         mon: Пн
         tue: Вт
@@ -1202,6 +1332,10 @@ ua:
       cancelled_toast: Урок скасовано без нарахування.
       deleted_toast: Урок видалено.
       completed_toast: Урок позначено як завершений.
+      finance_lesson_not_completed: Не вдалося нарахувати оплату — урок ще не в статусі «Завершено».
+      finance_lesson_no_teacher: Не вдалося нарахувати оплату — у уроку немає викладача.
+      finance_actor_missing: Не вдалося зафіксувати оплату — не знайдено користувача для проведення операції.
+      finance_currency_not_configured: У системі не налаштована валюта UAH для фінансів. Запустіть db:seed.
       mark_completed: Позначити завершеним
       confirm_outcome: Підтвердити результат
       confirm_lesson_outcome: Підтвердити результат уроку
@@ -1220,6 +1354,7 @@ ua:
       close_details: Закрити деталі уроку
       close: Закрити
       not_found: Цей урок не знайдено.
+      outcome_not_ready: Результат уроку можна підтвердити лише після його завершення.
       group_subtitle: Груповий урок
       date_time: Дата і час
       participants: Учасники
@@ -1258,6 +1393,7 @@ ua:
       material_link_url: Посилання
       add_material_link: Додати посилання
       upload_material: Завантажити файл
+      material_no_file: Файл не вибрано
       material_link_default: Посилання до уроку
       choose_material: Оберіть матеріал
       duplicate_lesson_action: Дублювати
@@ -1293,6 +1429,7 @@ ua:
       completed_banner: Завершено
       cancelled_banner: Скасовано
       cancelled_student_archived: Учня було архівовано
+      cancelled_teacher_archived: Викладача переміщено в архів
       cancelled_student_paused: Учня було призупинено
       cancelled_manual: Скасовано вручну
       min: хв

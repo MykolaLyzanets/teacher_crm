@@ -1462,9 +1462,9 @@ function readRawAppearance() {
   return storedAppearance()
 }
 
-function readAppearance() {
+function readAppearance(source) {
   try {
-    const stored = storedAppearance()
+    const stored = source ?? storedAppearance()
     const background = readBackground(stored)
     const headingRaw = stored.heading
     let heading = V1_DEFAULTS.heading
@@ -1505,7 +1505,7 @@ function applyAppearance(rawInput) {
     return applyV1DanlioAppearance()
   }
 
-  const next = readAppearance()
+  const next = readAppearance(raw)
   const style = STYLES[next.style] ? next.style : V1_DEFAULTS.style
   const color = PALETTES[next.color] ? next.color : V1_DEFAULTS.color
   const theme = THEMES[next.theme] ? next.theme : V1_DEFAULTS.theme
@@ -1585,12 +1585,12 @@ function persistAppearance(applied) {
 
 function saveAppearance(next) {
   const stored = { ...next }
-  applyAppearance(stored)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
   const el = document.getElementById("danlio-appearance")
   if (el) el.textContent = JSON.stringify(stored)
+  applyAppearance(stored)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
   persistAppearance(stored)
-  const detail = readAppearance()
+  const detail = readAppearance(stored)
   window.dispatchEvent(new CustomEvent("danlio:appearance", { detail }))
   return stored
 }

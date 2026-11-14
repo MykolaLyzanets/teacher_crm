@@ -1,0 +1,70 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+- name = teacher_display_name(teacher)
+- preview_url = preview_teacher_absences_path(teacher_id: teacher[:id])
+- existing_periods = Array(local_assigns[:existing_periods])
+- editing = local_assigns[:editing_absence]
+- form_url = editing ? teacher_absence_path(teacher[:id], editing) : teacher_absences_path(teacher_id: teacher[:id])
+- form_method = editing ? :patch : :post
+- default_type = editing&.absence_type || 'sick_leave'
+
+#teacher-absence-dialog.danlio-modal.danlio-modal--md.danlio-modal--absence hidden="hidden" role="presentation" data-teachers-target="absenceDialog" data-controller="teacher-absence" data-teacher-absence-editing-value=editing.present?.to_s data-teacher-absence-teacher-name-value=name data-teacher-absence-preview-url-value=preview_url data-teacher-absence-existing-periods-value=existing_periods.to_json data-teacher-absence-review-label-value=t('app.teachers.review_affected_lessons') data-teacher-absence-save-label-value=t('app.teachers.save_absence')
+  button.danlio-modal__backdrop type="button" data-action="teachers#closeAbsence click->teacher-absence#reset" aria-label=t('app.common.close')
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="add-absence-title"
+    .danlio-modal__head.danlio-modal__head--brand
+      span.danlio-modal__head-icon aria-hidden="true"
+        = icon_tag 'calendar-off', size: 18
+      div
+        h2#add-absence-title.danlio-modal__title = editing ? t('app.teachers.edit_absence') : t('app.teachers.add_absence')
+        p.danlio-modal__desc = t('app.teachers.absence_dialog_sub', name: name)
+    = form_with url: form_url, scope: :teacher_absence, method: form_method, html: { class: 'danlio-modal__form', data: { turbo_frame: '_top' } } do |f|
+      .danlio-modal__body
+        label.danlio-field
+          span
+            = t('app.teachers.absence_reason')
+            span.danlio-field__req *
+          = f.select :absence_type, options_for_select(TeacherAbsence::ABSENCE_TYPES.keys.map { |key| [t("app.teachers.absence_types.#{key}"), key] }, default_type), {}, class: 'danlio-field__control', data: { teacher_absence_target: 'type', action: 'change->teacher-absence#syncReasonDetail change->teacher-absence#updateSummary' }
+        .danlio-field data-teacher-absence-target="reasonDetailWrap" hidden="hidden"
+          span
+            = t('app.teachers.absence_reason_detail')
+            span.danlio-field__req *
+          = f.text_area :reason_detail, rows: 4, class: 'danlio-field__control danlio-field__control--textarea', placeholder: t('app.teachers.absence_reason_detail_placeholder'), value: editing&.reason_detail, data: { teacher_absence_target: 'reasonDetail', action: 'input->teacher-absence#updateSummary' }
+        .danlio-field-grid
+          label.danlio-field
+            span
+              = t('app.teachers.absence_start')
+              span.danlio-field__req *
+            = f.date_field :starts_on, required: true, class: 'danlio-field__control', value: editing&.starts_on, data: { teacher_absence_target: 'startsOn', action: 'change->teacher-absence#startsOnChanged input->teacher-absence#startsOnChanged change->teacher-absence#updateSummary' }
+          label.danlio-field
+            span
+              = t('app.teachers.absence_end')
+              span.danlio-field__req *
+            = f.date_field :ends_on, required: true, class: 'danlio-field__control', value: editing&.ends_on, data: { teacher_absence_target: 'endsOn', action: 'change->teacher-absence#updateSummary input->teacher-absence#updateSummary' }
+        p.teachers-page__field-error.absence-summary__overlap hidden="hidden" role="alert" data-teacher-absence-target="overlapError"
+          = t('app.teachers.absence_period_overlap')
+        label.danlio-field
+          span = t('app.teachers.absence_internal_note')
+          = f.text_area :note, rows: 4, class: 'danlio-field__control danlio-field__control--textarea', placeholder: t('app.teachers.absence_internal_note_placeholder'), value: editing&.note
+        .absence-summary data-teacher-absence-target="summaryWrap" hidden="hidden"
+          p.absence-summary__title = t('app.teachers.absence_summary')
+          dl.absence-summary__list
+            .absence-summary__row
+              dt = t('app.teachers.absence_summary_teacher')
+              dd data-teacher-absence-target="summaryTeacher" = name
+            .absence-summary__row
+              dt = t('app.teachers.absence_summary_reason')
+              dd data-teacher-absence-target="summaryReason"
+            .absence-summary__row
+              dt = t('app.teachers.absence_summary_period')
+              dd data-teacher-absence-target="summaryPeriod"
+            .absence-summary__row
+              dt = t('app.teachers.absence_summary_lessons')
+              dd data-teacher-absence-target="summaryLessons" 0
+            .absence-summary__row
+              dt = t('app.teachers.absence_summary_students')
+              dd data-teacher-absence-target="summaryStudents" 0
+      .danlio-modal__foot
+        button.danlio-modal__btn.danlio-modal__btn--secondary type="button" data-action="teachers#closeAbsence click->teacher-absence#reset" = t('app.common.cancel')
+        - if editing
+          button.danlio-modal__btn.danlio-modal__btn--primary type="submit" disabled="disabled" data-teacher-absence-target="submit" = t('app.teachers.save_absence')
+        - else
+          button.danlio-modal__btn.danlio-modal__btn--primary type="submit" name="review_lessons" value="1" disabled="disabled" data-teacher-absence-target="submit" = t('app.teachers.review_affected_lessons')

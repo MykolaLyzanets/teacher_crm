@@ -1,0 +1,75 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+- week_absences = Array(local_assigns[:week_absences])
+- week_start = teacher_availability_week_start
+- slots = teacher_display_availability_slots(teacher)
+- duration = teacher[:defaultLessonDurationMinutes].presence || TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES
+- bounds = slots.any? ? TeacherAvailability.timeline_bounds(slots) : nil
+- type_labels = availability_lesson_type_label_map(teacher)
+
+section.teachers-page__card#availability
+  .teachers-page__section-head
+    div
+      h2 = t('app.teachers.availability_title')
+      p.teachers-page__section-sub = t('app.teachers.availability_profile_sub')
+    - if can_manage_teachers?
+      = link_to edit_teacher_path(teacher[:id], anchor: 'availability'), class: 'teachers-page__hero-btn' do
+        = icon_tag 'pencil', size: 17
+        span = t('app.teachers.edit_availability')
+
+  - if slots.any? || week_absences.any?
+    .teachers-page__availability-summary
+      .teachers-page__availability-legend.ta-legend aria-hidden="true"
+        span
+          i.ta-legend__dot.ta-legend__dot--online
+          = t('app.teachers.availability_slots.legend_online')
+        span
+          i.ta-legend__dot.ta-legend__dot--in-person
+          = t('app.teachers.availability_slots.legend_in_person')
+        span
+          i.ta-legend__dot.ta-legend__dot--any
+          = t('app.teachers.availability_slots.legend_either')
+      ul.teachers-page__weekly-availability
+        - TeachersHelper::WEEK_DAYS.each_with_index do |day, index|
+          - day_date = week_start + index.days
+          - day_absence = teacher_absence_covering_date(week_absences, day_date)
+          - day_slots = TeacherAvailability.slots_for_day(slots, day)
+          - empty_day = day_slots.empty? && day_absence.blank?
+          li class=[(empty_day ? 'is-empty' : nil), (day_absence ? 'is-absent' : nil)].compact.join(' ')
+            .teachers-page__weekly-day-label
+              p.teachers-page__weekly-day-name
+                = weekday_full_label(day)
+                span.teachers-page__weekly-day-date = l(day_date)
+              - if day_absence
+                = render 'teachers/absence_status', reason: teacher_absence_reason_label(day_absence), variant: :chip
+              - elsif day_slots.any?
+                p.teachers-page__weekly-day-total = availability_duration_label(TeacherAvailability.total_slot_minutes(day_slots))
+            - if empty_day
+              p.teachers-page__weekly-empty = t('app.teachers.availability_slots.day_unavailable')
+            - elsif day_absence && day_slots.empty?
+              .teachers-page__weekly-absence-fill
+                = render 'teachers/absence_status', reason: teacher_absence_reason_label(day_absence), variant: :day_panel
+            - else
+              .teachers-page__weekly-day-body
+                .ta-timeline aria-hidden="true"
+                  .ta-timeline__track
+                    - day_slots.each do |slot|
+                      span class="ta-timeline__seg #{availability_slot_format_class(slot.with_indifferent_access[:format])}" style=availability_timeline_segment_style(slot, bounds) title="#{slot.with_indifferent_access[:startTime]}–#{slot.with_indifferent_access[:endTime]}"
+                  .ta-timeline__hours
+                    - availability_timeline_hour_marks(bounds).each do |hour|
+                      span style=availability_timeline_tick_style(hour, bounds) = format('%02d', hour)
+                ul.teachers-page__slot-badges
+                  - day_slots.each do |slot|
+                    li = render 'teachers/availability_slot_badge', slot: slot, label_map: type_labels
+  - else
+    p.teachers-page__weekly-empty-state = t('app.teachers.availability_empty_state')
+
+  dl.teachers-page__dl.teachers-page__dl--profile.teachers-page__dl--availability-meta
+    div
+      dt = t('app.teachers.default_lesson')
+      dd = t('app.teachers.minutes', count: duration)
+    div
+      dt = t('app.teachers.timezone')
+      dd = teacher[:timezone].present? ? teacher_timezone_label(teacher[:timezone]) : '—'
+    div
+      dt = t('app.teachers.workspace_access_label')
+      dd = teacher_workspace_access_summary(teacher)

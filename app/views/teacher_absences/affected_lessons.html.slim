@@ -1,0 +1,5 @@
+= turbo_frame_tag 'affected_lessons_dialog' do
+  = render 'teachers/affected_lessons_dialog',
+    teacher: @teacher.as_catalog,
+    absence: @absence,
+    payload: @payload

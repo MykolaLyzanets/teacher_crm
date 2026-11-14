@@ -68,6 +68,7 @@ export default class extends Controller {
     subjectDeleteDialogUrl: String,
     editUrl: String,
     workspaceCatalogUrl: String,
+    offeringDialogUrl: String,
     canManage: { type: Boolean, default: true }
   }
 
@@ -346,6 +347,39 @@ export default class extends Controller {
   async openOfferingDialog(event) {
     const subjectName = event?.currentTarget?.dataset?.subjectName || null
     this.offeringEditingSubject = subjectName
+    this.pendingOfferingOpen = true
+    if (!this.hasOfferingDialogTarget) {
+      await this.ensureOfferingDialog()
+      if (!this.hasOfferingDialogTarget) {
+        this.pendingOfferingOpen = false
+        return
+      }
+    }
+    await this.populateAndOpenOffering()
+  }
+
+  offeringDialogTargetConnected() {
+    if (!this.pendingOfferingOpen) return
+    this.populateAndOpenOffering()
+  }
+
+  async ensureOfferingDialog() {
+    if (!this.hasOfferingDialogUrlValue) return
+    const frame = document.getElementById("offering_dialog")
+    if (!frame) return
+    if (frame.querySelector("[data-lesson-types-target='offeringDialog']")) return
+    return new Promise((resolve) => {
+      const onLoad = (event) => {
+        if (event.target !== frame) return
+        resolve()
+      }
+      frame.addEventListener("turbo:frame-load", onLoad, { once: true })
+      this.loadFrame(this.offeringDialogUrlValue, {}, "offering_dialog")
+    })
+  }
+
+  async populateAndOpenOffering() {
+    this.pendingOfferingOpen = false
     if (!this.hasOfferingDialogTarget) return
     if (this.hasWorkspaceCatalogUrlValue) {
       try {
@@ -357,6 +391,7 @@ export default class extends Controller {
     }
     this.syncOfferingAddButton()
     this.clearOfferingError()
+    const subjectName = this.offeringEditingSubject
     const adding = !subjectName
     if (this.hasOfferingTitleTarget) {
       this.offeringTitleTarget.textContent = adding
@@ -514,17 +549,16 @@ export default class extends Controller {
   }
 
   closeOfferingDialog() {
-    if (!this.hasOfferingDialogTarget) return
-    closeModal(this.offeringDialogTarget)
-    this.offeringDialogTarget.hidden = true
+    if (this.hasOfferingDialogTarget) {
+      closeModal(this.offeringDialogTarget)
+      this.offeringDialogTarget.hidden = true
+    }
     this.offeringEditingSubject = null
     this.offeringModesByType = {}
-    if (this.hasOfferingNoSubjectsTarget) this.offeringNoSubjectsTarget.hidden = true
-    if (this.hasOfferingChipsTarget) {
-      this.offeringChipsTarget.hidden = true
-      this.offeringChipsTarget.innerHTML = ""
+    this.pendingOfferingOpen = false
+    if (this.hasOfferingDialogUrlValue) {
+      this.dismissFrame(this.offeringDialogUrlValue, "offering_dialog")
     }
-    if (this.hasOfferingSubmitTarget) this.offeringSubmitTarget.disabled = false
     this.clearOfferingError()
   }
 

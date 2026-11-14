@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["menu"]
+  static targets = ["menu", "materialFile", "materialFileName"]
+  static values = { noFile: String }
 
   connect() {
     this.boundPointer = (event) => {
@@ -25,5 +26,12 @@ export default class extends Controller {
   closeMenu() {
     if (!this.hasMenuTarget) return
     this.menuTarget.classList.add("lessons-page__menu--hidden")
+  }
+
+  syncMaterialFileName() {
+    if (!this.hasMaterialFileTarget || !this.hasMaterialFileNameTarget) return
+    const file = this.materialFileTarget.files?.[0]
+    const fallback = this.noFileValue || this.materialFileNameTarget.dataset.emptyLabel || ""
+    this.materialFileNameTarget.textContent = file?.name || fallback
   }
 }

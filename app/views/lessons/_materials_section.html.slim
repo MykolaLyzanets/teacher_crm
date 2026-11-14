@@ -23,10 +23,11 @@ section.lessons-page__show-section#lesson-materials
     p.lessons-page__muted = t('app.lessons.no_materials')
   - if editable
     .lessons-page__material-forms
+      - file_input_id = "lesson-material-file-#{lesson[:id]}"
       = form_with url: lesson_materials_path(lesson[:id]), method: :post, html: { multipart: true, data: { turbo_frame: 'lesson_details' }, class: 'lessons-page__material-form' } do
         p.lessons-page__material-form-title = t('app.lessons.add_material')
         label.lessons-page__field
-          span = t('app.homework.link_title_placeholder')
+          span = t('app.homework.link_title')
           input type="text" name="title" placeholder=t('app.homework.link_title_placeholder')
         label.lessons-page__field
           span = t('app.lessons.material_link_url')
@@ -36,12 +37,18 @@ section.lessons-page__show-section#lesson-materials
           span = t('app.lessons.add_material_link')
       = form_with url: lesson_materials_path(lesson[:id]), method: :post, html: { multipart: true, data: { turbo_frame: 'lesson_details' }, class: 'lessons-page__material-form' } do
         p.lessons-page__material-form-title = t('app.lessons.upload_material')
-        label.lessons-page__field
+        .lessons-page__field
           span = t('app.homework.attach_files')
-          input type="file" name="file" accept="application/pdf,image/*,audio/*,video/mp4,video/quicktime,video/webm"
+          .lessons-page__file-control
+            input.sr-only type="file" name="file" id=file_input_id accept="application/pdf,image/*,audio/*,video/mp4,video/quicktime,video/webm" data-lesson-drawer-target="materialFile" data-action="change->lesson-drawer#syncMaterialFileName"
+            label.lessons-page__file-browse for=file_input_id
+              = lesson_icon 'paperclip', size: 16
+              span = t('app.homework.browse')
+            span.lessons-page__file-name data-lesson-drawer-target="materialFileName" = t('app.lessons.material_no_file')
         label.lessons-page__field
-          span = t('app.homework.link_title_placeholder')
+          span = t('app.homework.link_title')
           input type="text" name="title" placeholder=t('app.homework.link_title_placeholder')
+        p.lessons-page__materials-limits = t('app.homework.materials_limits')
         button.lessons-page__primary-btn.lessons-page__compact-btn type="submit"
           = lesson_icon 'upload', size: 16
           span = t('app.lessons.add_material')

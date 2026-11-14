@@ -174,10 +174,6 @@
                 option value=grade selected=(grade.to_s == selected_grade.to_s) = grade
             span.students-page__hint = t('app.students.optional_field')
           label.students-page__field
-            span = t('app.students.student_id')
-            input type="text" name="student_code" placeholder=t('app.students.student_id_placeholder') value=student[:studentCode]
-            span.students-page__hint = t('app.students.student_id_hint')
-          label.students-page__field
             span = t('app.students.enrollment')
             input type="date" name="enrollment_date" value=enrollment_default
             span.students-page__hint = t('app.students.optional_field')

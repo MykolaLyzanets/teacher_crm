@@ -15,12 +15,23 @@ module Finance
     end
 
     def finance_currency!
-      currency = default_currency!
-      if currency.code != FINANCE_CURRENCY_CODE
-        raise UnsupportedCurrencyError, 'Finance supports UAH only'
-      end
+      currency = Currency.find_by(code: FINANCE_CURRENCY_CODE)
+      return currency if currency.present?
 
-      currency
+      ensure_uah_currency!
+    end
+
+    def ensure_uah_currency!
+      Currency.where(default: true).where.not(code: FINANCE_CURRENCY_CODE).update_all(default: false)
+      Currency.find_or_create_by!(code: FINANCE_CURRENCY_CODE) do |row|
+        row.name = 'Ukrainian hryvnia'
+        row.symbol = '₴'
+        row.subunit_to_unit = 100
+        row.active = true
+        row[:default] = true
+      end.tap do |row|
+        row.update!(active: true, default: true) if !row.default? || !row.active?
+      end
     end
 
     def currency_for_lesson(_lesson)
@@ -35,7 +46,7 @@ module Finance
     end
 
     def teacher_earning_cents(lesson_price_cents, teacher_profile)
-      percent = teacher_profile.compensation_rate
+      percent = teacher_profile.compensation_rate || TeacherProfile::DEFAULT_COMPENSATION_PERCENT
       (lesson_price_cents.to_i * percent / 100.0).round
     end
 

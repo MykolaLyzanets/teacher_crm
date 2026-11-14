@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
+ActiveRecord::Schema[7.0].define(version: 2026_11_14_133000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -192,10 +192,17 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
     t.bigint "cancelled_by_id"
     t.integer "charge_decision", default: 0, null: false
     t.integer "charged_cents", default: 0, null: false
+    t.bigint "teacher_absence_id"
+    t.bigint "original_teacher_id"
+    t.integer "substitution_status"
+    t.jsonb "rescheduled_from"
     t.index ["cancelled_by_id"], name: "index_lessons_on_cancelled_by_id"
     t.index ["lesson_type_id"], name: "index_lessons_on_lesson_type_id"
+    t.index ["original_teacher_id"], name: "index_lessons_on_original_teacher_id"
     t.index ["series_id"], name: "index_lessons_on_series_id"
     t.index ["subject_id"], name: "index_lessons_on_subject_id"
+    t.index ["substitution_status"], name: "index_lessons_on_substitution_status"
+    t.index ["teacher_absence_id"], name: "index_lessons_on_teacher_absence_id"
     t.index ["teacher_id", "starts_at"], name: "index_lessons_on_teacher_id_and_starts_at"
     t.index ["teacher_id"], name: "index_lessons_on_teacher_id"
     t.check_constraint "actual_duration_minutes IS NULL OR actual_duration_minutes > 0", name: "lessons_actual_duration_positive"
@@ -441,6 +448,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "reason_detail"
     t.index ["teacher_id", "starts_on", "ends_on"], name: "idx_teacher_absences_teacher_dates"
     t.index ["teacher_id"], name: "index_teacher_absences_on_teacher_id"
     t.check_constraint "ends_on >= starts_on", name: "teacher_absences_date_range"
@@ -536,6 +544,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "compensation_percent", default: 60, null: false
+    t.jsonb "compensation_setup", default: {}, null: false
     t.jsonb "availability_slots", default: [], null: false
     t.index ["user_id"], name: "index_teacher_profiles_on_user_id", unique: true
     t.index ["workspace_id"], name: "index_teacher_profiles_on_workspace_id"
@@ -589,6 +598,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_14_120000) do
   add_foreign_key "lesson_types", "subjects"
   add_foreign_key "lessons", "lesson_types"
   add_foreign_key "lessons", "subjects"
+  add_foreign_key "lessons", "teacher_absences"
+  add_foreign_key "lessons", "teacher_profiles", column: "original_teacher_id"
   add_foreign_key "lessons", "teacher_profiles", column: "teacher_id"
   add_foreign_key "lessons", "users", column: "cancelled_by_id"
   add_foreign_key "lessons_students", "lessons"

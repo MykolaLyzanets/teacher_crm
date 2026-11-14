@@ -1,0 +1,92 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+- absence = local_assigns[:absence]
+- payload = local_assigns[:payload].with_indifferent_access
+- rows = Array(payload[:lessons])
+- meta = payload[:absence] || {}
+- unresolved = payload[:unresolvedCount].to_i
+- bulk_candidates = Array(payload[:bulkSubstituteCandidates])
+- dialog_url = affected_lessons_teacher_absence_path(teacher_id: teacher[:id], id: absence.id)
+- assign_url = assign_substitute_teacher_absence_path(teacher_id: teacher[:id], id: absence.id)
+- restore_url = restore_teacher_teacher_absence_path(teacher_id: teacher[:id], id: absence.id)
+- cancel_url = cancel_lesson_teacher_absence_path(teacher_id: teacher[:id], id: absence.id)
+- reschedule_dialog_url = teacher_lesson_reschedule_dialog_url(teacher, absence)
+
+#teacher-affected-lessons-dialog.danlio-modal.danlio-modal--xl.teachers-page__affected-lessons hidden="hidden" role="presentation" data-teachers-target="affectedLessonsDialog" data-controller="teacher-affected-lessons" data-teacher-affected-lessons-dialog-url-value=dialog_url data-teacher-affected-lessons-assign-url-value=assign_url data-teacher-affected-lessons-restore-url-value=restore_url data-teacher-affected-lessons-cancel-url-value=cancel_url data-teacher-affected-lessons-cancel-confirm-value=t('app.teachers.absence_cancel_lesson_confirm') data-teacher-affected-lessons-reschedule-dialog-url-value=reschedule_dialog_url
+  button.danlio-modal__backdrop type="button" data-action="teachers#closeAffectedLessons" aria-label=t('app.common.close')
+  .danlio-modal__card role="dialog" aria-modal="true" aria-labelledby="affected-lessons-title"
+    .danlio-modal__head
+      div
+        h2#affected-lessons-title.danlio-modal__title = t('app.teachers.manage_affected_lessons')
+        p.danlio-modal__desc = [meta[:teacherName], meta[:reasonLabel], meta[:periodLabel]].compact.join(' · ')
+      button.danlio-modal__close type="button" data-action="teachers#closeAffectedLessons" aria-label=t('app.common.close')
+        = icon_tag 'x', size: 18
+
+    .teachers-page__affected-panel
+      - if unresolved.positive?
+        .teachers-page__affected-alert
+          = icon_tag 'alert-triangle', size: 18
+          p
+            strong = t('app.teachers.affected_attention_title')
+            = ' '
+            = t('app.teachers.affected_attention_body', count: unresolved)
+
+      .teachers-page__affected-tabs role="tablist"
+        - TeachersHelper::AFFECTED_LESSON_TABS.each do |tab|
+          button.teachers-page__affected-tab class=(tab == 'all' ? 'is-active' : nil) type="button" role="tab" data-tab=tab data-action="teacher-affected-lessons#selectTab" data-teacher-affected-lessons-target="tab" aria-selected=(tab == 'all' ? 'true' : 'false')
+            = t("app.teachers.affected_tab_#{tab}")
+
+      .teachers-page__affected-bulk hidden="hidden" data-teacher-affected-lessons-target="bulkBar"
+        span.teachers-page__affected-bulk-count data-teacher-affected-lessons-target="bulkCount"
+        select.teachers-page__affected-bulk-select data-teacher-affected-lessons-target="bulkSelect" data-action="change->teacher-affected-lessons#bulkSelectChanged"
+          option value="" = t('app.teachers.assign_one_substitute')
+          - bulk_candidates.each do |candidate|
+            - candidate = candidate.with_indifferent_access
+            option value=candidate[:id] = candidate[:name]
+        button.teachers-page__affected-bulk-confirm type="button" data-action="teacher-affected-lessons#bulkAssign" data-teacher-affected-lessons-target="bulkConfirm" disabled="disabled"
+          = t('app.teachers.affected_bulk_confirm')
+        span.teachers-page__affected-bulk-hint hidden="hidden" data-teacher-affected-lessons-target="bulkHint"
+          = t('app.teachers.affected_bulk_no_common')
+        button.teachers-page__affected-bulk-clear type="button" data-action="teacher-affected-lessons#clearSelection"
+          = t('app.teachers.affected_clear_selection')
+
+      .teachers-page__affected-scroll
+        - if rows.empty?
+          p.teachers-page__affected-empty = t('app.teachers.affected_none_in_period')
+        - else
+          .teachers-page__affected-list
+            - rows.each do |row|
+              - row = row.with_indifferent_access
+              - tone = teacher_substitution_tone(row[:status])
+              - candidate_ids = row[:substituteCandidates].map { |c| c.with_indifferent_access[:id] }.join(',')
+              .teachers-page__affected-row data-teacher-affected-lessons-target="row" data-status=row[:status] data-raw-status=row[:rawStatus] data-lesson-id=row[:id] data-candidate-ids=candidate_ids
+                input.teachers-page__affected-check type="checkbox" data-action="teacher-affected-lessons#toggleRow" data-lesson-id=row[:id] aria-label=row[:studentName]
+                .teachers-page__affected-main
+                  span.teachers-page__affected-avatar = row[:studentInitials]
+                  div
+                    p.teachers-page__affected-student = row[:studentName]
+                    p.teachers-page__affected-meta = [row[:dateLabel], row[:timeRange], row[:subjectName]].compact.join(' · ')
+                    p.teachers-page__affected-teacher = row[:teacherLine]
+                .teachers-page__affected-actions
+                  - badge_key = row[:status].to_s == 'reschedule_required' ? 'needs_replacement' : row[:status].to_s
+                  - badge_key = 'substitute_assigned' if badge_key == 'restored'
+                  = status_badge(t("app.teachers.substitution_status.#{badge_key}"), tone: tone)
+                  - if row[:canAssign]
+                    select.teachers-page__affected-select data-action="teacher-affected-lessons#assign" data-lesson-id=row[:id] disabled=(row[:substituteCandidates].empty? ? true : nil)
+                      option value="" disabled="disabled" selected="selected"
+                        = row[:substituteCandidates].empty? ? t('app.teachers.no_substitute_available') : t('app.teachers.assign_substitute')
+                      - row[:substituteCandidates].each do |candidate|
+                        - candidate = candidate.with_indifferent_access
+                        option value=candidate[:id] = candidate[:name]
+                  button.teachers-page__affected-reschedule type="button" data-action="teacher-affected-lessons#reschedule" data-lesson-id=row[:id] data-date=row[:rescheduleDate]
+                    = icon_tag 'calendar-event', size: 16
+                    span = t('app.teachers.reschedule_lesson')
+                  - if row[:canCancel]
+                    button.teachers-page__affected-cancel type="button" data-action="teacher-affected-lessons#cancel" data-lesson-id=row[:id]
+                      = icon_tag 'x', size: 16
+                      span = t('app.lessons.cancel_lesson')
+                  - if row[:canRestore]
+                    button.teachers-page__affected-restore type="button" data-action="teacher-affected-lessons#restore" data-lesson-id=row[:id]
+                      = icon_tag 'user-check', size: 16
+                      span = t('app.teachers.restore_original_teacher')
+
+= turbo_frame_tag 'affected_lesson_reschedule'

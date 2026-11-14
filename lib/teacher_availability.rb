@@ -93,6 +93,30 @@ module TeacherAvailability
     (h || 0) * 60 + (m || 0)
   end
 
+  def timeline_bounds(slots)
+    start_min = 8 * 60
+    end_min = 20 * 60
+    Array(slots).each do |row|
+      slot = row.with_indifferent_access
+      start_t = minutes_of(slot[:startTime])
+      end_t = minutes_of(slot[:endTime])
+      next if end_t <= start_t
+
+      start_min = [start_min, (start_t / 60) * 60].min
+      end_min = [end_min, ((end_t + 59) / 60) * 60].max
+    end
+    { 'start' => start_min, 'end' => end_min }
+  end
+
+  def total_slot_minutes(slots)
+    Array(slots).sum do |row|
+      slot = row.with_indifferent_access
+      start_t = minutes_of(slot[:startTime])
+      end_t = minutes_of(slot[:endTime])
+      [end_t - start_t, 0].max
+    end
+  end
+
   def legacy_format(formats)
     online = formats.include?('online')
     in_person = formats.include?('in_person')

@@ -31,9 +31,10 @@ section.teachers-page__card#availability.ta-section.tc-scroll-anchor
       fieldset.ta-calendar-colors
         legend.ta-calendar-colors__legend = t('app.teachers.calendar_color')
         p.ta-calendar-colors__hint = t('app.teachers.calendar_color_hint')
-        input type="hidden" name="calendar_color" value=(teacher[:calendarColor].presence || 'olive') data-teachers-target="calendarColor"
+        - selected_color = teacher_calendar_color_key(teacher)
+        input type="hidden" name="calendar_color" value=selected_color data-teachers-target="calendarColor"
         .ta-color-btns
           - TeachersHelper::CALENDAR_COLORS.each do |id, hex|
-            button.ta-color-btn type="button" data-color=id data-action="teachers#setCalendarColor" aria-pressed=(id.to_s == (teacher[:calendarColor].presence || 'olive').to_s) aria-label=teacher_color_label(id)
+            button.ta-color-btn type="button" data-color=id data-action="teachers#setCalendarColor" aria-pressed=(id == selected_color) aria-label=teacher_color_label(id)
               span.ta-color-btn__dot style="background-color: #{hex}"
               = teacher_color_label(id)

@@ -45,6 +45,26 @@ RSpec.describe Lessons::RecordOutcome do
     expect(lesson.charged_cents).to eq(lesson.billed_price_cents.to_i)
   end
 
+  it 'completes a lesson when teacher compensation_percent is nil' do
+    lesson = build_lesson(price_cents: 5000)
+    lesson.teacher_profile.update_column(:compensation_percent, nil)
+
+    service = described_class.new(
+      lesson:,
+      params: {
+        outcome: 'completed',
+        attendance: 'attended',
+        actualDurationMinutes: 60,
+        cancelled_by_id: lesson.teacher_profile.workspace.owner.id
+      }
+    )
+
+    expect(service.save).to be(true)
+    lesson.reload
+    expect(lesson).to be_completed
+    expect(TeacherEarning.find_by(lesson_id: lesson.id).earning_cents).to eq(3000)
+  end
+
   it 'accepts attended as present and charges the billed price' do
     lesson = build_lesson(price_cents: 2500, currency: 'EUR')
     service = described_class.new(

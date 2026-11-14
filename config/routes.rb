@@ -44,6 +44,26 @@ Rails.application.routes.draw do
         get :delete_dialog
         get :assign_dialog
         get :unassign_dialog
+        get :absence_dialog
+        get :offering_dialog
+        get :archive_lessons_dialog
+      end
+      member do
+        post :cancel_archive_lessons
+      end
+      resources :absences, only: %i[create update destroy], controller: 'teacher_absences' do
+        collection do
+          get :preview
+        end
+        member do
+          get :affected_lessons
+          get 'lessons/:lesson_id/reschedule_dialog', action: :reschedule_dialog, as: :lesson_reschedule_dialog
+          get 'lessons/:lesson_id/reschedule_check', action: :reschedule_check, as: :lesson_reschedule_check
+          patch :assign_substitute
+          patch :cancel_lesson
+          patch 'lessons/:lesson_id/reschedule', action: :reschedule_lesson, as: :lesson_reschedule
+          patch :restore_teacher
+        end
       end
       resources :subjects, only: %i[index create]
     end
@@ -64,6 +84,7 @@ Rails.application.routes.draw do
       resources :materials, only: :create, controller: 'lesson_materials'
     end
     get 'payments', to: 'payments#index'
+    get 'payments/modals', to: 'payments#modals', as: :payments_modals
     post 'payments/student_payment', to: 'payments#create_student_payment', as: :payments_student_payment
     post 'payments/confirm_payment', to: 'payments#confirm_payment', as: :payments_confirm_payment
     post 'payments/reject_payment', to: 'payments#reject_payment', as: :payments_reject_payment
@@ -102,6 +123,7 @@ Rails.application.routes.draw do
     post 'students/:student_id/materials', to: 'student_materials#create', as: :share_student_material
 
     get 'homework', to: 'homework#index', as: :homework
+    get 'homework/modals', to: 'homework#modals', as: :homework_modals
     resources :homeworks, controller: 'homework', only: %i[show create update] do
       member do
         post :review

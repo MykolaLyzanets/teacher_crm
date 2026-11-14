@@ -8,17 +8,18 @@
       button.danlio-modal__close type="button" aria-label=t('app.common.close') data-action="homework#closeSelect" data-modal-focus="true"
         = homework_icon 'x', size: 20
     .danlio-modal__body
-      - if @eligible_lessons.any?
+      - eligible_lessons = Array(@eligible_lessons)
+      - if eligible_lessons.any?
         .homework-page__search.homework-page__search--modal
           = homework_icon 'search', size: 18
           input type="search" placeholder=t('app.homework.select_search') aria-label=t('app.homework.select_search') data-homework-target="lessonSearch" data-action="input->homework#filterLessons"
-      .homework-page__lesson-empty data-homework-target="lessonEmpty" hidden=(true if @eligible_lessons.any?)
+      .homework-page__lesson-empty data-homework-target="lessonEmpty" hidden=(true if eligible_lessons.any?)
         = homework_icon 'calendar-event', size: 22
         p.homework-page__lesson-empty-title = t('app.homework.select_empty')
         p.homework-page__muted = t('app.homework.select_empty_text')
       p.homework-page__lesson-none hidden="hidden" data-homework-target="lessonNone" = t('app.homework.select_none')
-      ul.homework-page__lesson-list data-homework-target="lessonList" hidden=(true if @eligible_lessons.empty?)
-        - @eligible_lessons.each do |lesson|
+      ul.homework-page__lesson-list data-homework-target="lessonList" hidden=(true if eligible_lessons.empty?)
+        - eligible_lessons.each do |lesson|
           - lesson_search = "#{lesson_party_label(lesson)} #{lesson_subject_label(lesson)}".downcase
           li data-homework-target="lessonOption" data-search=lesson_search
             button.homework-page__lesson-btn type="button" data-action="homework#pickLesson" data-lesson=(lesson.to_json)

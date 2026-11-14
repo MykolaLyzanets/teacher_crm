@@ -6,6 +6,7 @@ import {
   generateOccurrenceDates,
   initials,
   studentName,
+  teacherAbsenceOnDate,
   teacherName
 } from "../lib/calendar_create"
 import { closeModal } from "../lib/modal"
@@ -15,6 +16,10 @@ const MONTH_KEYS = [
   "january", "february", "march", "april", "may", "june",
   "july", "august", "september", "october", "november", "december"
 ]
+const MONTH_SHORT_KEYS = [
+  "jan", "feb", "mar", "apr", "may", "jun",
+  "jul", "aug", "sep", "oct", "nov", "dec"
+]
 const WEEKDAY_KEYS = [
   "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
 ]
@@ -23,6 +28,7 @@ const DAY_END_HOUR = 21
 const HOUR_HEIGHT = 64
 const HOURS = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR }, (_, i) => DAY_START_HOUR + i)
 const BOOKABLE_STUDENT_STATUSES = ["active", "trial"]
+const DEFAULT_TIMEZONE = "Europe/Kyiv"
 
 let pendingCreateDraft = null
 
@@ -124,6 +130,7 @@ export default class extends Controller {
     "assignPermanent",
     "timezoneLabel",
     "availability",
+    "teacherAbsence",
     "studentConflicts",
     "conflictOptions",
     "repeatConflictHint",
@@ -143,6 +150,7 @@ export default class extends Controller {
 
   static values = {
     lessons: Array,
+    absences: { type: Array, default: [] },
     teachers: Array,
     students: Array,
     teacherId: String,
@@ -167,6 +175,16 @@ export default class extends Controller {
 
   monthName(index) {
     return this.i18nValue?.calendar?.months?.[MONTH_KEYS[index]] || MONTH_KEYS[index]
+  }
+
+  monthShortName(index) {
+    return this.i18nValue?.calendar?.months_short?.[MONTH_SHORT_KEYS[index]] || MONTH_SHORT_KEYS[index]
+  }
+
+  formatLessonDayShort(dateKey) {
+    if (!dateKey) return ""
+    const date = parseDateKey(dateKey)
+    return `${date.getDate()} ${this.monthShortName(date.getMonth())}`
   }
 
   weekdayName(index) {
@@ -593,10 +611,7 @@ export default class extends Controller {
 
   async hydrateDrawer() {
     if (!this.hasDrawerTarget) return
-    if (this.hasTimezoneLabelTarget) {
-      const zone = this.timezoneValue || "Europe/Kyiv"
-      this.timezoneLabelTarget.textContent = `${this.t("calendar", "workspace_timezone")}: ${zone.replaceAll("_", " ")}`
-    }
+    this.syncTimezoneLabel()
     if (await this.hydratePendingDraft()) return
     this.editingId = null
     const rawStudentId = this.drawerTarget.dataset.studentId || this.studentIdValue || ""
@@ -692,6 +707,21 @@ export default class extends Controller {
 
   teacherDuration(teacher) {
     return Number(teacher?.defaultLessonDurationMinutes) || 60
+  }
+
+  effectiveTimezone() {
+    const teacher = this.teacherRecord(this.draftTeacherId())
+    const fromTeacher = teacher?.timezone?.toString().trim()
+    if (fromTeacher) return fromTeacher.replaceAll(" ", "_")
+    const fromPage = this.timezoneValue?.toString().trim()
+    if (fromPage) return fromPage.replaceAll(" ", "_")
+    return DEFAULT_TIMEZONE
+  }
+
+  syncTimezoneLabel() {
+    if (!this.hasTimezoneLabelTarget) return
+    const zone = this.effectiveTimezone().replaceAll("_", " ")
+    this.timezoneLabelTarget.textContent = `${this.t("calendar", "workspace_timezone")}: ${zone}`
   }
 
   async onSubjectChange() {
@@ -882,6 +912,7 @@ export default class extends Controller {
 
   syncTeacherUi() {
     const teacher = this.teacherRecord(this.draftTeacherId())
+    this.syncTimezoneLabel()
     const locked = this.lockTeacherValue
     if (this.hasTeacherLockedTarget) this.teacherLockedTarget.hidden = true
     if (this.hasTeacherFieldTarget) this.teacherFieldTarget.hidden = locked
@@ -1060,8 +1091,25 @@ export default class extends Controller {
     if (this.hasCustomDaysTarget) this.customDaysTarget.hidden = repeat !== "custom"
     if (this.hasRepeatSummaryTarget && repeat !== "none") {
       const dates = generateOccurrenceDates(this.draftDateTarget?.value, repeat, this.draftRepeatEndTarget?.value, this.customWeekdays)
-      const key = repeat === "weekly" ? "repeat_weekly_summary" : repeat === "biweekly" ? "repeat_biweekly_summary" : "repeat_custom_summary"
-      this.repeatSummaryTarget.textContent = this.t("calendar", key).replace("%{count}", String(dates.length)).replace("%{until}", this.draftRepeatEndTarget?.value || "")
+      const until = this.draftRepeatEndTarget?.value || ""
+      if (repeat === "custom") {
+        const dayLabels = this.customWeekdays.map((day) => {
+          const button = this.hasWeekdayBtnTarget
+            ? this.weekdayBtnTargets.find((item) => item.dataset.day === day)
+            : null
+          return button ? button.textContent.trim() : day.slice(0, 3)
+        })
+        const days = dayLabels.join(", ") || this.t("calendar", "repeat_custom_days_fallback")
+        this.repeatSummaryTarget.textContent = this.t("calendar", "repeat_custom_summary")
+          .replace("%{days}", days)
+          .replace("%{count}", String(dates.length))
+          .replace("%{until}", until)
+      } else {
+        const key = repeat === "weekly" ? "repeat_weekly_summary" : "repeat_biweekly_summary"
+        this.repeatSummaryTarget.textContent = this.t("calendar", key)
+          .replace("%{count}", String(dates.length))
+          .replace("%{until}", until)
+      }
     }
     this.syncAvailability()
     this.syncLessonTypeChangeNotice()
@@ -1070,11 +1118,25 @@ export default class extends Controller {
   }
 
   syncAvailability() {
-    const teacher = this.teacherRecord(this.draftTeacherId())
+    const teacherId = this.draftTeacherId()
+    const teacher = this.teacherRecord(teacherId)
     const date = this.hasDraftDateTarget ? this.draftDateTarget.value : ""
     const start = this.hasDraftStartTarget ? this.draftStartTarget.value : ""
     const end = this.hasDraftEndTarget ? this.draftEndTarget.value : ""
-    const availability = teacher && date && start && end
+    const absence = teacherId && date ? teacherAbsenceOnDate(teacherId, date, this.absencesValue) : null
+    this._teacherAbsent = Boolean(absence)
+    if (this.hasTeacherAbsenceTarget) {
+      this.teacherAbsenceTarget.hidden = !absence
+      if (absence) {
+        const reason = absence.reasonLabel || absence.absenceType || ""
+        const range = `${absence.startsOn || absence.starts_on} – ${absence.endsOn || absence.ends_on}`
+        const detail = this.t("calendar", "teacher_absent_detail")
+          .replace("%{reason}", reason)
+          .replace("%{range}", range)
+        this.teacherAbsenceTarget.textContent = detail || this.t("calendar", "teacher_absent")
+      }
+    }
+    const availability = !absence && teacher && date && start && end
       ? checkTeacherAvailability(teacher, date, start, end, this.lessons, this.editingId)
       : null
     if (this.hasAvailabilityTarget) {
@@ -1153,6 +1215,7 @@ export default class extends Controller {
     const end = this.hasDraftEndTarget ? this.draftEndTarget.value : ""
     const subject = this.hasDraftSubjectTarget ? this.draftSubjectTarget.value : ""
     if (!teacherId || !date || !start || !end || !subject) return false
+    if (this._teacherAbsent) return false
     if (!this.selectedLessonTypeId) return false
     if (timeToMinutes(end) <= timeToMinutes(start)) return false
     if (this.lessonType === "group") {
@@ -1184,7 +1247,7 @@ export default class extends Controller {
     }
     const selectedTeacher = teacherName(this.teacherRecord(this.draftTeacherId()))
     const subject = this.selectedSubjectName()
-    const when = `${formatLessonDayShort(this.draftDateTarget.value)} · ${formatTimeRange(this.draftStartTarget.value, this.draftEndTarget.value)}`
+    const when = `${this.formatLessonDayShort(this.draftDateTarget.value)} · ${formatTimeRange(this.draftStartTarget.value, this.draftEndTarget.value)}`
     const cents = this.draftPriceCents()
     const currency = this.hasDraftCurrencyTarget ? this.draftCurrencyTarget.value : "UAH"
     const price = this.showPriceValue && cents != null
@@ -1243,6 +1306,7 @@ export default class extends Controller {
       date: this.hasDraftDateTarget ? this.draftDateTarget.value : "",
       startTime: this.hasDraftStartTarget ? this.draftStartTarget.value : "",
       endTime: this.hasDraftEndTarget ? this.draftEndTarget.value : "",
+      timezone: this.effectiveTimezone(),
       location: this.hasDraftLocationTarget ? this.draftLocationTarget.value : "online",
       meetingLink: this.hasDraftMeetingTarget ? this.draftMeetingTarget.value : "",
       locationText: this.hasDraftPlaceTarget ? this.draftPlaceTarget.value : "",
@@ -1513,7 +1577,7 @@ export default class extends Controller {
       let body = ""
       if (mobile) {
         body = `<span class="calendar-page__dots">${list.slice(0, 3).map((lesson) =>
-          `<span class="calendar-page__dot calendar-page__dot--${lesson.status === "cancelled" ? "cancelled" : lesson.type}"></span>`
+          lessonDotHtml(lesson, this)
         ).join("")}</span>`
       } else {
         const visible = list.slice(0, 3)
@@ -1884,12 +1948,6 @@ function lessonTypeNameForLesson(lesson) {
   return lesson?.lessonTypeName || ""
 }
 
-function formatLessonDayShort(dateKey) {
-  const date = parseDateKey(dateKey)
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  return `${date.getDate()} ${months[date.getMonth()]}`
-}
-
 function addHour(value) {
   return minutesToTime(Math.min(timeToMinutes(value) + 60, DAY_END_HOUR * 60))
 }
@@ -1906,18 +1964,48 @@ function lessonEventAttrs(lesson, controller) {
   return `href="${escapeHtml(controller.lessonShowUrl(lesson.id))}" data-turbo="true" data-turbo-frame="lesson_details" data-lesson-id="${escapeHtml(lesson.id)}"`
 }
 
+function teacherColorHex(lesson, controller) {
+  const teacher = controller.teacherRecord(lesson.teacherId)
+  return teacher?.calendarColorHex || ""
+}
+
+function lessonEventPresentation(lesson, controller) {
+  if (lesson.status === "cancelled") {
+    return { className: "calendar-page__event--cancelled", style: "" }
+  }
+  const hex = teacherColorHex(lesson, controller)
+  if (!hex) {
+    return { className: `calendar-page__event--${lesson.type || "individual"}`, style: "" }
+  }
+  return {
+    className: "calendar-page__event--teacher",
+    style: `style="--teacher-color: ${hex}"`
+  }
+}
+
+function lessonDotHtml(lesson, controller) {
+  if (lesson.status === "cancelled") {
+    return `<span class="calendar-page__dot calendar-page__dot--cancelled"></span>`
+  }
+  const hex = teacherColorHex(lesson, controller)
+  if (hex) {
+    return `<span class="calendar-page__dot" style="background: ${escapeHtml(hex)}"></span>`
+  }
+  return `<span class="calendar-page__dot calendar-page__dot--${lesson.type || "individual"}"></span>`
+}
+
 function eventHtml(lesson, density, controller) {
-  const tone = lesson.status === "cancelled" ? "cancelled" : lesson.type
+  const { className: tone, style } = lessonEventPresentation(lesson, controller)
   const online = lesson.location === "online" ? controller.t("common", "online") : controller.t("common", "in_person")
   const action = lessonEventAttrs(lesson, controller)
   if (density === "compact") {
-    return `<a class="calendar-page__event calendar-page__event--compact calendar-page__event--${tone}" ${action}>
+    return `<a class="calendar-page__event calendar-page__event--compact ${tone}" ${style} ${action}>
       <span class="calendar-page__event-time">${escapeHtml(formatTimeLabel(lesson.startTime))}</span>
       <span class="calendar-page__event-title">${escapeHtml(lesson.title)}</span>
     </a>`
   }
   if (density === "agenda") {
-    return `<a class="calendar-page__event calendar-page__event--agenda calendar-page__event--${tone}" ${action}>
+    return `<a class="calendar-page__event calendar-page__event--agenda ${tone}" ${style} ${action}>
       <div class="calendar-page__event-time">${escapeHtml(formatTimeRange(lesson.startTime, lesson.endTime))}</div>
       <div>
         <div class="calendar-page__event-title">${escapeHtml(lesson.title)}</div>
@@ -1927,13 +2015,13 @@ function eventHtml(lesson, density, controller) {
     </a>`
   }
   if (density === "block") {
-    return `<a class="calendar-page__event calendar-page__event--block calendar-page__event--${tone}" ${action}>
+    return `<a class="calendar-page__event calendar-page__event--block ${tone}" ${style} ${action}>
       <p class="calendar-page__event-time">${escapeHtml(formatTimeRange(lesson.startTime, lesson.endTime))}</p>
       <p class="calendar-page__event-title">${escapeHtml(lesson.title)}</p>
       <p class="calendar-page__event-meta">${escapeHtml(lesson.student)}</p>
     </a>`
   }
-  return `<a class="calendar-page__event calendar-page__event--${tone}" ${action}>
+  return `<a class="calendar-page__event ${tone}" ${style} ${action}>
     <span class="calendar-page__event-time">${escapeHtml(formatTimeLabel(lesson.startTime))}</span>
     <span class="calendar-page__event-title">${escapeHtml(lesson.title)}</span>
     <span class="calendar-page__event-meta">${escapeHtml(lesson.student)}</span>

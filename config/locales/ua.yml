@@ -121,6 +121,7 @@ ua:
             base:
               teacher_overlap: Викладач уже має підтверджений урок у цей час
               student_overlap: Учень уже має підтверджений урок у цей час
+              teacher_absent: Цього викладача позначено відсутнім у цей день
             ends_at:
               before_start: має бути пізніше за початок
             subject:
@@ -147,6 +148,7 @@ ua:
             base:
               students_invalid: Один або кілька учнів не знайдені
               teacher_overlap: Викладач уже має підтверджений урок у цей час
+              teacher_absent: Цього викладача позначено відсутнім у цей день
         lessons/schedule:
           attributes:
             base:

@@ -96,6 +96,7 @@ en:
             base:
               teacher_overlap: The teacher already has a confirmed lesson at this time
               student_overlap: The student already has a confirmed lesson at this time
+              teacher_absent: This teacher is marked absent on this date
             ends_at:
               before_start: must be later than the start time
             subject:
@@ -122,6 +123,7 @@ en:
             base:
               students_invalid: One or more students could not be found
               teacher_overlap: The teacher already has a confirmed lesson at this time
+              teacher_absent: This teacher is marked absent on this date
         lessons/schedule:
           attributes:
             base:

@@ -1,4 +1,5 @@
 @import "general.sass.scss";
+@import "components/fields";
 @import "components/modal";
 
 .app-body {
@@ -6,6 +7,8 @@
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   h1,
   h2,
@@ -143,12 +146,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border-radius: var(--radius);
+  border-radius: 12px;
   padding: 10px 12px;
-  color: var(--sidebar-foreground);
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  color: color-mix(in oklch, var(--sidebar-foreground) 62%, var(--sidebar));
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.4;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .app-sidebar__link + .app-sidebar__link {
@@ -156,23 +163,24 @@
 }
 
 .app-sidebar__link:hover {
-  background: var(--sidebar-accent);
+  background: color-mix(in oklch, var(--sidebar-accent) 90%, var(--sidebar-foreground) 4%);
   color: var(--sidebar-foreground);
 }
 
 .app-sidebar__link.is-active {
-  background: var(--sidebar-accent);
-  color: var(--sidebar-foreground);
+  background: var(--sage, var(--sidebar-accent));
+  color: var(--olive-dark, var(--sidebar-accent-foreground, var(--sidebar-foreground)));
+  font-weight: 500;
 }
 
 .app-sidebar__icon {
   display: grid;
   place-items: center;
-  color: var(--muted-foreground);
+  color: var(--text-subtle, #8b9086);
 }
 
 .app-sidebar__link.is-active .app-sidebar__icon {
-  color: var(--sidebar-primary);
+  color: var(--olive, var(--sidebar-primary));
 }
 
 .app-sidebar__link svg.icon {

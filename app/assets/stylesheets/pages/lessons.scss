@@ -785,6 +785,63 @@
   font-weight: 600;
 }
 
+.lessons-page__material-form .lessons-page__compact-btn {
+  justify-self: start;
+  width: auto;
+  min-width: min(100%, 280px);
+}
+
+.lessons-page__materials-limits {
+  margin: 4px 0 0;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.lessons-page__file-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.lessons-page__file-browse {
+  display: inline-flex;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in oklch, var(--accent) 70%, var(--border));
+  }
+}
+
+.lessons-page__file-name {
+  flex: 1 1 120px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .lessons-page__form-flash {
   margin: 0 0 12px;
   font-size: var(--font-size-sm);
@@ -1474,13 +1531,63 @@
   }
 }
 
-.lessons-page__finance-check {
+.lessons-page__finance-switch {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 8px;
-  font-weight: 400;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
   cursor: pointer;
+}
+
+.lessons-page__finance-switch-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--foreground);
+  line-height: 1.4;
+}
+
+.lessons-page__switch-control {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+}
+
+.lessons-page__switch-rail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--muted-foreground) 35%, var(--border));
+  transition: background 0.15s ease;
+}
+
+.lessons-page__switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: 0 1px 2px color-mix(in oklch, black 18%, transparent);
+  transition: transform 0.15s ease;
+  pointer-events: none;
+}
+
+.lessons-page__switch-control:has(input:checked) .lessons-page__switch-rail {
+  background: var(--primary);
+}
+
+.lessons-page__switch-control:has(input:checked) .lessons-page__switch-knob {
+  transform: translateX(16px);
+}
+
+.lessons-page__switch-control:has(input:focus-visible) .lessons-page__switch-rail {
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring) 40%, transparent);
 }
 
 .lessons-page__complete {

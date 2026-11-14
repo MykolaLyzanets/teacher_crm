@@ -5,8 +5,11 @@ class TeachersController < AppController
   helper LessonsHelper
 
   before_action :require_owner_staff!
-  before_action :require_workspace!, only: %i[new create edit update destroy delete_dialog assign_dialog unassign_dialog]
-  before_action :set_teacher_record, only: %i[show edit update destroy]
+  before_action :require_workspace!, only: %i[
+    new create edit update destroy delete_dialog assign_dialog unassign_dialog absence_dialog offering_dialog
+    archive_lessons_dialog cancel_archive_lessons
+  ]
+  before_action :set_teacher_record, only: %i[show edit update destroy cancel_archive_lessons]
 
   def index
     @teachers = teacher_catalog_payloads
@@ -15,8 +18,16 @@ class TeachersController < AppController
   end
 
   def show
-    @teacher = @teacher_record&.as_catalog
-    return unless @teacher_record
+    return if @teacher_record.blank?
+
+    @teacher = @teacher_record.as_catalog
+    today = Time.zone.today
+    current_absence = @teacher_record.teacher_absences.covering(today).first
+    helpers.teacher_apply_display_status!(@teacher, @teacher_record, absence: current_absence, date: today)
+    week_start = helpers.teacher_availability_week_start
+    week_end = week_start + 6.days
+    @teacher_absences = @teacher_record.teacher_absences.ordered
+    @teacher_absences_for_week = @teacher_absences.select { |row| row.starts_on <= week_end && row.ends_on >= week_start }
 
     assigned = @teacher_record.student_profiles.kept.includes(:user)
     teacher_label = @teacher_record.display_label
@@ -27,6 +38,8 @@ class TeachersController < AppController
       @earnings = @teacher_finance[:primary][:summary]
     end
     @school_workspace = current_workspace.blank? || current_workspace.school? || current_user.admin?
+    @absence_manageable_ids = absence_ids_with_affected_lessons(@teacher_absences)
+    @archive_lessons_count = Teachers::UpcomingLessons.count(@teacher_record) if @teacher_record.archived?
   end
 
   def new
@@ -37,7 +50,10 @@ class TeachersController < AppController
   def edit
     return if @teacher_record.blank?
 
-    @teacher = @teacher_record.as_catalog
+    @teacher = @teacher_record.as_catalog.merge(
+      lessonCatalog: @teacher_record.lesson_catalog_json,
+      compensationSetup: @teacher_record.compensation_setup_json
+    )
     @editing = true
     render :new
   end
@@ -57,6 +73,14 @@ class TeachersController < AppController
 
   def update
     return if @teacher_record.blank?
+    return update_status if params[:status_only].present?
+
+    next_status = teacher_params[:status].to_s
+    if next_status == 'archived' && !@teacher_record.archived? && Teachers::UpcomingLessons.count(@teacher_record).positive?
+      redirect_to delete_dialog_teachers_path(teacher_id: @teacher_record.id, from_edit: 1),
+                  alert: I18n.t('app.teachers.archive_lessons_use_dialog')
+      return
+    end
 
     service = Teachers::Update.new(teacher_profile: @teacher_record, actor: current_user, params: teacher_params)
     if service.save
@@ -77,7 +101,15 @@ class TeachersController < AppController
     end
 
     name = @teacher_record.display_label
-    Teachers::Destroy.new(teacher_profile: @teacher_record).call
+    cancel_lessons = params[:cancel_lessons].to_s == '1'
+    manage_lessons = params[:manage_lessons].to_s == '1'
+    Teachers::Destroy.new(teacher_profile: @teacher_record, cancel_lessons: cancel_lessons).call
+
+    if manage_lessons && !cancel_lessons && Teachers::UpcomingLessons.count(@teacher_record).positive?
+      redirect_to teacher_path(@teacher_record, manage_archive: 1), notice: I18n.t('app.teachers.archived', name:)
+      return
+    end
+
     redirect_to teachers_path, notice: I18n.t('app.teachers.archived', name:)
   end
 
@@ -91,7 +123,45 @@ class TeachersController < AppController
     end
 
     @teacher = @teacher_record.as_catalog
+    @upcoming_lessons = Teachers::UpcomingLessons.relation(@teacher_record)
+    @upcoming_count = @upcoming_lessons.size
     render :delete_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def archive_lessons_dialog
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    if @teacher_record.blank?
+      head :not_found
+      return
+    end
+
+    @teacher = @teacher_record.as_catalog
+    @upcoming_lessons = Teachers::UpcomingLessons.relation(@teacher_record)
+    render :archive_lessons_dialog, layout: false
+  end
+
+  def cancel_archive_lessons
+    return if @teacher_record.blank?
+
+    Lessons::CancelForTeacher.new(teacher_profile: @teacher_record).call
+    redirect_to teacher_path(@teacher_record), notice: I18n.t('app.teachers.archive_lessons_cancelled')
+  end
+
+  def update_status
+    status = params[:status].to_s
+    if status == 'archived' && !@teacher_record.archived? && Teachers::UpcomingLessons.count(@teacher_record).positive?
+      redirect_to teachers_path(delete_teacher_id: @teacher_record.id)
+      return
+    end
+
+    service = Teachers::UpdateStatus.new(teacher_profile: @teacher_record, status:)
+    name = @teacher_record.display_label
+    if service.save
+      redirect_to teachers_path, notice: I18n.t('app.teachers.status_updated', name:)
+      return
+    end
+
+    redirect_to teachers_path, alert: service.error_messages.to_sentence
   end
 
   def assign_dialog
@@ -126,6 +196,38 @@ class TeachersController < AppController
     render :unassign_dialog, layout: (turbo_frame_request? ? false : 'app')
   end
 
+  def absence_dialog
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    if @teacher_record.blank?
+      return redirect_to teachers_path unless turbo_frame_request?
+
+      render :absence_dialog, layout: false
+      return
+    end
+
+    @teacher = @teacher_record.as_catalog
+    @editing_absence = @teacher_record.teacher_absences.find_by(id: params[:absence_id])
+    @existing_absence_periods = helpers.teacher_absence_existing_periods(
+      @teacher_record,
+      except_id: @editing_absence&.id
+    )
+    render :absence_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
+  def offering_dialog
+    return render :offering_dialog, layout: false if turbo_frame_request? && params[:dismiss].present?
+
+    @teacher_record = teacher_profiles_scope.find_by(id: params[:teacher_id])
+    if @teacher_record.blank?
+      return redirect_to teachers_path unless turbo_frame_request?
+
+      render :offering_dialog, layout: false
+      return
+    end
+
+    render :offering_dialog, layout: (turbo_frame_request? ? false : 'app')
+  end
+
   private
 
   def teacher_params
@@ -135,7 +237,7 @@ class TeachersController < AppController
       :default_lesson_duration_minutes, :duration_preset, :custom_duration,
       :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
-      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog, :availability_slots,
+      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog, :compensation_setup, :availability_slots,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
     )
     permitted[:working_hours] = permitted_working_hours if params[:working_hours].present?
@@ -151,7 +253,11 @@ class TeachersController < AppController
   end
 
   def set_teacher_record
-    @teacher_record = teacher_profiles_scope.find_by(id: params[:id])
+    scope = teacher_profiles_scope
+    if action_name.in?(%w[edit update])
+      scope = scope.includes(taught_subjects: :lesson_types)
+    end
+    @teacher_record = scope.find_by(id: params[:id])
   end
 
   def default_teacher_attrs
@@ -164,7 +270,7 @@ class TeachersController < AppController
       email: '',
       phone: '',
       preferredContactMethod: 'email',
-      timezone: 'America/New_York',
+      timezone: TeacherProfile::DEFAULT_TIMEZONE,
       location: '',
       subjects: [],
       workspaceRole: '',
@@ -180,6 +286,7 @@ class TeachersController < AppController
       invitationTiming: 'send_now',
       notes: '',
       lessonCatalog: '[]',
+      compensationSetup: '{}',
       availabilitySlots: []
     }.with_indifferent_access
   end
@@ -258,7 +365,10 @@ class TeachersController < AppController
       notes: data[:notes].to_s,
       photo:,
       inviteToWorkspace: data[:invite_to_workspace].to_s == '1',
-      lessonCatalog: data[:lesson_catalog].presence || fallback[:lessonCatalog] || '[]'
+      lessonCatalog: data[:lesson_catalog].presence || fallback[:lessonCatalog].presence ||
+        record&.lesson_catalog_json || '[]',
+      compensationSetup: data[:compensation_setup].presence || fallback[:compensationSetup].presence ||
+        record&.compensation_setup_json || '{}'
     ).with_indifferent_access
   end
 
@@ -307,5 +417,13 @@ class TeachersController < AppController
     created && created >= start_time && created < end_time
   rescue ArgumentError, TypeError
     false
+  end
+
+  def absence_ids_with_affected_lessons(absences)
+    scope = teacher_profiles_scope
+    absences.filter_map do |absence|
+      rows = Teachers::AbsenceAffectedLessons.new(absence:, workspace_teachers_scope: scope).call[:lessons]
+      absence.id if rows.present?
+    end.to_set
   end
 end

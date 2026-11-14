@@ -31,6 +31,16 @@ function inactiveStatus(status) {
   return ["cancelled", "cancelled_charged", "cancelled_not_charged", "completed", "no_show"].includes(String(status))
 }
 
+export function teacherAbsenceOnDate(teacherId, date, absences) {
+  if (!teacherId || !date) return null
+  return (absences || []).find((row) => {
+    if (String(row.teacherId) !== String(teacherId)) return false
+    const start = row.startsOn || row.starts_on
+    const end = row.endsOn || row.ends_on
+    return start && end && date >= start && date <= end
+  }) || null
+}
+
 export function checkTeacherAvailability(teacher, date, startTime, endTime, lessons, ignoreId) {
   if (!teacher) return { kind: "unknown", message: "unknown" }
   const dayName = weekdayNameFromDate(parseDateKey(date))

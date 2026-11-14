@@ -1,0 +1,29 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+
+section.teachers-page__card
+  h2 = t('app.teachers.contact')
+  p.teachers-page__section-sub = t('app.teachers.contact_sub')
+  dl.teachers-page__dl.teachers-page__dl--profile
+    div
+      dt = t('app.teachers.email')
+      dd
+        - if teacher[:email].present?
+          = link_to teacher[:email], "mailto:#{teacher[:email]}"
+        - else
+          | —
+    div
+      dt = t('app.teachers.phone')
+      dd
+        - if teacher[:phone].present?
+          = link_to teacher[:phone], "tel:#{teacher[:phone]}"
+        - else
+          | —
+    div
+      dt = t('app.teachers.preferred_contact')
+      dd = teacher_preferred_contact_label(teacher[:preferredContactMethod])
+    div
+      dt = t('app.teachers.timezone')
+      dd = teacher[:timezone].present? ? teacher_timezone_label(teacher[:timezone]) : '—'
+    div.teachers-page__dl-row--full
+      dt = t('app.teachers.location')
+      dd = teacher[:location].presence || '—'
