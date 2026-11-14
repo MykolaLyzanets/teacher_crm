@@ -93,9 +93,12 @@ module ApplicationHelper
       { path: reports_path, label: t('app.nav.reports'), icon: 'reports', match: 'reports' },
       { path: messages_path, label: t('app.nav.messages'), icon: 'messages', match: 'messages' }
     ]
-    return items if can_manage_teachers?
+    hidden = []
+    hidden << 'teachers' if !can_manage_teachers?
+    hidden << 'payments' if !can_view_finance?
+    return items if hidden.empty?
 
-    items.reject { |item| item[:match] == 'teachers' }
+    items.reject { |item| hidden.include?(item[:match]) }
   end
 
   def signed_in_home_path
@@ -110,7 +113,11 @@ module ApplicationHelper
   end
 
   def can_view_finance?
-    user_signed_in? && (current_user.owner? || current_user.admin?)
+    user_signed_in? && current_user.owner?
+  end
+
+  def can_manage_payments?
+    user_signed_in? && current_user.owner?
   end
 
   def can_assign_teacher?

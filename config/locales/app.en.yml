@@ -229,7 +229,7 @@ en:
       tab_progress: Progress
       tab_notes: Notes
       tab_payments: Payments
-      payments_admin_only: Visible to administrators only
+      payments_admin_only: Visible to the workspace owner only
       no_lessons: No lessons found
       homework_empty: Homework assigned to this student will appear here.
       payments_empty: Payments will appear here.
@@ -858,7 +858,11 @@ en:
       meeting_link: Default meeting link
       calendar_color: Calendar color
       workspace_access: Workspace access
-      workspace_access_sub: Choose whether this teacher can sign in to Danlio.
+      workspace_access_sub: Teacher permissions in the school workspace.
+      senior_teacher_toggle: Senior teacher
+      senior_teacher_hint: Same as a teacher, but can create, move, and delete lessons. Only the owner can assign this role.
+      workspace_access_standard_hint: Standard teacher — cannot create, reschedule, or delete lessons on the calendar on their own.
+      senior_teacher_on: Enabled
       invite_title: Invite teacher to Danlio
       invite_copy: "Teacher profile only: can be assigned students and lessons, but cannot sign in and no invitation is sent."
       send_invitation: Send invitation
@@ -1207,6 +1211,7 @@ en:
     lessons:
       title: Lessons
       subtitle: Manage and review all your lessons.
+      manage_forbidden: Only the owner and senior teachers can create, move, or delete lessons.
       create: Create lesson
       search_placeholder: Search lessons...
       search_aria: Search lessons
@@ -1527,7 +1532,7 @@ en:
       instructions_required: Add instructions for the student.
       due_required: Choose a due date.
       invalid_due_date: Enter a valid due date.
-      lesson_not_eligible: Homework can only be linked to a completed lesson or a no-show.
+      lesson_not_eligible: Homework can only be linked to a confirmed, completed lesson or a no-show.
       assigned_toast: Homework assigned.
       updated_toast: Homework updated.
       reviewed_toast: Homework marked as reviewed.
@@ -1830,7 +1835,7 @@ en:
     payments:
       title: Payments
       subtitle: Student balances, lesson charges, teacher earnings and payouts.
-      forbidden_text: You do not have permission to view financial information.
+      forbidden_text: Only the workspace owner can view and manage payments.
       tabs_aria: Payments sections
       tab_overview: Overview
       tab_balances: Student balances

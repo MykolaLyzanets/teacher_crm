@@ -7,9 +7,10 @@ section.students-page__table-card
         option value="upcoming" = t('app.students.filter_upcoming')
         option value="completed" = t('app.students.filter_completed')
         option value="cancelled" = t('app.students.filter_cancelled')
-    = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
-      = icon_tag 'calendar-plus', size: 18
-      span = t('app.students.create_lesson')
+    - if lesson_manageable?
+      = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
+        = icon_tag 'calendar-plus', size: 18
+        span = t('app.students.create_lesson')
 
   .students-page__table-empty data-students-target="lessonsEmpty" hidden=(lessons.present? ? true : nil)
     p = t('app.students.no_lessons_found')

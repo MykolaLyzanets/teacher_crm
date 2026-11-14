@@ -6,7 +6,7 @@
   data-controller="lessons homework"
   data-lessons-i18n-value=app_i18n_json('app.lessons', 'app.common')
   data-homework-locale-value=I18n.locale
-  data-homework-i18n-value=app_i18n_json('app.homework', 'app.common')
+  data-homework-i18n-value=app_i18n_json('app.homework', 'app.common', 'app.lessons')
   data-homework-library-value=@materials_by_id.to_json
   data-homework-materials-url-value=materials_path
   data-homework-homeworks-url-value=homeworks_path
@@ -18,9 +18,10 @@
     div
       h1.lessons-page__title = t('app.lessons.title')
       p.lessons-page__subtitle = t('app.lessons.subtitle')
-    = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
-      = lesson_icon 'plus', size: 20
-      span = t('app.lessons.create')
+    - if lesson_manageable?
+      = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
+        = lesson_icon 'plus', size: 20
+        span = t('app.lessons.create')
 
   section.lessons-page__panel
     .lessons-page__toolbar
@@ -46,9 +47,10 @@
         = lesson_icon 'clipboard', size: 24
       h2 = t('app.lessons.empty_title')
       p = t('app.lessons.empty_text')
-      = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
-        = lesson_icon 'plus', size: 20
-        span = t('app.lessons.create')
+      - if lesson_manageable?
+        = link_to new_calendar_path, class: 'lessons-page__primary-btn', data: calendar_create_turbo_data do
+          = lesson_icon 'plus', size: 20
+          span = t('app.lessons.create')
 
     .lessons-page__empty hidden="hidden" data-lessons-target="filterEmpty"
       .lessons-page__empty-icon

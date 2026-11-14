@@ -229,7 +229,7 @@ ua:
       tab_progress: Прогрес
       tab_notes: Нотатки
       tab_payments: Оплати
-      payments_admin_only: Лише для адміністраторів
+      payments_admin_only: Лише для власника простору
       no_lessons: Уроків не знайдено
       homework_empty: Домашні завдання цього учня зʼявляться тут.
       payments_empty: Оплати зʼявляться тут.
@@ -867,7 +867,11 @@ ua:
       meeting_link: Посилання на зустріч
       calendar_color: Колір календаря
       workspace_access: Доступ до простору
-      workspace_access_sub: Чи може викладач увійти в Danlio.
+      workspace_access_sub: Права викладача в просторі школи.
+      senior_teacher_toggle: Старший викладач
+      senior_teacher_hint: Як звичайний викладач, але може створювати, переносити й видаляти уроки. Лише власник може призначати цю роль.
+      workspace_access_standard_hint: Звичайний викладач — не може самостійно створювати, переносити й видаляти уроки в розкладі.
+      senior_teacher_on: Увімкнено
       invite_title: Запросити викладача в Danlio
       invite_copy: "Лише профіль: можна призначати учнів і уроки, але вхід і запрошення не надсилаються."
       send_invitation: Надіслати запрошення
@@ -1222,6 +1226,7 @@ ua:
     lessons:
       title: Уроки
       subtitle: Керуйте всіма уроками та переглядайте їх.
+      manage_forbidden: Створювати, переносити та видаляти уроки можуть лише власник і старший викладач.
       create: Створити урок
       search_placeholder: Шукати уроки...
       search_aria: Пошук уроків
@@ -1542,7 +1547,7 @@ ua:
       instructions_required: Додайте інструкцію для учня.
       due_required: Оберіть дату дедлайну.
       invalid_due_date: Вкажіть коректну дату дедлайну.
-      lesson_not_eligible: Домашнє можна привʼязати лише до завершеного уроку або no-show.
+      lesson_not_eligible: Домашнє можна привʼязати лише до підтвердженого, завершеного уроку або no-show.
       assigned_toast: Домашнє призначено.
       updated_toast: Домашнє оновлено.
       reviewed_toast: Домашнє позначено як перевірене.
@@ -1847,7 +1852,7 @@ ua:
     payments:
       title: Оплати
       subtitle: Баланси учнів, списання за уроки, нарахування та виплати викладачам.
-      forbidden_text: У вас немає доступу до фінансової інформації.
+      forbidden_text: Переглядати та керувати оплатами може лише власник простору.
       tabs_aria: Розділи оплат
       tab_overview: Огляд
       tab_balances: Баланси учнів

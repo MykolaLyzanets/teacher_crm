@@ -6,9 +6,10 @@
     div
       h1.calendar-page__title = t('app.calendar.title')
       p.calendar-page__subtitle = t('app.calendar.subtitle')
-    = link_to new_calendar_path, class: 'calendar-page__primary-btn', data: calendar_create_turbo_data(sync: true) do
-      = icon_tag 'plus', size: 20
-      span = t('app.calendar.create_lesson')
+    - if can_manage_lessons?
+      = link_to new_calendar_path, class: 'calendar-page__primary-btn', data: calendar_create_turbo_data(sync: true) do
+        = icon_tag 'plus', size: 20
+        span = t('app.calendar.create_lesson')
 
   section.calendar-page__shell
     .calendar-page__toolbar
@@ -101,7 +102,8 @@
           div
             p.calendar-page__selected-label = t('app.calendar.selected_day')
             h3 data-calendar-target="selectedTitle" —
-          = link_to t('app.calendar.create'), new_calendar_path, class: 'calendar-page__ghost-btn', data: calendar_create_turbo_data(sync: true)
+          - if can_manage_lessons?
+            = link_to t('app.calendar.create'), new_calendar_path, class: 'calendar-page__ghost-btn', data: calendar_create_turbo_data(sync: true)
         .calendar-page__selected-list data-calendar-target="selectedList"
 
       .calendar-page__empty-banner.calendar-page__empty-banner--hidden data-calendar-target="emptyBanner"
@@ -109,7 +111,8 @@
         div
           p = t('app.calendar.no_lessons_scheduled')
           span = t('app.calendar.no_lessons_hint')
-        = link_to t('app.calendar.create_lesson'), new_calendar_path, class: 'calendar-page__primary-btn', data: calendar_create_turbo_data(sync: true)
+        - if can_manage_lessons?
+          = link_to t('app.calendar.create_lesson'), new_calendar_path, class: 'calendar-page__primary-btn', data: calendar_create_turbo_data(sync: true)
 
   .calendar-page__modal.calendar-page__modal--overflow hidden="hidden" data-calendar-target="overflow"
     button.calendar-page__modal-backdrop type="button" aria-label=t('app.calendar.close') data-action="calendar#closeOverflow"

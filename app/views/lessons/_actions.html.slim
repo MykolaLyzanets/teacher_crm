@@ -11,4 +11,5 @@
   .lessons-page__menu.lessons-page__menu--hidden data-lessons-target="menu"
     - if upcoming
       = link_to t('app.lessons.cancel_lesson'), cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item', data: lesson_dialog_turbo
-    = link_to t('app.lessons.delete_lesson'), delete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item lessons-page__menu-item--danger', data: lesson_dialog_turbo
+    - if lesson_manageable?
+      = link_to t('app.lessons.delete_lesson'), delete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item lessons-page__menu-item--danger', data: lesson_dialog_turbo

@@ -164,4 +164,27 @@ RSpec.describe 'Payments', type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(I18n.t('app.payments.forbidden_text'))
   end
+
+  it 'forbids admins from viewing finance page content' do
+    admin = create(:user, workspace:, role: :admin, skip_workspace_presence: true)
+    sign_in admin, scope: :user
+
+    get payments_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t('app.payments.forbidden_text'))
+  end
+
+  it 'forbids admins from payment actions' do
+    admin = create(:user, workspace:, role: :admin, skip_workspace_presence: true)
+    sign_in admin, scope: :user
+
+    post payments_student_payment_path, params: {
+      student_profile_id: student.id,
+      amount_cents: 1000,
+      method: 'cash',
+      confirm: true
+    }, as: :json
+
+    expect(response).to have_http_status(:forbidden)
+  end
 end

@@ -101,8 +101,9 @@
       .dash__card-head
         h2 = t('app.dashboard.todays_lessons')
         .dash__card-actions
-          = link_to new_calendar_path, class: 'dash__primary', data: calendar_create_turbo_data do
-            span = t('app.dashboard.create_lesson')
+          - if can_manage_lessons?
+            = link_to new_calendar_path, class: 'dash__primary', data: calendar_create_turbo_data do
+              span = t('app.dashboard.create_lesson')
           = link_to t('app.dashboard.open_calendar'), calendar_path
       - if today_lessons.empty?
         p.dash__empty = t('app.dashboard.no_lessons')

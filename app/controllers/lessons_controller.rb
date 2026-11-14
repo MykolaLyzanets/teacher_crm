@@ -5,6 +5,7 @@ class LessonsController < AppController
 
   wrap_parameters false
   before_action :ensure_api_workspace!, only: %i[create update destroy outcome]
+  before_action :require_lesson_manager!, only: %i[create update destroy]
 
   def index
     @lessons = catalog_lessons
@@ -92,6 +93,15 @@ class LessonsController < AppController
   end
 
   private
+
+  def require_lesson_manager!
+    return if can_manage_lessons?
+
+    respond_to do |format|
+      format.json { render json: { error: I18n.t('app.lessons.manage_forbidden') }, status: :forbidden }
+      format.html { redirect_to lessons_path, alert: I18n.t('app.lessons.manage_forbidden') }
+    end
+  end
 
   def render_lesson_dialog(view, frame = 'lesson_dialog', require_outcome: false)
     @dialog_frame = frame

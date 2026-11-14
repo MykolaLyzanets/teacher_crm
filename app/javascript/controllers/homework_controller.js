@@ -131,6 +131,7 @@ export default class extends Controller {
     this.activeRow = null
     this.editing = false
     this.pickedLesson = null
+    this.fromCompleteDialog = false
     this.modalsLoading = null
     this.titleTouched = false
     this.materialsKind = "form"
@@ -139,7 +140,10 @@ export default class extends Controller {
     this.openFromLessonHandler = async (event) => {
       const lesson = event.detail?.lesson
       if (!lesson) return
-      await this.openHomeworkForLesson(lesson, { completeBeforeAssign: Boolean(event.detail?.completeBeforeAssign) })
+      await this.openHomeworkForLesson(lesson, {
+        completeBeforeAssign: Boolean(event.detail?.completeBeforeAssign),
+        fromCompleteDialog: Boolean(event.detail?.fromCompleteDialog)
+      })
     }
     window.addEventListener("homework:open-from-lesson", this.openFromLessonHandler)
     if (this.hasTabTarget) this.filter()
@@ -261,6 +265,7 @@ export default class extends Controller {
     this.activeRow = null
     this.pickedLesson = null
     this.completeBeforeAssign = false
+    this.fromCompleteDialog = false
   }
 
   async saveForm() {
@@ -289,32 +294,32 @@ export default class extends Controller {
         return
       }
 
-      const fromCompleteDialog = this.completeBeforeAssign
+      const fromCompleteDialog = this.fromCompleteDialog
       await this.ensureLessonCompletedForHomework()
       const data = await this.requestHomework(null, "POST", this.createPayload({ title, instructions, dueDate }))
       this.insertRow(data.row)
       this.refreshSummary(data.summary)
       this.maybeAddStudentOptionFromRow(data.row)
       this.maybeAddSubjectOptionFromRow(data.row)
+      this.refreshLessonHomeworkOutcomes(data.row)
+      this.activateTabForRow(data.row)
       this.showToast(this.strings.assigned_toast)
       this.closeForm()
-      if (fromCompleteDialog) {
-        await this.dismissLessonDialog()
-        this.filter()
-        return
-      }
       this.filter()
+      window.dispatchEvent(new CustomEvent("homework:assigned", { detail: { row: data.row, fromCompleteDialog } }))
+      if (fromCompleteDialog) return
     } catch (error) {
       this.setFormError(error.message)
     }
   }
 
-  async openHomeworkForLesson(lesson, { completeBeforeAssign = false } = {}) {
+  async openHomeworkForLesson(lesson, { completeBeforeAssign = false, fromCompleteDialog = false } = {}) {
     if (!lesson) return
     if (!(await this.ensureModalsLoaded())) return
     this.editing = false
     this.activeRow = null
     this.completeBeforeAssign = completeBeforeAssign
+    this.fromCompleteDialog = fromCompleteDialog
     this.pickedLesson = lesson
     this.useFormMaterials()
     this.fillFormFromLesson(lesson)
@@ -479,7 +484,7 @@ export default class extends Controller {
   }
 
   homeworkEligibleStatuses() {
-    return ["completed", "no_show"]
+    return ["completed", "no_show", "confirmed"]
   }
 
   lessonNeedsCompletion(lesson) {
@@ -501,25 +506,6 @@ export default class extends Controller {
     }
     const catalog = await completer()
     this.pickedLesson = { ...lesson, ...catalog, status: catalog.status || "completed" }
-  }
-
-  async dismissLessonDialog() {
-    const lessonId = this.pickedLesson?.id
-    const frame = document.getElementById("lesson_dialog")
-    if (!lessonId || !frame) {
-      window.location.reload()
-      return
-    }
-    try {
-      const response = await fetch(`/lessons/${encodeURIComponent(lessonId)}/complete_dialog?dismiss=1`, {
-        credentials: "same-origin",
-        headers: { Accept: "text/html", "Turbo-Frame": "lesson_dialog" }
-      })
-      if (!response.ok) throw new Error("dismiss failed")
-      frame.innerHTML = await response.text()
-    } catch (_) {
-      window.location.reload()
-    }
   }
 
   persistedMaterialIds() {
@@ -621,6 +607,54 @@ export default class extends Controller {
       this.listTarget.prepend(row)
       this.syncEmptyState(true)
     }
+  }
+
+  activateTabForRow(payload) {
+    if (!this.hasTabTarget || !payload) return
+    const rowTab = payload.tab || STATUS_TAB[payload.status] || "active"
+    if (this.tabValue === "all" || this.tabValue === rowTab) return
+    this.tabValue = rowTab
+    this.tabTargets.forEach((button) => {
+      button.setAttribute("aria-selected", button.dataset.tab === rowTab ? "true" : "false")
+    })
+  }
+
+  refreshLessonHomeworkOutcomes(payload) {
+    const lessonId = String(payload?.lessonId || this.pickedLesson?.id || "")
+    const homeworkId = String(payload?.id || "")
+    if (!lessonId || !homeworkId) return
+
+    const assignedLabel =
+      this.i18nValue?.lessons?.homework_assigned ||
+      this.strings.statuses?.assigned ||
+      this.strings.assigned_toast ||
+      "Homework assigned"
+
+    document.querySelectorAll(`[data-outcome-homework][data-lesson-id="${lessonId}"]`).forEach((section) => {
+      section.hidden = false
+      const badge = section.querySelector("[data-homework-badge]")
+      if (badge) {
+        badge.className = "status-badge status-badge--olive"
+        badge.textContent = assignedLabel
+      }
+      section.querySelectorAll("[data-homework-missing]").forEach((button) => {
+        button.hidden = true
+      })
+      section.querySelectorAll("[data-homework-assigned]").forEach((button) => {
+        button.hidden = false
+        button.dataset.homeworkId = homeworkId
+      })
+      const progress = section.querySelector(".lessons-page__outcome-homework-progress")
+      if (progress) {
+        if (payload.submissionSummary) {
+          progress.textContent = payload.submissionSummary
+          progress.hidden = false
+        } else {
+          progress.textContent = ""
+          progress.hidden = true
+        }
+      }
+    })
   }
 
   buildRowFromPayload(payload) {

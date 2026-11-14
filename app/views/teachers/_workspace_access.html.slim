@@ -1,0 +1,23 @@
+- teacher = local_assigns[:teacher].with_indifferent_access
+- editable = local_assigns.fetch(:editable, false)
+
+- unless teacher_workspace_owner?(teacher)
+  section.teachers-page__card
+    h2 = t('app.teachers.workspace_access')
+    p.teachers-page__section-sub = t('app.teachers.workspace_access_sub')
+    - if editable
+      .teachers-page__senior-toggle
+        div
+          p.teachers-page__name = t('app.teachers.senior_teacher_toggle')
+          p.teachers-page__hint = t('app.teachers.senior_teacher_hint')
+        label.teachers-page__switch aria-label=t('app.teachers.senior_teacher_toggle')
+          input type="checkbox" name="senior_teacher" value="1" checked=(teacher[:seniorTeacher] ? true : nil)
+          span
+    - elsif teacher[:seniorTeacher]
+      .teachers-page__senior-toggle
+        div
+          p.teachers-page__name = t('app.teachers.senior_teacher_toggle')
+          p.teachers-page__hint = t('app.teachers.senior_teacher_hint')
+        = status_badge t('app.teachers.senior_teacher_on'), tone: 'olive'
+    - else
+      p.teachers-page__hint = t('app.teachers.workspace_access_standard_hint')

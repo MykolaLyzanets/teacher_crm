@@ -3,7 +3,7 @@
 class HomeworkController < AppController
   helper LessonsHelper
 
-  ELIGIBLE_LESSON_STATUSES = %w[completed no_show].freeze
+  ELIGIBLE_LESSON_STATUSES = %w[completed no_show confirmed].freeze
 
   wrap_parameters false
   before_action :require_teacher_homework_staff!, only: %i[show create update review]

@@ -11,7 +11,7 @@
       = lesson_icon 'user-off', size: 15
       span = t('app.lessons.student_absent')
 
-  .lessons-page__outcome-homework data-outcome-homework="" hidden=(true unless review == 'completed')
+  .lessons-page__outcome-homework data-outcome-homework="" data-lesson-id=lesson[:id] hidden=(true unless review == 'completed')
     span.status-badge class="status-badge--#{homework[:assigned] ? 'olive' : 'neutral'}" data-homework-badge=""
       = homework[:assigned] ? t('app.lessons.homework_assigned') : t('app.lessons.homework_not_assigned')
     - if homework[:submissionSummary].present?

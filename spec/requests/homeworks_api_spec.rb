@@ -97,23 +97,42 @@ RSpec.describe 'Homeworks API' do
       expect(json_response['errors']).to include(I18n.t('app.homework.invalid_due_date'))
     end
 
-    it 'rejects a lesson that is not completed or no-show' do
-      scheduled_lesson = create(:lesson, teacher:, status: :confirmed).tap do |record|
+    it 'allows homework while the lesson is still confirmed (complete dialog flow)' do
+      confirmed_lesson = create(:lesson, teacher:, status: :confirmed).tap do |record|
         record.students = [student]
         record.save!
       end
       sign_in workspace.owner
 
       post homeworks_path, params: {
-        lessonId: scheduled_lesson.id,
+        lessonId: confirmed_lesson.id,
         studentIds: [student.id],
-        instructions: 'Too early.',
+        instructions: 'Prepare for next class.',
+        dueDate: 1.week.from_now.to_date.iso8601
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(confirmed_lesson.reload).to be_confirmed
+      expect(Homework.where(lesson_id: confirmed_lesson.id)).to exist
+    end
+
+    it 'rejects homework on cancelled lessons' do
+      cancelled_lesson = create(:lesson, teacher:, status: :cancelled).tap do |record|
+        record.students = [student]
+        record.save!
+      end
+      sign_in workspace.owner
+
+      post homeworks_path, params: {
+        lessonId: cancelled_lesson.id,
+        studentIds: [student.id],
+        instructions: 'Too late.',
         dueDate: 1.week.from_now.to_date.iso8601
       }, as: :json
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['errors']).to include(I18n.t('app.homework.lesson_not_eligible'))
-      expect(Homework.where(lesson_id: scheduled_lesson.id)).to be_empty
+      expect(Homework.where(lesson_id: cancelled_lesson.id)).to be_empty
     end
 
     it 'rejects a lesson that already has homework' do

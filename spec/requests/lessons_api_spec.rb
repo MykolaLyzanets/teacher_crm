@@ -190,7 +190,30 @@ RSpec.describe 'Lesson scheduling API' do
     expect(Lesson.order(:id).last.allow_overlap).to be(true)
   end
 
-  it 'does not let a teacher override a scheduling conflict' do
+  it 'does not let a regular teacher create a lesson' do
+    workspace, teacher, subject_record, lesson_type, student = graph
+    sign_in teacher.user
+
+    expect do
+      post lessons_path, params: lesson_payload(teacher, subject_record, lesson_type, student), as: :json
+    end.not_to change(Lesson, :count)
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
+  it 'lets a senior teacher create a lesson' do
+    workspace, teacher, subject_record, lesson_type, student = graph
+    teacher.update!(senior_teacher: true)
+    sign_in teacher.user
+
+    expect do
+      post lessons_path, params: lesson_payload(teacher, subject_record, lesson_type, student), as: :json
+    end.to change(Lesson, :count).by(1)
+
+    expect(response).to have_http_status(:created)
+  end
+
+  it 'does not let a regular teacher override a scheduling conflict' do
     _workspace, teacher, subject_record, lesson_type, student = graph
     create(
       :lesson,
@@ -213,6 +236,35 @@ RSpec.describe 'Lesson scheduling API' do
     end.not_to change(Lesson, :count)
 
     expect(response).to have_http_status(:forbidden)
+  end
+
+  it 'lets a senior teacher override a scheduling conflict' do
+    _workspace, teacher, subject_record, lesson_type, student = graph
+    teacher.update!(senior_teacher: true)
+    create(
+      :lesson,
+      teacher:,
+      subject: subject_record,
+      lesson_type:,
+      students: [student],
+      starts_at: teacher.time_zone.local(2026, 9, 5, 10, 0, 0),
+      ends_at: teacher.time_zone.local(2026, 9, 5, 11, 0, 0),
+      with_student: false
+    )
+    sign_in teacher.user
+
+    expect do
+      post lessons_path, params: lesson_payload(
+        teacher, subject_record, lesson_type, student,
+        date: '2026-09-05',
+        startTime: '10:00',
+        endTime: '11:00',
+        overrideConflict: true,
+        overrideReason: 'Team decision'
+      ), as: :json
+    end.to change(Lesson, :count).by(1)
+
+    expect(response).to have_http_status(:created)
   end
 
   it 'records a completed lesson outcome' do

@@ -99,7 +99,8 @@ class TeacherProfile < ApplicationRecord
       timezone:,
       location:,
       subjects: Array(subjects),
-      workspaceRole: user&.role,
+      workspaceRole: workspace_role_key,
+      seniorTeacher: senior_teacher?,
       experienceYears: experience_years,
       languages: Array(languages),
       bio:,
@@ -120,6 +121,17 @@ class TeacherProfile < ApplicationRecord
       assignedCount: assigned_count.nil? ? student_profiles.kept.count : assigned_count.to_i,
       createdAt: created_at&.iso8601
     }.with_indifferent_access
+  end
+
+  def workspace_role_key
+    role = user&.role.to_s.presence || 'teacher'
+    return role if role != 'teacher'
+
+    if has_attribute?(:senior_teacher) && senior_teacher?
+      return 'senior_teacher'
+    end
+
+    'teacher'
   end
 
   private

@@ -24,9 +24,10 @@ section.students-page__hero
       = link_to edit_student_path(student[:id]), class: 'students-page__ghost-btn' do
         = icon_tag 'pencil', size: 18
         span = t('app.students.edit_student')
-      = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
-        = icon_tag 'calendar-plus', size: 18
-        span = t('app.students.create_lesson')
+      - if lesson_manageable?
+        = link_to new_calendar_path(student_id: student[:id]), class: 'students-page__create-btn', data: calendar_create_turbo_data do
+          = icon_tag 'calendar-plus', size: 18
+          span = t('app.students.create_lesson')
       .students-page__menu
         button.students-page__icon-action type="button" aria-label=t('app.students.more_actions') aria-expanded="false" data-students-target="menuButton" data-action="click->students#toggleMenu:stop"
           = icon_tag 'dots', size: 18

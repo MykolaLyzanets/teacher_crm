@@ -237,7 +237,8 @@ class TeachersController < AppController
       :default_lesson_duration_minutes, :duration_preset, :custom_duration,
       :max_lessons_per_day, :default_meeting_link,
       :calendar_color, :invite_to_workspace, :invitation_timing, :invitation_message,
-      :notes, :workspace_role, :photo, :remove_photo, :lesson_catalog, :compensation_setup, :availability_slots,
+      :notes, :workspace_role, :senior_teacher, :photo, :remove_photo, :lesson_catalog, :compensation_setup,
+      :availability_slots,
       subjects: [], languages: [], tags: [], working_days: [], lesson_formats: []
     )
     permitted[:working_hours] = permitted_working_hours if params[:working_hours].present?
@@ -284,6 +285,7 @@ class TeachersController < AppController
       calendarColor: 'olive',
       inviteToWorkspace: false,
       invitationTiming: 'send_now',
+      seniorTeacher: false,
       notes: '',
       lessonCatalog: '[]',
       compensationSetup: '{}',
@@ -363,6 +365,7 @@ class TeachersController < AppController
       maxLessonsPerDay: data[:max_lessons_per_day],
       calendarColor: data[:calendar_color].presence || fallback[:calendarColor],
       notes: data[:notes].to_s,
+      seniorTeacher: data.key?(:senior_teacher) ? ActiveModel::Type::Boolean.new.cast(data[:senior_teacher]) : fallback[:seniorTeacher],
       photo:,
       inviteToWorkspace: data[:invite_to_workspace].to_s == '1',
       lessonCatalog: data[:lesson_catalog].presence || fallback[:lessonCatalog].presence ||

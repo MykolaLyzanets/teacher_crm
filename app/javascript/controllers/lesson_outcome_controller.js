@@ -62,6 +62,13 @@ export default class extends Controller {
       event.detail.completer = () => this.persistCompletedForHomework()
     }
     window.addEventListener("homework:request-lesson-completion", this.onHomeworkCompleteRequest)
+    this.onHomeworkAssigned = (event) => {
+      const row = event.detail?.row
+      const lessonId = String(this.lesson?.id || "")
+      if (!row || String(row.lessonId || "") !== lessonId) return
+      this.markHomeworkAssigned()
+    }
+    window.addEventListener("homework:assigned", this.onHomeworkAssigned)
     const students = Array.isArray(this.lesson.students) ? this.lesson.students : []
     const current = this.hasAttendanceTarget ? this.attendanceTarget.value : "attended"
     students.forEach((student) => {
@@ -73,6 +80,7 @@ export default class extends Controller {
 
   disconnect() {
     window.removeEventListener("homework:request-lesson-completion", this.onHomeworkCompleteRequest)
+    window.removeEventListener("homework:assigned", this.onHomeworkAssigned)
   }
 
   t(key, vars = {}) {
@@ -108,16 +116,27 @@ export default class extends Controller {
   }
 
   chooseHomework(event) {
-    this.homeworkIntent = event.currentTarget.dataset.homework || "skip"
+    const choice = event.currentTarget.dataset.homework || "skip"
+    if (choice === "create" && event.currentTarget.disabled) return
+    this.homeworkIntent = choice
     this.homeworkBtnTargets.forEach((button) => {
       button.classList.toggle("is-selected", button.dataset.homework === this.homeworkIntent)
     })
     if (this.homeworkIntent === "create") {
       window.dispatchEvent(new CustomEvent("homework:open-from-lesson", {
-        detail: { lesson: this.lesson, completeBeforeAssign: true },
+        detail: { lesson: this.lesson, fromCompleteDialog: true },
         bubbles: true
       }))
     }
+  }
+
+  markHomeworkAssigned() {
+    this.homeworkIntent = "skip"
+    this.homeworkBtnTargets.forEach((button) => {
+      const create = button.dataset.homework === "create"
+      button.classList.toggle("is-selected", button.dataset.homework === "skip")
+      if (create) button.disabled = true
+    })
   }
 
   resolvedAttendance() {

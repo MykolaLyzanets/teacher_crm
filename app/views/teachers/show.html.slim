@@ -50,15 +50,18 @@
           = link_to edit_teacher_path(teacher[:id]), class: 'teachers-page__hero-btn' do
             = icon_tag 'pencil', size: 17
             span = t('app.teachers.edit_teacher')
-        = link_to new_calendar_path(teacher_id: teacher[:id]), class: 'teachers-page__hero-btn', data: calendar_create_turbo_data do
-          = icon_tag 'calendar-event', size: 17
-          span = t('app.teachers.schedule_lesson')
+        - if can_manage_lessons?
+          = link_to new_calendar_path(teacher_id: teacher[:id]), class: 'teachers-page__hero-btn', data: calendar_create_turbo_data do
+            = icon_tag 'calendar-event', size: 17
+            span = t('app.teachers.schedule_lesson')
         - if can_manage_teachers?
           button.teachers-page__hero-btn type="button" data-action="teachers#openAbsence"
             = icon_tag 'calendar-off', size: 17
             span = t('app.teachers.add_absence')
 
     = render 'teachers/profile_availability', teacher: teacher, week_absences: @teacher_absences_for_week
+
+    = render 'teachers/workspace_access', teacher:, editable: false
 
     section#lesson-types.teachers-page__card.teachers-page__card--lesson-types data=lesson_types_stimulus_data(mode: 'catalog', teacher_id: teacher[:id])
       = render 'teachers/teaching_section', show_step: true, manager: { show_toast: true }

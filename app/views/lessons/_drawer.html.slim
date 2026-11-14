@@ -37,7 +37,8 @@
               = link_to t('app.lessons.cancel_lesson'), cancel_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item', data: lesson_dialog_turbo
             - if %w[completed cancelled].include?(review)
               = button_to t('app.lessons.correct_outcome'), outcome_lesson_path(lesson[:id]), method: :patch, params: { outcome: 'confirmed' }, class: 'lessons-page__menu-item', form: { data: { turbo: false } }
-            = link_to t('app.lessons.delete_lesson'), delete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item lessons-page__menu-item--danger', data: lesson_dialog_turbo
+            - if lesson_manageable?
+              = link_to t('app.lessons.delete_lesson'), delete_dialog_lesson_path(lesson[:id]), class: 'lessons-page__menu-item lessons-page__menu-item--danger', data: lesson_dialog_turbo
         = link_to close_path, class: 'danlio-modal__close', aria: { label: t('app.lessons.close') }, data: { modal_dismiss: true, turbo: true, turbo_frame: 'lesson_details', modal_focus: true } do
           = lesson_icon 'x', size: 20
 

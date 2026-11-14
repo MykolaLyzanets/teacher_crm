@@ -1618,6 +1618,17 @@
     color: var(--muted-foreground);
   }
 
+  &__senior-toggle {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
   &__switch {
     position: relative;
     display: inline-flex;

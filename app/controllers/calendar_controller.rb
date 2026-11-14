@@ -13,6 +13,13 @@ class CalendarController < AppController
       return
     end
 
+    if !can_manage_lessons?
+      return redirect_to calendar_path, alert: I18n.t('app.lessons.manage_forbidden') unless turbo_frame_request?
+
+      render plain: I18n.t('app.lessons.manage_forbidden'), status: :forbidden
+      return
+    end
+
     load_catalog
     assign_draft_params
     @workspace_timezone = calendar_workspace_timezone(@draft_teacher_id)

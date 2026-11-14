@@ -93,7 +93,8 @@ module Teachers
         max_lessons_per_day: integer_or_nil(params[:max_lessons_per_day]),
         default_meeting_link: params[:default_meeting_link].to_s.strip.presence,
         calendar_color: params[:calendar_color].presence || 'olive',
-        notes: params[:notes].to_s.strip.presence
+        notes: params[:notes].to_s.strip.presence,
+        senior_teacher: senior_teacher_enabled?
       }
     end
 
@@ -117,6 +118,14 @@ module Teachers
         integer_or_nil(params[:duration_preset].presence || params[:default_lesson_duration_minutes]) ||
           TeacherProfile::DEFAULT_LESSON_DURATION_MINUTES
       end
+    end
+
+    def senior_teacher_enabled?
+      return false if teacher_profile.user&.owner?
+      return teacher_profile.senior_teacher? if !actor&.owner?
+      return false if !params.key?(:senior_teacher)
+
+      ActiveModel::Type::Boolean.new.cast(params[:senior_teacher])
     end
 
     def integer_or_nil(value)

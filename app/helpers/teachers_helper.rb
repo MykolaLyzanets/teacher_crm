@@ -23,6 +23,7 @@ module TeachersHelper
   ROLE_I18N = {
     'owner' => 'role_owner',
     'teacher' => 'role_teacher',
+    'senior_teacher' => 'role_senior',
     'admin' => 'role_admin',
     'student' => 'role_teacher'
   }.freeze
@@ -139,6 +140,10 @@ module TeachersHelper
 
     key = ROLE_I18N[role.to_s]
     key ? t("app.teachers.#{key}") : role.to_s.humanize
+  end
+
+  def teacher_workspace_owner?(teacher)
+    teacher[:workspaceRole].to_s == 'owner'
   end
 
   def teacher_color_label(id)

@@ -128,6 +128,9 @@
 
       = render 'teachers/availability_section', teacher:
 
+      - if can_manage_teachers?
+        = render 'teachers/workspace_access', teacher:, editable: true
+
       section.teachers-page__card
         h2 = t('app.teachers.internal_notes')
         p.teachers-page__section-sub = t('app.teachers.internal_notes_sub')

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_11_14_140500) do
+ActiveRecord::Schema[7.0].define(version: 2026_11_14_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -546,6 +546,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_11_14_140500) do
     t.integer "compensation_percent", default: 60, null: false
     t.jsonb "compensation_setup", default: {}, null: false
     t.jsonb "availability_slots", default: [], null: false
+    t.boolean "senior_teacher", default: false, null: false
     t.index ["user_id"], name: "index_teacher_profiles_on_user_id", unique: true
     t.index ["workspace_id"], name: "index_teacher_profiles_on_workspace_id"
   end

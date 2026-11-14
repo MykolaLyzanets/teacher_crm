@@ -10,6 +10,7 @@ class AppController < ApplicationController
 
   helper_method :app_page_stylesheet, :can_manage_teachers?, :can_assign_teacher?,
                 :can_view_finance?, :can_manage_payments?, :can_override_schedule?,
+                :can_manage_lessons?, :senior_teacher?,
                 :can_manage_workspace_catalog?, :can_view_workspace_catalog?,
                 :staff_notifications, :unread_staff_count, :lesson_modal_request?,
                 :materials_scope
@@ -57,15 +58,23 @@ class AppController < ApplicationController
   end
 
   def can_view_finance?
-    current_user.owner? || current_user.admin?
+    current_user&.owner?
+  end
+
+  def senior_teacher?
+    current_user&.teacher_profile&.senior_teacher?
+  end
+
+  def can_manage_lessons?
+    current_user&.owner? || current_user&.admin? || senior_teacher?
   end
 
   def can_override_schedule?
-    current_user.owner? || current_user.admin?
+    can_manage_lessons?
   end
 
   def can_manage_payments?
-    can_view_finance?
+    current_user&.owner?
   end
 
   def staff_notifications

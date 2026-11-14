@@ -484,8 +484,14 @@ module LessonsHelper
   end
 
   def lesson_editable?(lesson)
+    return false if !can_manage_lessons?
+
     review = lesson_review_status(lesson)
     review != 'cancelled' && review != 'completed'
+  end
+
+  def lesson_manageable?
+    can_manage_lessons?
   end
 
   private
